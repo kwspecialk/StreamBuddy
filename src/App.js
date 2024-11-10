@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VideoFeed from './VideoFeed';
 import Sidebar from './Sidebar';
 import LayoutSelector from './LayoutSelector';
@@ -11,6 +11,45 @@ const App = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [volume, setVolume] = useState(100);
+
+  // In App.js, modify the useEffect hook
+useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === 'volume_update') {
+        console.log('Volume updated in iframe:', event.data);
+      }
+    };
+  
+    // Add this function to handle iframe loads
+    const handleIframeLoad = () => {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach((iframe, index) => {
+        try {
+          // Unmute on load but set volume based on active video
+          iframe.contentWindow.postMessage({
+            volume: index === activeVideoId ? volume : 0,
+            muted: index !== activeVideoId
+          }, '*');
+        } catch (error) {
+          console.error('Error controlling iframe volume:', error);
+        }
+      });
+    };
+  
+    // Add load event listeners to iframes
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      iframe.addEventListener('load', handleIframeLoad);
+    });
+  
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      iframes.forEach(iframe => {
+        iframe.removeEventListener('load', handleIframeLoad);
+      });
+    };
+  }, [activeVideoId, volume]);
 
   const handleReorderUrls = (newUrls) => {
     setVideoUrls(newUrls);
@@ -32,10 +71,28 @@ const App = () => {
 
   const handleVolumeChange = (newVolume) => {
     setVolume(newVolume);
+  
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach((iframe) => {
+      iframe.contentWindow.postMessage({
+        type: 'volume_update',
+        volume: newVolume,
+        muted: newVolume === 0,
+      }, '*');
+    });
   };
 
   const handleVideoSelect = (videoId) => {
-    setActiveVideoId(videoId === '' ? null : Number(videoId));
+    setActiveVideoId(videoId);
+  
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach((iframe, index) => {
+      iframe.contentWindow.postMessage({
+        type: 'volume_update',
+        volume: index === videoId ? volume : 0,
+        muted: index !== videoId,
+      }, '*');
+    });
   };
 
   const handleLayoutChange = (newLayout) => {
@@ -75,7 +132,7 @@ const App = () => {
     // Get the maximum windows for current layout
     const maxWindows = LAYOUTS[layout]?.windows || videoUrls.length;
     
-    // Return only the videos that should be displayed
+    // Return only the URLs, not the JSX
     return videoUrls.slice(0, maxWindows);
   };
 
