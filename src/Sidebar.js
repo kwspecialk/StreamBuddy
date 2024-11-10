@@ -19,6 +19,7 @@ const Sidebar = ({
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [sourceIndices, setSourceIndices] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [streamErrors, setStreamErrors] = useState({});
 
   const filteredMatches = (matches, searchTerm) => {
     return matches.filter(match => 
@@ -101,11 +102,21 @@ const Sidebar = ({
 
   const fetchStreams = async (match, sourceIndex = 0) => {
     if (!match?.sources?.[sourceIndex]) return;
-    
+
     try {
       const source = match.sources[sourceIndex];
-      const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+      console.log('Fetching stream for:', match.title, 'source:', source);
+
+      const response = await fetch(`/api/stream/${source.source}/${source.id}`);
+      
+      if (!response.ok) {
+        console.error('Stream fetch failed:', response.status);
+        return;
+      }
+
       const data = await response.json();
+      console.log('Stream data received:', data);
+
       if (data?.[0]?.embedUrl) {
         onAddUrl(data[0].embedUrl);
         setSourceIndices(prev => ({
@@ -114,39 +125,36 @@ const Sidebar = ({
         }));
       }
     } catch (error) {
-      console.error('Error fetching streams:', error);
+      console.error('Error fetching stream:', error);
     }
   };
 
   const handleMatchSelect = async (match) => {
-    setSelectedMatch(match);
-    await fetchStreams(match, 0);
-  };
-
-  const cycleSource = async (url, index) => {
-    const urlData = sourceIndices[url];
-    if (!urlData?.match?.sources) return;
-    
-    const nextIndex = (urlData.sourceIndex + 1) % urlData.match.sources.length;
+    if (!match?.sources?.[0]) return;
     
     try {
-      const source = urlData.match.sources[nextIndex];
+      const source = match.sources[0];
       const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
       const data = await response.json();
       
       if (data?.[0]?.embedUrl) {
-        const newUrls = [...videoUrls];
-        newUrls[index] = data[0].embedUrl;
-        onReorderUrls(newUrls);
-        setSourceIndices(prev => ({
-          ...prev,
-          [data[0].embedUrl]: { match: urlData.match, sourceIndex: nextIndex }
-        }));
+        const embedUrl = data[0].embedUrl.replace('streamed.su', 'embedme.top');
+        onAddUrl(embedUrl);
       }
     } catch (error) {
-      console.error('Error fetching alternate stream:', error);
+      console.error('Error fetching stream:', error);
     }
   };
+
+  const cycleSource = async (url, urlIndex) => {
+    // Get the data for this URL from our sourceIndices state
+    const urlData = sourceIndices[url];
+    
+    // If we don't have source data or there are no sources, exit early
+    if (!urlData?.match?.sources) {
+      console.warn('No source data available for URL:', url);
+      return;
+    }
 
   const normalizeMatchTitle = (title) => {
     return title
@@ -158,18 +166,57 @@ const Sidebar = ({
       .trim();
   };
   
+  const nextIndex = (urlData.sourceIndex + 1) % urlData.match.sources.length;
+  
+  try {
+    const source = urlData.match.sources[nextIndex];
+    const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+    const data = await response.json();
+    
+    if (data?.[0]?.embedUrl) {
+      // Create new URLs array with replaced URL
+      const newUrls = [...videoUrls];
+      newUrls[urlIndex] = data[0].embedUrl;
+      onReorderUrls(newUrls);
+
+      // Update source index for new URL
+      setSourceIndices(prev => ({
+        ...prev,
+        [data[0].embedUrl]: { 
+          match: urlData.match, 
+          sourceIndex: nextIndex 
+        }
+      }));
+    } else {
+      console.warn('No embed URL found in stream data');
+    }
+  } catch (error) {
+    console.error('Error fetching alternate stream:', error);
+  }
+};
   const fetchMatches = async () => {
     try {
+      console.log('Fetching matches...');
       const response = await fetch('https://streamed.su/api/matches/live');
-      const data = await response.json();
       
-      // Create an object to store unique matches with their live status
+      if (!response.ok) {
+        console.error('Match fetch failed:', response.status, response.statusText);
+        const text = await response.text();
+        console.log('Error response:', text);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Matches data received:', data); // Debug log
+      
+      // Create an object to store unique matches
       const uniqueMatches = {};
       
       data.forEach(match => {
         const isLive = match.title.includes('LIVE');
         const cleanTitle = match.title.replace('LIVE', '').trim();
         
+        // Keep match with most sources or LIVE status
         if (!uniqueMatches[cleanTitle] || isLive) {
           uniqueMatches[cleanTitle] = {
             ...match,
@@ -182,9 +229,10 @@ const Sidebar = ({
         }
       });
       
+      // Convert to array and set state
       setMatches(Object.values(uniqueMatches));
     } catch (error) {
-      console.error('Error fetching matches:', error);
+      console.error('Error in fetchMatches:', error);
     }
   };
 

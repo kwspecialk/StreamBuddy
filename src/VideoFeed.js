@@ -1,35 +1,49 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 const VideoFeed = ({ url }) => {
-    useEffect(() => {
-        const handleMessage = (event) => {
-          if (event.data.type === 'volume_update') {
-            const video = document.querySelector('video');
-            if (video) {
-              video.volume = event.data.volume / 100;
-              video.muted = event.data.muted;
-            }
-          }
-        };
+  const proxyUrl = useMemo(() => {
+    try {
+      const originalUrl = new URL(url);
       
-        window.addEventListener('message', handleMessage);
+      // Replace the domain with our proxy
+      if (originalUrl.hostname === 'embedme.top') {
+        return `/embed-proxy${originalUrl.pathname}${originalUrl.search}`;
+      }
       
-        const iframe = document.querySelector('iframe');
-        iframe.addEventListener('load', () => {
-          iframe.contentWindow.postMessage({
-            type: 'unmute',
-          }, '*');
-        });
+      if (originalUrl.hostname === 'rr.vipstreams.in') {
+        return `/stream-proxy${originalUrl.pathname}${originalUrl.search}`;
+      }
       
-        return () => {
-          window.removeEventListener('message', handleMessage);
-        };
-      }, []);
+      // For other domains, use the generic proxy
+      return `/proxy/${originalUrl.hostname}${originalUrl.pathname}${originalUrl.search}`;
+    } catch (e) {
+      console.error('Error processing URL:', e);
+      return url;
+    }
+  }, [url]);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === 'volume_update') {
+        const video = document.querySelector('video');
+        if (video) {
+          video.volume = event.data.volume / 100;
+          video.muted = event.data.muted;
+        }
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   return (
     <div className="video-container">
       <iframe
-        src={url}
+        src={proxyUrl}
         title="Video"
         allowFullScreen
         allow="autoplay"
@@ -38,6 +52,7 @@ const VideoFeed = ({ url }) => {
           height: '100%',
           border: 'none',
           pointerEvents: 'auto',
+          scrolling: 'no',
           overflow: 'hidden'
         }}
       />
