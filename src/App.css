@@ -74,6 +74,78 @@
   left: 360px;
 }
 
+.search-bar {
+  padding: 10px;
+  background-color: var(--color-dark-surface);
+  border-bottom: 1px solid var(--color-dark-border);
+}
+
+.match-search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--color-dark-border);
+  background-color: var(--color-dark-surface-lighter);
+  color: var(--color-platinum);
+  font-size: 14px;
+}
+
+.match-search:focus {
+  outline: none;
+  border-color: var(--color-viridian);
+}
+
+/* Updated match header styling */
+.match-header {
+  background-color: var(--color-dark-surface);  /* Same as background */
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-dark-border);
+  text-align: center;  /* Center the text */
+  margin: 20px 0;  /* Keep the spacing */
+}
+
+.match-header h2 {
+  color: var(--color-viridian);  /* Green text */
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Updated live badge styling */
+.live-badge {
+  background-color: var(--color-butterscotch);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+/* Match item container styling */
+.matches-container {
+  border: 1px solid var(--color-dark-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.matches-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--color-dark-surface);
+}
+
+/* Match item hover effect */
+.match-item:hover {
+  background-color: rgba(46, 55, 49, 0.8);
+  transition: background-color 0.2s ease;
+}
+
 /* URL input and controls */
 .url-input-group {
   display: flex;
@@ -84,10 +156,16 @@
 
 .url-input-group input {
   padding: 8px;
-  background-color: #333;
-  border: 1px solid #444;
+  background-color: var(--color-dark-surface);
   color: white;
   border-radius: 4px;
+  width: 100%;
+}
+
+.url-input-group input:focus {
+  outline: none;
+  border-color: var(--color-emerald);  /* Optional: change border color on focus */
+  box-shadow: 0 0 0 1px var(--color-viridian);  /* Optional: add subtle glow effect */
 }
 .url-input-group button:first-child {
   background-color: var(--color-dark-surface);

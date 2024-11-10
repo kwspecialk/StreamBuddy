@@ -18,6 +18,14 @@ const Sidebar = ({
   const [matches, setMatches] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [sourceIndices, setSourceIndices] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredMatches = (matches, searchTerm) => {
+    return matches.filter(match => 
+      match.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (match.teams && `${match.teams.home?.name} ${match.teams.away?.name}`.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  };
 
   const formatApiUrl = (url) => {
     try {
@@ -152,27 +160,29 @@ const Sidebar = ({
   
   const fetchMatches = async () => {
     try {
-      const response = await fetch('https://streamed.su/api/matches/live', {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json',
-          'Referer': 'https://streamed.su/'
-        }
-      });
+      const response = await fetch('https://streamed.su/api/matches/live');
       const data = await response.json();
       
-      const uniqueMatches = Object.values(
-        data.reduce((acc, match) => {
-          const normalizedTitle = normalizeMatchTitle(match.title);
-          if (!acc[normalizedTitle] || 
-              (match.sources?.length > (acc[normalizedTitle].sources?.length || 0))) {
-            acc[normalizedTitle] = match;
-          }
-          return acc;
-        }, {})
-      );
-  
-      setMatches(uniqueMatches);
+      // Create an object to store unique matches with their live status
+      const uniqueMatches = {};
+      
+      data.forEach(match => {
+        const isLive = match.title.includes('LIVE');
+        const cleanTitle = match.title.replace('LIVE', '').trim();
+        
+        if (!uniqueMatches[cleanTitle] || isLive) {
+          uniqueMatches[cleanTitle] = {
+            ...match,
+            id: match.id,
+            title: cleanTitle,
+            popular: match.popular || isLive,
+            isLive: isLive,
+            sources: match.sources
+          };
+        }
+      });
+      
+      setMatches(Object.values(uniqueMatches));
     } catch (error) {
       console.error('Error fetching matches:', error);
     }
@@ -183,18 +193,20 @@ const Sidebar = ({
       onClick={() => handleMatchSelect(match)}
       className="match-item"
     >
-      <div className="match-content">
-        <div className="match-title">
-          {match.title.replace('LIVE', '').trim()}
-          {match.popular && (
-            <span className="live-badge">LIVE</span>
+      <div className="flex items-center">
+        <div className="flex-1">
+          <div className="text-sm flex items-center justify-between">
+            <span>{match.title}</span>
+            {match.isLive && (
+              <span className="live-badge">LIVE</span>
+            )}
+          </div>
+          {match.teams && (
+            <div className="text-xs text-gray-400">
+              {match.teams.home?.name} vs {match.teams.away?.name}
+            </div>
           )}
         </div>
-        {match.teams && (
-          <div className="match-teams">
-            {match.teams.home?.name} vs {match.teams.away?.name}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -224,34 +236,46 @@ const Sidebar = ({
           </button>
           
           {showBrowser && !isCollapsed && (
-            <div className="matches-container">
-              <div className="matches-section">
-                <div className="match-header">
-                  Featured Matches
-                </div>
-                <div className="matches-list">
-                  {matches
-                    .filter(match => match.popular)
-                    .map((match) => (
-                      <MatchItem key={match.id} match={match} />
-                    ))}
-                </div>
-              </div>
+  <div className="matches-container">
+    {/* Add search bar */}
+    <div className="search-bar">
+      <input
+        type="text"
+        placeholder="Search matches..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="match-search"
+      />
+    </div>
 
-              <div className="matches-section">
-                <div className="match-header">
-                  All Live Events
-                </div>
-                <div className="matches-list">
-                  {matches
-                    .filter(match => !match.popular)
-                    .map((match) => (
-                      <MatchItem key={match.id} match={match} />
-                    ))}
-                </div>
-              </div>
-            </div>
-          )}
+    <div className="matches-section">
+        <div className="match-header">
+            <h2>Featured Matches</h2>
+        </div>
+        <div className="matches-list">
+            {filteredMatches(matches.filter(match => match.popular), searchTerm)
+            .map((match) => (
+                <MatchItem 
+                key={match.id} 
+                match={match} 
+                />
+            ))}
+        </div>
+    </div>
+
+    <div className="matches-section">
+      <div className="match-header">
+        <h2>All Live Events</h2>
+      </div>
+      <div className="matches-list">
+        {filteredMatches(matches.filter(match => !match.popular), searchTerm)
+          .map((match) => (
+            <MatchItem key={match.id} match={match} />
+          ))}
+      </div>
+    </div>
+  </div>
+)}
 
           <input type="text" placeholder="Enter video URL" className="url-input" />
           <div className="button-group">
