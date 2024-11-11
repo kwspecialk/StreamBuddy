@@ -130,19 +130,26 @@ const Sidebar = ({
   };
 
   const handleMatchSelect = async (match) => {
-    if (!match?.sources?.[0]) return;
-    
-    try {
-      const source = match.sources[0];
-      const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
-      const data = await response.json();
-      
-      if (data?.[0]?.embedUrl) {
-        const embedUrl = data[0].embedUrl.replace('streamed.su', 'embedme.top');
-        onAddUrl(embedUrl);
+    setSelectedMatch(match);
+    if (match?.sources?.[0]) {
+      try {
+        const response = await fetch(`https://streamed.su/api/stream/${match.sources[0].source}/${match.sources[0].id}`);
+        const data = await response.json();
+        
+        if (data?.[0]?.embedUrl) {
+          onAddUrl(data[0].embedUrl);
+          // Store the match and source index for this URL
+          setSourceIndices(prev => ({
+            ...prev,
+            [data[0].embedUrl]: {
+              match: match,
+              sourceIndex: 0
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching initial stream:', error);
       }
-    } catch (error) {
-      console.error('Error fetching stream:', error);
     }
   };
 
