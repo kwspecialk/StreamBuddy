@@ -1,30 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VideoFeed from './VideoFeed';
 import Sidebar from './Sidebar';
 import LayoutSelector from './LayoutSelector';
 import { LAYOUTS } from './layouts';
 import './App.css';
-
+import ErrorBoundary from './components/ErrorBoundary';
+import OnDemandBrowser from './components/OnDemandBrowser';
+import MovieDetailsModal from './components/MovieDetailsModal';
+import EpisodeSelector from './components/EpisodeSelector.js';
 const App = () => {
-  const [videoUrls, setVideoUrls] = useState([]);
-  const [layout, setLayout] = useState('single');
+  const [videoUrls, setVideoUrls] = useState(() => {
+    // Try to load saved URLs from localStorage on initial render
+  const savedUrls = localStorage.getItem('savedVideoUrls');
+  return savedUrls ? JSON.parse(savedUrls) : [];
+});
+const [layout, setLayout] = useState(() => {
+  const savedLayout = localStorage.getItem('savedLayout');
+  return savedLayout || 'single';
+});
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeVideoId, setActiveVideoId] = useState(null);
-  // Add state for tracking source indices and active matches
+  const [movieDetails, setMovieDetails] = useState(null);
   const [sourceIndices, setSourceIndices] = useState({});
+  const [streamRetries, setStreamRetries] = useState({});
+  const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
+  const [selectedShow, setSelectedShow] = useState(null);
 
-  const addVideoUrl = (url, match = null) => {
+  const handleStreamRecovery = (index) => {
+    setStreamRetries(prev => {
+      const currentRetries = prev[index] || 0;
+      if (currentRetries < 3) {  // Limit retries
+        const newUrls = [...videoUrls];
+        const currentUrl = newUrls[index];
+        // Force stream refresh
+        newUrls[index] = '';
+        setVideoUrls(newUrls);
+        setTimeout(() => {
+          newUrls[index] = currentUrl;
+          setVideoUrls(newUrls);
+        }, 1000);
+        return { ...prev, [index]: currentRetries + 1 };
+      }
+      return prev;
+    });
+  };
+
+  const handleReorderUrls = (newUrls) => {
+    setVideoUrls(prevUrls => {
+      const reorderedUrls = newUrls.map(url => prevUrls[prevUrls.indexOf(url)]);
+      return reorderedUrls;
+    });
+  };
+
+  const addVideoUrl = (url, matchInfo = null) => {
     if (url && !videoUrls.includes(url)) {
       setVideoUrls([...videoUrls, url]);
-      if (match) {
-        // Store the match data and initial source index
+      if (matchInfo) {
         setSourceIndices(prev => ({
           ...prev,
-          [url]: { match, sourceIndex: 0 }
+          [url]: { 
+            match: {
+              ...matchInfo,
+              title: matchInfo.title || matchInfo.name  // Include the title
+            },
+            sourceIndex: 0 
+          }
         }));
       }
+      document.querySelector("input[placeholder='Enter video URL']").value = '';
     }
-    document.querySelector("input[placeholder='Enter video URL']").value = '';
   };
 
   const handleDeleteUrl = (urlToDelete) => {
@@ -48,40 +92,21 @@ const App = () => {
     setLayout(newLayout);
   };
 
-  const cycleSource = async (url, urlIndex) => {
-    const urlData = sourceIndices[url];
-    if (!urlData?.match?.sources) {
-      console.warn('No source data available for URL:', url);
-      return;
-    }
-
-    const nextIndex = (urlData.sourceIndex + 1) % urlData.match.sources.length;
-
-    try {
-      const source = urlData.match.sources[nextIndex];
-      const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
-      const data = await response.json();
-
-      if (data?.[0]?.embedUrl) {
-        // Create new URLs array with replaced URL
-        const newUrls = [...videoUrls];
-        newUrls[urlIndex] = data[0].embedUrl;
-        setVideoUrls(newUrls);
-
-        // Update source index for new URL
-        setSourceIndices(prev => ({
-          ...prev,
-          [data[0].embedUrl]: {
-            match: urlData.match,
-            sourceIndex: nextIndex
-          }
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching alternate stream:', error);
+  const cycleSource = async (url, urlIndex, newSourceIndices) => {
+    if (newSourceIndices) {
+      setSourceIndices(newSourceIndices);
     }
   };
-
+  const clearSavedState = () => {
+    localStorage.removeItem('savedVideoUrls');
+    localStorage.removeItem('savedLayout');
+    setVideoUrls([]);
+    setLayout('single');
+    setActiveVideoId(null);
+    setSourceIndices({});
+    setStreamRetries({});
+    setMovieDetails(null);
+  };
   // Get only the videos that should be displayed based on layout
   const getDisplayedVideos = () => {
     if (layout === 'grid-infinite') {
@@ -92,6 +117,33 @@ const App = () => {
   };
 
   const displayedVideos = getDisplayedVideos();
+
+useEffect(() => {
+  // Cleanup function to run when component unmounts
+  return () => {
+    // Force garbage collection of video elements
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      try {
+        if (iframe.contentWindow) {
+          iframe.src = '';
+        }
+      } catch (e) {
+        console.warn('Cleanup failed:', e);
+      }
+    });
+  };
+}, []);
+
+useEffect(() => {
+  // Save URLs to localStorage whenever they change
+  localStorage.setItem('savedVideoUrls', JSON.stringify(videoUrls));
+}, [videoUrls]);
+
+useEffect(() => {
+  localStorage.setItem('savedLayout', layout);
+}, [layout]);
+
 
   const formatApiUrl = (url) => {
     try {
@@ -142,6 +194,8 @@ const App = () => {
         sourceIndices={sourceIndices}
         onCycleSource={cycleSource}
         formatApiUrl={formatApiUrl}
+        onShowMovieDetails={setMovieDetails}
+        onClearState={clearSavedState}
       />
 
       <LayoutSelector
@@ -150,27 +204,108 @@ const App = () => {
       />
 
       <div className={`video-grid ${layout}`}>
-        {displayedVideos.map((url, index) => (
-          <div key={index} className="video-container">
-            <div className="video-number">{index + 1}</div>
-            <iframe
-              src={url}
-              title={`Video ${index + 1}`}
-              allowFullScreen
-              allow="autoplay"
-              style={{
-                width: '100%',
-                height: '100%',
-                border: 'none'
+        {getDisplayedVideos().map((url, index) => {
+          console.log('Video URL being passed to VideoFeed:', url); // Add this line
+          return (
+            <div key={url} className="video-container">
+              <div className="video-number">{index + 1}</div>
+              <ErrorBoundary>
+                <VideoFeed 
+                  url={url}
+                  isActive={activeVideoId === index}
+                />
+              </ErrorBoundary>
+              {activeVideoId === index && (
+                <div className="video-muted-indicator">
+                  Active Audio
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <OnDemandBrowser 
+        onAddUrl={addVideoUrl} 
+        onShowMovieDetails={setMovieDetails}
+      />
+
+      {/* Movie Details Modal */}
+      {movieDetails && (
+        <div 
+          className="modal-backdrop" 
+          onClick={() => setMovieDetails(null)}
+        >
+          <div 
+            className="modal-content"
+            onClick={e => e.stopPropagation()}
+          >
+            <MovieDetailsModal
+              movieDetails={movieDetails}
+              onClose={() => setMovieDetails(null)}
+              onAddUrl={addVideoUrl}  // Pass the addVideoUrl function here
+            />
+              
+            <div className="movie-content">
+              <div className="movie-poster">
+                <img 
+                  src={`https://image.tmdb.org/t/p/w300${movieDetails.posterPath}`}
+                  alt={movieDetails.title}
+                />
+              </div>
+              
+              <div className="movie-info">
+                <h1>{movieDetails.title}</h1>
+                <div className="movie-meta">
+                  <span className="year">{movieDetails.year}</span>
+                  {movieDetails.type === 'movie' && <span className="badge">Movie</span>}
+                  {movieDetails.type === 'tv' && <span className="badge">TV Series</span>}
+                </div>
+                
+                <p className="overview">{movieDetails.overview}</p>
+                
+                <div className="action-buttons">
+                  <button
+                    className="watch-now-btn"
+                    onClick={() => {
+                      if (movieDetails.type === 'movie') {
+                        addVideoUrl(`https://vidsrc.to/embed/movie/${movieDetails.tmdb}`);
+                      } else {
+                        setSelectedShow(movieDetails);
+                        setShowEpisodeSelector(true);
+                      }
+                      setMovieDetails(null);
+                    }}
+                  >
+                    Watch Now
+                  </button>
+                  <button
+                    className="close-btn"
+                    onClick={() => setMovieDetails(null)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {showEpisodeSelector && selectedShow && (
+            <MovieDetailsModal
+              show={selectedShow}
+              onSelectMovie={(url) => {
+                addVideoUrl(url);
+                setShowEpisodeSelector(false);
+                setSelectedShow(null);
+              }}
+              onClose={() => {
+                setShowEpisodeSelector(false);
+                setSelectedShow(null);
               }}
             />
-            {/* Add live badge if URL has sources */}
-            {sourceIndices[url] && (
-              <div className="live-badge">LIVE</div>
-            )}
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

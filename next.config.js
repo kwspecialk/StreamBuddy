@@ -1,5 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz;",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrc.xyz https://*.vidsrc.xyz;",
+              "frame-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz;",
+              "img-src 'self' * data: blob:;",
+              "media-src 'self' * blob:;",
+              "connect-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz;",
+              "style-src 'self' 'unsafe-inline' https://vidsrc.xyz https://*.vidsrc.xyz;",
+              "frame-ancestors 'self';",
+              "worker-src 'self' blob: *;"
+            ].join(' ')
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          }
+        ],
+      },
+    ]
+  },
   async rewrites() {
     return [
       {
@@ -13,10 +40,14 @@ const nextConfig = {
       {
         source: '/proxy/vip/:path*',
         destination: 'https://rr.vipstreams.in/:path*'
+      },
+      {
+        source: '/api/vidsrc/:path*',
+        destination: 'https://vidsrc.xyz/:path*'
       }
     ]
   },
-  async headers() {
+  async additionalHeaders() {
     return [
       {
         source: '/:path*',
@@ -31,4 +62,34 @@ const nextConfig = {
   }
 }
 
-module.exports = nextConfig
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: '/proxy/video',
+        destination: '/api/proxy/video'
+      }
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: '*'
+          }
+        ],
+      },
+    ];
+  }
+};
