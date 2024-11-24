@@ -1,6 +1,26 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback,useRef } from 'react';
 import axios from 'axios';
 import OnDemandBrowser from './components/OnDemandBrowser';
+
+const MatchItem = ({ match, onSelect }) => {
+  const displayTitle = match.teams?.home?.name && match.teams?.away?.name
+    ? `${match.teams.home.name} vs ${match.teams.away.name}`
+    : match.title;
+
+  return (
+    <div
+      onClick={() => onSelect(match)}
+      className="match-item"
+    >
+      <div className="flex items-center justify-between">
+        <span>{displayTitle}</span>
+      </div>
+    </div>
+  );
+};
+const hasValidSources = (match) => {
+  return match?.sources && Array.isArray(match.sources) && match.sources.length > 0;
+};
 
 const Sidebar = ({
   isCollapsed,
@@ -30,6 +50,13 @@ const Sidebar = ({
   const [localSourceIndices, setSourceIndices] = useState(sourceIndices || {});
   const [refreshingUrls, setRefreshingUrls] = useState(new Set());
   const [showHelp, setShowHelp] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [newUrl, setNewUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
+  const lastFetchTimeRef = useRef(0);
+  const [isFeaturedCollapsed, setIsFeaturedCollapsed] = useState(false);
+
 
   const filteredMatches = (matches, searchTerm) => {
     return matches.filter(match => 
@@ -169,15 +196,49 @@ const Sidebar = ({
 
   const handleMatchSelect = async (match) => {
     setSelectedMatch(match);
-    if (match?.sources?.[0]) {
+    console.log('Full match data:', match); // Log entire match object
+    
+    // Check if we have sources and log them
+    if (match?.sources) {
+      console.log('Sources array:', match.sources);
+    } else {
+      console.log('No sources found in match data');
+      return;
+    }
+  
+    // Validate first source
+    if (match.sources[0]) {
+      console.log('First source:', match.sources[0]);
+      
       try {
-        console.log('Selected match:', match);
-        const response = await fetch(`https://streamed.su/api/stream/${match.sources[0].source}/${match.sources[0].id}`);
+        // Construct and log the API URL before fetching
+        const apiUrl = `https://streamed.su/api/stream/${match.sources[0].source}/${match.sources[0].id}`;
+        console.log('Fetching from URL:', apiUrl);
+  
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API error response:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
         const data = await response.json();
+        console.log('Stream data received:', data);
         
         if (data?.[0]?.embedUrl) {
-          onAddUrl(data[0].embedUrl);
-          // Store the match and source index for this URL
+          let embedUrl = data[0].embedUrl;
+          // Modify vipstreams URLs to use our proxy
+          if (embedUrl.includes('vipstreams.in')) {
+            embedUrl = embedUrl.replace(
+              'https://rr.vipstreams.in',
+              '/api/stream-proxy'
+            );
+          }
+          console.log('Found embed URL:', embedUrl);
+          onAddUrl(embedUrl);
+          
+          // Store source information
           const newSourceIndices = {
             ...sourceIndices,
             [data[0].embedUrl]: {
@@ -186,10 +247,15 @@ const Sidebar = ({
             }
           };
           setSourceIndices(newSourceIndices);
+        } else {
+          console.log('No embed URL found in response data');
         }
       } catch (error) {
-        console.error('Error fetching initial stream:', error);
+        console.error('Error fetching stream:', error);
+        console.error('Error details:', error.message);
       }
+    } else {
+      console.log('No valid source found in first position');
     }
   };
   
@@ -293,35 +359,33 @@ const Sidebar = ({
     }
   };
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Use the ref value instead of state
+    if (!force && now - lastFetchTimeRef.current < 300000) {
+      return;
+    }
+
     try {
-      console.log('Fetching matches...');
+      setIsLoading(true);
+      console.log('Fetching matches...', new Date().toLocaleTimeString());
       const response = await fetch('https://streamed.su/api/matches/live');
       
       if (!response.ok) {
-        console.error('Match fetch failed:', response.status, response.statusText);
-        const text = await response.text();
-        console.log('Error response:', text);
+        console.error('Match fetch failed:', response.status);
         return;
       }
       
       const data = await response.json();
-      console.log('Matches data received:', data); // Debug log
-      
-      // Create an object to store unique matches
       const uniqueMatches = new Map();
       
       data.forEach(match => {
-        // Create a unique key using relevant match properties
         const uniqueKey = `${match.teams?.home?.name}-${match.teams?.away?.name}-${match.title}`.toLowerCase();
         
-        // Only add the match if it's not already in our Map
-        // or if the new match has more sources (better quality)
         if (!uniqueMatches.has(uniqueKey) || 
             (match.sources?.length > uniqueMatches.get(uniqueKey).sources?.length)) {
-          
-          const isLive = match.title.includes('LIVE');
-          const cleanTitle = match.title.replace('LIVE', '').trim();
+          const isLive = match.title.toLowerCase().includes('live');
+          const cleanTitle = match.title.replace(/LIVE/i, '').trim();
           
           uniqueMatches.set(uniqueKey, {
             ...match,
@@ -329,43 +393,41 @@ const Sidebar = ({
             title: cleanTitle,
             popular: match.popular || isLive,
             isLive: isLive,
-            sources: match.sources
+            sources: match.sources?.filter(Boolean) || []
           });
         }
       });
-     // Add this right before the setMatches call to debug
-      console.log('Filtered matches:', Array.from(uniqueMatches.values()));    
-      // Convert to array and set state
-      setMatches(Array.from(uniqueMatches.values()));
-    } catch (error) {
-      console.error('Error in fetchMatches:', error);
-    }
-  };
 
-  const MatchItem = ({ match }) => {
-    // If we have team data, construct the title from teams, otherwise use match.title
-    const displayTitle = match.teams?.home?.name && match.teams?.away?.name
-      ? `${match.teams.home.name} vs ${match.teams.away.name}`
-      : match.title;
+      setMatches(Array.from(uniqueMatches.values()));
+      // Update the ref instead of state
+      lastFetchTimeRef.current = now;
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []); // Empty dependency array since we're using ref
+
+  // Initial fetch and interval setup
+  useEffect(() => {
+    const controller = new AbortController();
   
-    return (
-      <div
-        onClick={() => handleMatchSelect(match)}
-        className="match-item mb-2"
-      >
-        <div className="flex items-center">
-          <div className="flex-1">
-            <div className="text-sm flex items-center justify-between">
-              <span className="my-1">{displayTitle}</span>
-              {match.isLive && (
-                <span className="live-badge">LIVE</span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+    // Only fetch if matches array is empty
+    if (matches.length === 0) {
+      fetchMatches(true);
+    }
+  
+    // Set up refresh interval
+    const refreshInterval = setInterval(() => {
+      fetchMatches(true);
+    }, 300000); // 5 minutes
+  
+    return () => {
+      clearInterval(refreshInterval);
+      controller.abort();
+    };
+  }, []); // Remove fetchMatches from dependency arrayfetchMatches is now stable due to empty dependency array
+
 
   const handleToggleSidebar = () => {
     toggleSidebar();
@@ -385,8 +447,19 @@ const Sidebar = ({
     <button className="sidebar-toggle" onClick={handleToggleSidebar}>
       {isCollapsed ? '☰' : '←'}
     </button>
+
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className='search-bar'>
+        <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="match-search"
+            />
+        </div>
       <div className="sidebar-content">
+      
         <div className="url-input-group">
           <div className="flex gap-2">
             <button 
@@ -395,16 +468,16 @@ const Sidebar = ({
                 if (!showBrowser) fetchMatches();
                 setShowOnDemand(false);
               }}
-              className="browse-button flex-1"
+              className="browse-button"
             >
-              {showBrowser ? 'Hide Events' : 'Browse Live Events'}
+              {showBrowser ? 'Hide Games' : 'Browse Games'}
             </button>
             <button   
               onClick={() => {
                 setShowOnDemand(!showOnDemand);
                 setShowBrowser(false);
               }}
-              className="browse-button flex-1"
+              className="browse-button"
             >
               {showOnDemand ? 'Hide On Demand' : 'On Demand'}
             </button>
@@ -419,85 +492,60 @@ const Sidebar = ({
 
           {showBrowser && !isCollapsed && (
             <div className="matches-container">
-              {/* Add search bar */}
-              <div className="search-bar">
-                <input
-                  type="text"
-                  placeholder="Search matches..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="match-search"
-                />
-              </div>
 
               <div className="matches-section">
-                <div className="match-header">
-                  <h2>Featured Matches</h2>
-                </div>
+                <div className="match-header">All Games</div>
                 <div className="matches-list">
-                  {filteredMatches(matches.filter(match => match.popular), searchTerm)
-                    .map((match) => (
-                      <MatchItem 
-                        key={match.id} 
-                        match={match} 
-                        className="mb-2"
-                      />
-                    ))}
-                </div>
-              </div>
-
-              <div className="matches-section">
-                <div className="match-header">
-                  <h2>All Live Events</h2>
-                </div>
-                <div className="matches-list">
-                  {filteredMatches(matches.filter(match => !match.popular), searchTerm)
-                    .map((match) => (
-                      <MatchItem key={match.id} match={match} />
-                    ))}
+                  {filteredMatches(
+                    matches.filter(match => !match.popular && hasValidSources(match)),
+                    searchTerm
+                  ).map((match) => (
+                    <MatchItem 
+                      key={match.id} 
+                      match={match} 
+                      onSelect={handleMatchSelect} 
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           )}
-
-          <input type="text" placeholder="Enter video URL" className="url-input" />
-          <div className="button-group">
-            <button onClick={() => onAddUrl(document.querySelector("input").value)}>
-              Add Video
-            </button>
-            <button onClick={onExportUrls}>Export</button>
-            <label htmlFor="file-upload" className="custom-file-upload" style={{ textAlign: 'center' }}>
-              Import
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".txt"
-              style={{ display: 'none' }}
-              onChange={onFileUpload}
-            />
-          </div>
         </div>
+        {/* Featured Matches - Always Visible */}
+        <div className="matches-section">
+          <div 
+            className="section-header"
+            onClick={() => setIsFeaturedCollapsed(!isFeaturedCollapsed)}
+          >
+            <div className="match-header">Featured Games</div>
+            <span className={`collapse-icon ${isFeaturedCollapsed ? 'collapsed' : ''}`}>
+            </span>
+          </div>
+          
+          {!isFeaturedCollapsed && (
+            <div className="matches-list">
+              {matches.filter(match => match.popular).map((match) => (
+                <div
+                  key={match.id}
+                  onClick={() => handleMatchSelect(match)}
+                  className="match-item"
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{match.title}</span>
 
-        <div className="volume-controls">
-          <div className="volume-selector">
-            <label>Selected Window:</label>
-            <select
-              value={activeVideoId || ''}
-              onChange={(e) => onVideoSelect(e.target.value)}
-            >
-              <option value="">None Selected</option>
-              {videoUrls.map((_, index) => (
-                <option key={index} value={index}>
-                  Window {index + 1}
-                </option>
+                  </div>
+                </div>
               ))}
-            </select>
-          </div>
-          <div className="volume-note">
-            Note: Volume must be controlled through the video player
-          </div>
+              {isLoading && matches.length === 0 && (
+                <div className="match-item">Loading featured games...</div>
+              )}
+              {!isLoading && matches.filter(match => match.popular).length === 0 && (
+                <div className="match-item">No featured games available</div>
+              )}
+            </div>
+          )}
         </div>
+
 
         <div className="url-list">
           {videoUrls.map((url, index) => (
@@ -552,6 +600,14 @@ const Sidebar = ({
           >
             ⛶
           </button>
+
+          <button
+            className="sidebar-bottom-button"
+            onClick={() => setShowUrlInput(!showUrlInput)}
+            title="Add URL"
+          >
+            ＋
+          </button>
   
           <button
             className="sidebar-bottom-button"
@@ -569,10 +625,39 @@ const Sidebar = ({
             Clear All
           </button>
 
+          {/* URL Input Modal */}
+          {showUrlInput && (
+            <div className="url-input-modal">
+              <div className="url-input-content">
+                <input
+                  type="text"
+                  value={newUrl}
+                  onChange={(e) => setNewUrl(e.target.value)}
+                  placeholder="Enter video URL"
+                  className="url-input"
+                />
+                <div className="url-input-buttons">
+                  <button onClick={() => {
+                    if (newUrl.trim()) {
+                      onAddUrl(newUrl);
+                      setNewUrl('');
+                      setShowUrlInput(false);
+                    }
+                  }} className="url-input-add">
+                    Add
+                  </button>
+                  <button onClick={() => setShowUrlInput(false)} className="url-input-cancel">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {showHelp && (
           <div className="help-modal">
             <h3>Tips & Information</h3>
-            <div className="help-date">Notes: *11/17 - On Demand content not working currently, working on fix. Known issues with refreshing live events when streaming more than 2 concurrent streams, will fix soon.</div>
+            <div className="help-date">Notes: *11/22 - Main search bar not working currently, working on fix. Known issues with refreshing live events when streaming more than 2 concurrent streams, will fix soon.</div>
             <ul>
               <li><span className="shortcut">↑</span> Reorder streams</li>
               <li><span className="shortcut">ESC</span> Exit fullscreen</li>

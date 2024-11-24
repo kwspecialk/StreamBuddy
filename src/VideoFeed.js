@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { throttler } from './utils/requestThrottler';
 
+
 const VideoFeed = ({ 
   url, 
   isActive, 
@@ -221,7 +222,7 @@ const VideoFeed = ({
         ref={iframeRef}
         title="Video Player"
         allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"
+        // sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"
         loading={isActive ? "eager" : "lazy"}
         style={{
           width: '100%',

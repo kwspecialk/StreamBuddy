@@ -79,7 +79,7 @@ const OnDemandBrowser = ({ onAddUrl, onShowMovieDetails }) => {
 
   return (
     <div className="matches-container">
-      <div className="search-bar flex gap-2">
+      <div className="search-bar-full flex gap-2">
         <select
           value={contentType}
           onChange={(e) => {
@@ -102,12 +102,10 @@ const OnDemandBrowser = ({ onAddUrl, onShowMovieDetails }) => {
       </div>
 
       <div className="matches-section">
-        <div className="match-header">
-          <h2>Search Results {items.length > 0 && `(${items.length})`}</h2>
-        </div>
+        <div className="match-header">Search Results {items.length > 0 && `(${items.length})`}</div>
 
         {loading && (
-          <div className="text-center py-4">
+          <div className="matches-list">
             <p>Searching...</p>
           </div>
         )}

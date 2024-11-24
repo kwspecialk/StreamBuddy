@@ -12,6 +12,7 @@
     "express": "^4.21.1",
     "http-proxy-middleware": "^3.0.3",
     "lodash": "^4.17.21",
+    "lucide-react": "^0.460.0",
     "next-http-proxy-middleware": "^1.2.6",
     "node-fetch": "^3.3.2",
     "react": "^18.3.1",

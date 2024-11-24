@@ -8,6 +8,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import OnDemandBrowser from './components/OnDemandBrowser';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import EpisodeSelector from './components/EpisodeSelector.js';
+import OnDemandVideoFeed from './OnDemandVideoFeed';
+
 const App = () => {
   const [videoUrls, setVideoUrls] = useState(() => {
     // Try to load saved URLs from localStorage on initial render
@@ -25,6 +27,8 @@ const [layout, setLayout] = useState(() => {
   const [streamRetries, setStreamRetries] = useState({});
   const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
   const [selectedShow, setSelectedShow] = useState(null);
+
+  
 
   const handleStreamRecovery = (index) => {
     setStreamRetries(prev => {
@@ -54,20 +58,16 @@ const [layout, setLayout] = useState(() => {
 
   const addVideoUrl = (url, matchInfo = null) => {
     if (url && !videoUrls.includes(url)) {
-      setVideoUrls([...videoUrls, url]);
+      setVideoUrls(prev => [...prev, url]);
       if (matchInfo) {
         setSourceIndices(prev => ({
           ...prev,
           [url]: { 
-            match: {
-              ...matchInfo,
-              title: matchInfo.title || matchInfo.name  // Include the title
-            },
+            match: matchInfo,
             sourceIndex: 0 
           }
         }));
       }
-      document.querySelector("input[placeholder='Enter video URL']").value = '';
     }
   };
 
@@ -205,21 +205,25 @@ useEffect(() => {
 
       <div className={`video-grid ${layout}`}>
         {getDisplayedVideos().map((url, index) => {
-          console.log('Video URL being passed to VideoFeed:', url); // Add this line
+          const isOnDemand = url.includes('vidsrc.xyz') || url.includes('2embed.cc');
+          
           return (
             <div key={url} className="video-container">
               <div className="video-number">{index + 1}</div>
               <ErrorBoundary>
-                <VideoFeed 
-                  url={url}
-                  isActive={activeVideoId === index}
-                />
+                {isOnDemand ? (
+                  <OnDemandVideoFeed 
+                    url={url}
+                    isActive={activeVideoId === index}
+                    onVideoSelect={() => handleVideoSelect(index)}
+                  />
+                ) : (
+                  <VideoFeed 
+                    url={url}
+                    isActive={activeVideoId === index}
+                  />
+                )}
               </ErrorBoundary>
-              {activeVideoId === index && (
-                <div className="video-muted-indicator">
-                  Active Audio
-                </div>
-              )}
             </div>
           );
         })}
@@ -269,7 +273,7 @@ useEffect(() => {
                     className="watch-now-btn"
                     onClick={() => {
                       if (movieDetails.type === 'movie') {
-                        addVideoUrl(`https://vidsrc.to/embed/movie/${movieDetails.tmdb}`);
+                        addVideoUrl(`https://vidsrc.xyz/embed/movie/${movieDetails.tmdb}`);
                       } else {
                         setSelectedShow(movieDetails);
                         setShowEpisodeSelector(true);

@@ -1,10 +1,10 @@
-// Create new file: pages/api/proxy/video.js
 import httpProxyMiddleware from 'next-http-proxy-middleware';
 
 export const config = {
   api: {
     bodyParser: false,
     externalResolver: true,
+    responseLimit: false
   },
 };
 
@@ -23,21 +23,56 @@ export default async function handler(req, res) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       },
       pathRewrite: {
-        '^/proxy/video': '',
+        '^/api/proxy/video': '',
       },
+      // Enhanced response handling
       onProxyRes: (proxyRes, req, res) => {
-        // Remove CORS restrictions
+        // Set CORS headers
         proxyRes.headers['access-control-allow-origin'] = '*';
+        proxyRes.headers['access-control-allow-methods'] = 'GET, OPTIONS';
+        proxyRes.headers['access-control-allow-headers'] = '*';
+        proxyRes.headers['access-control-expose-headers'] = '*';
+        
+        // Remove problematic headers
         delete proxyRes.headers['x-frame-options'];
         delete proxyRes.headers['content-security-policy'];
+        
+        // Handle HLS content specifically
+        if (req.url.endsWith('.m3u8') || req.url.endsWith('.ts')) {
+          proxyRes.headers['content-type'] = 'application/vnd.apple.mpegurl';
+        }
+
+        // Handle JavaScript files
+        if (req.url.endsWith('.js')) {
+          proxyRes.headers['content-type'] = 'application/javascript';
+        }
       },
+      // Enhanced error handling
       onError: (err, req, res) => {
         console.error('Proxy error:', err);
-        res.status(500).json({ error: 'Proxy error', details: err.message });
+        
+        // Send a more graceful error response
+        if (!res.headersSent) {
+          res.writeHead(500, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          });
+        }
+        
+        res.end(JSON.stringify({
+          error: 'Stream temporarily unavailable',
+          code: 'PROXY_ERROR',
+          details: err.message
+        }));
+      },
+      // Add buffer handling for large responses
+      buffer: {
+        enabled: true,
+        maxSize: 100 * 1024 * 1024 // 100MB buffer
+      },
+      // Add retry logic
+      proxyTimeout: 10000,
+      retry: {
+        attempts: 3,
+        delay: 1000
       }
-    });
-  } catch (error) {
-    console.error('Error in video proxy:', error);
-    res.status(500).json({ error: 'Failed to proxy video' });
-  }
-}
