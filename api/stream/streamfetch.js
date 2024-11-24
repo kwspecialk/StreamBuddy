@@ -11,16 +11,15 @@ export default async function handler(req, res) {
     await httpProxyMiddleware(req, res, {
       target: 'https://rr.vipstreams.in',
       pathRewrite: {
-        '^/api/stream-proxy': '', // remove the api prefix
+        '^/api/proxy': '',
       },
       changeOrigin: true,
-      headers: {
-        'Referer': 'https://embedme.top/',
-        'Origin': 'https://embedme.top'
+      onProxyRes: (proxyRes, req, res) => {
+        proxyRes.headers['Access-Control-Allow-Origin'] = '*';
       },
     });
-  } catch (err) {
-    console.error('Proxy error:', err);
+  } catch (error) {
+    console.error('Proxy error:', error);
     res.status(500).json({ error: 'Proxy error' });
   }
 }
