@@ -311,6 +311,7 @@ useEffect(() => {
           )}
         </div>
       )}
+      <Analytics />
     </div>
   );
 };
