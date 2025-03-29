@@ -9,6 +9,7 @@ import OnDemandBrowser from './components/OnDemandBrowser';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import EpisodeSelector from './components/EpisodeSelector.js';
 import OnDemandVideoFeed from './OnDemandVideoFeed';
+import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   const [videoUrls, setVideoUrls] = useState(() => {
