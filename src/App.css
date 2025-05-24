@@ -22,9 +22,13 @@
   background-color: #1a1a1a;
   color: #fff;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Stream view specific styles (when showing video grid) */
+.app.stream-view {
   height: 100vh;
   overflow: hidden;
-  position: relative;
 }
 
 /* Sidebar styles */
@@ -925,9 +929,7 @@
   position: relative;
 }
 
-body {
-  overflow: hidden; /* Prevents scrolling to hidden popups */
-}
+/* Body scrolling is now managed by component-specific styles */
 
 /* Override any potential popup styles */
 .video-container *[class*="popup"],

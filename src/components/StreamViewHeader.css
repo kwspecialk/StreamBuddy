@@ -1,0 +1,199 @@
+/* Stream View Header Styles */
+.stream-view-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.back-to-home-btn {
+  background: none;
+  border: none;
+  color: var(--color-viridian);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back-to-home-btn:hover {
+  background: rgba(37, 129, 95, 0.1);
+  color: var(--color-emerald);
+}
+
+.edit-streams-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.edit-streams-btn:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #d97706;
+  color: #d97706;
+  transform: translateY(-1px);
+}
+
+.edit-btn-text-short {
+  display: none;
+}
+
+.edit-btn-text-full {
+  display: inline;
+}
+
+.add-stream-btn-header {
+  background: var(--color-viridian);
+  border: 1px solid var(--color-viridian);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(37, 129, 95, 0.3);
+}
+
+.add-stream-btn-header:hover {
+  background: var(--color-emerald);
+  border-color: var(--color-emerald);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.4);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Adjust existing layout controls for stream view */
+.layout-controls {
+  position: static; /* Override the fixed positioning when in header */
+  z-index: auto;
+}
+
+/* Header-specific layout selector styling */
+.stream-view-header .layout-controls .layout-toggle.enhanced {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-platinum);
+  padding: 8px 12px;
+  border-radius: 6px;
+  min-width: auto;
+  font-size: 0.9rem;
+}
+
+.stream-view-header .layout-controls .layout-toggle.enhanced:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.stream-view-header .layout-controls .layout-toggle-text {
+  display: none; /* Hide text, show only icon */
+}
+
+.stream-view-header .layout-controls .layout-toggle-arrow {
+  margin-left: 4px;
+}
+
+/* Adjust video grid to account for header only (no sidebar) */
+.video-grid {
+  margin-top: 60px; /* Account for header height */
+  height: calc(100vh - 60px);
+  width: 100vw; /* Full width since no sidebar */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stream-view-header {
+    padding: 0 15px;
+  }
+  
+  .header-left {
+    gap: 12px;
+  }
+  
+  .back-to-home-btn {
+    font-size: 1rem;
+  }
+  
+  .edit-streams-btn {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+  
+  .add-stream-btn-header {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+  
+  .header-right {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stream-view-header {
+    padding: 0 12px;
+  }
+  
+  .header-left {
+    gap: 8px;
+  }
+  
+  .edit-streams-btn {
+    font-size: 0.7rem;
+    padding: 6px 8px;
+  }
+  
+  .edit-btn-text-full {
+    display: none;
+  }
+  
+  .edit-btn-text-short {
+    display: inline;
+  }
+  
+  .add-stream-btn-header span {
+    display: none; /* Hide text on mobile */
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
+}

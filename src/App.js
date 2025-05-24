@@ -1,26 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import VideoFeed from './VideoFeed';
-import Sidebar from './Sidebar';
 import LayoutSelector from './LayoutSelector';
 import { LAYOUTS } from './layouts';
 import './App.css';
+import './components/QuickStart.css';
+import './components/LayoutSelector.css';
+import './components/StreamHomepage.css';
+import './components/StreamViewHeader.css';
+import './components/AddStreamButton.css';
+import './components/StreamBrowserModal.css';
+import './components/EditStreamsModal.css';
 import ErrorBoundary from './components/ErrorBoundary';
 import OnDemandBrowser from './components/OnDemandBrowser';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import EpisodeSelector from './components/EpisodeSelector.js';
 import OnDemandVideoFeed from './OnDemandVideoFeed';
+import QuickStart from './components/QuickStart';
+import StreamHomepage from './components/StreamHomepage';
+import StreamBrowserModal from './components/StreamBrowserModal';
+import EditStreamsModal from './components/EditStreamsModal';
+import { Plus } from 'lucide-react';
+import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
+  // App view state - 'homepage' or 'stream-view'
+  const [currentView, setCurrentView] = useState(() => {
+    const savedUrls = localStorage.getItem('savedVideoUrls');
+    const hasStreams = savedUrls && JSON.parse(savedUrls).length > 0;
+    return hasStreams ? 'stream-view' : 'homepage';
+  });
+
+  // Check if user has completed setup before
+  const [showQuickStart, setShowQuickStart] = useState(() => {
+    const hasCompletedSetup = localStorage.getItem('streambuddy_setup_completed');
+    const hasSavedUrls = localStorage.getItem('savedVideoUrls');
+    return !hasCompletedSetup && (!hasSavedUrls || JSON.parse(hasSavedUrls).length === 0);
+  });
+
+  // Modal states
+  const [showStreamBrowser, setShowStreamBrowser] = useState(false);
+  const [showEditStreams, setShowEditStreams] = useState(false);
+
+  // Matches data for QuickStart, Homepage, and Stream Browser
+  const [matches, setMatches] = useState([]);
+  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+
   const [videoUrls, setVideoUrls] = useState(() => {
-    // Try to load saved URLs from localStorage on initial render
-  const savedUrls = localStorage.getItem('savedVideoUrls');
-  return savedUrls ? JSON.parse(savedUrls) : [];
-});
-const [layout, setLayout] = useState(() => {
-  const savedLayout = localStorage.getItem('savedLayout');
-  return savedLayout || 'single';
-});
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const savedUrls = localStorage.getItem('savedVideoUrls');
+    return savedUrls ? JSON.parse(savedUrls) : [];
+  });
+
+  const [layout, setLayout] = useState(() => {
+    const savedLayout = localStorage.getItem('savedLayout');
+    return savedLayout || 'single';
+  });
+
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
   const [sourceIndices, setSourceIndices] = useState({});
@@ -28,15 +62,163 @@ const [layout, setLayout] = useState(() => {
   const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
   const [selectedShow, setSelectedShow] = useState(null);
 
-  
+  // Fetch matches for QuickStart, Homepage, and Stream Browser
+  const fetchMatches = async () => {
+    if (matches.length > 0) return;
+    
+    try {
+      setIsLoadingMatches(true);
+      const response = await fetch('https://streamed.su/api/matches/live');
+      if (!response.ok) return;
+      
+      const data = await response.json();
+      const uniqueMatches = new Map();
+      
+      data.forEach(match => {
+        const uniqueKey = `${match.teams?.home?.name}-${match.teams?.away?.name}-${match.title}`.toLowerCase();
+        
+        if (!uniqueMatches.has(uniqueKey) || 
+            (match.sources?.length > uniqueMatches.get(uniqueKey).sources?.length)) {
+          const isLive = match.title.toLowerCase().includes('live');
+          const cleanTitle = match.title.replace(/LIVE/i, '').trim();
+          
+          uniqueMatches.set(uniqueKey, {
+            ...match,
+            id: match.id,
+            title: cleanTitle,
+            popular: match.popular || isLive,
+            isLive: isLive,
+            sources: match.sources?.filter(Boolean) || []
+          });
+        }
+      });
+
+      setMatches(Array.from(uniqueMatches.values()));
+    } catch (error) {
+      console.error('Error fetching matches:', error);
+    } finally {
+      setIsLoadingMatches(false);
+    }
+  };
+
+  // Helper function to auto-switch layout based on stream count
+  const autoSwitchLayout = (streamCount) => {
+    const currentMaxWindows = LAYOUTS[layout]?.windows || 1;
+    if (streamCount > currentMaxWindows && layout !== 'grid-infinite') {
+      // Find the best layout for the current stream count
+      const layoutOptions = [
+        { id: 'single', windows: 1 },
+        { id: 'dual', windows: 2 },
+        { id: 'triple', windows: 3 },
+        { id: 'quad', windows: 4 },
+        { id: 'two-plus-four', windows: 6 },
+        { id: 'grid-3x3', windows: 9 },
+        { id: 'grid-5x2', windows: 10 },
+        { id: 'grid-infinite', windows: Infinity }
+      ];
+      
+      // Find the smallest layout that can accommodate all streams
+      const bestLayout = layoutOptions.find(l => l.windows >= streamCount);
+      if (bestLayout && bestLayout.id !== layout) {
+        setLayout(bestLayout.id);
+        console.log(`Auto-switched layout from ${layout} to ${bestLayout.id} to accommodate ${streamCount} streams`);
+        return bestLayout.id;
+      }
+    }
+    return layout;
+  };
+
+  // Load matches when needed
+  useEffect(() => {
+    if (currentView === 'homepage' || showQuickStart || showStreamBrowser) {
+      fetchMatches();
+    }
+  }, [currentView, showQuickStart, showStreamBrowser]);
+
+  const handleQuickStartComplete = async (setupData) => {
+    const { selectedContent, selectedLayout, skipWizard } = setupData;
+    
+    localStorage.setItem('streambuddy_setup_completed', 'true');
+    
+    if (!skipWizard && selectedContent.length > 0) {
+      setLayout(selectedLayout);
+      
+      for (const match of selectedContent) {
+        if (match.sources && match.sources.length > 0) {
+          try {
+            const source = match.sources[0];
+            const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data?.[0]?.embedUrl) {
+                addVideoUrl(data[0].embedUrl, match);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching stream for', match.title, error);
+          }
+        }
+      }
+      
+      setCurrentView('stream-view');
+    }
+    
+    setShowQuickStart(false);
+    
+    if (skipWizard) {
+      setCurrentView('homepage');
+    }
+  };
+
+  const handleStreamSelect = async (match) => {
+    if (match.sources && match.sources.length > 0) {
+      try {
+        const source = match.sources[0];
+        const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.[0]?.embedUrl) {
+            addVideoUrl(data[0].embedUrl, match);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching stream for', match.title, error);
+      }
+    }
+  };
+
+  const handleEnterStreamView = () => {
+    setCurrentView('stream-view');
+  };
+
+  const handleReturnToHomepage = () => {
+    setCurrentView('homepage');
+  };
+
+  const handleOpenStreamBrowser = () => {
+    setShowStreamBrowser(true);
+  };
+
+  const handleCloseStreamBrowser = () => {
+    setShowStreamBrowser(false);
+  };
+
+  const handleOpenEditStreams = () => {
+    setShowEditStreams(true);
+  };
+
+  const handleCloseEditStreams = () => {
+    setShowEditStreams(false);
+  };
 
   const handleStreamRecovery = (index) => {
     setStreamRetries(prev => {
       const currentRetries = prev[index] || 0;
-      if (currentRetries < 3) {  // Limit retries
+      if (currentRetries < 3) {
         const newUrls = [...videoUrls];
         const currentUrl = newUrls[index];
-        // Force stream refresh
         newUrls[index] = '';
         setVideoUrls(newUrls);
         setTimeout(() => {
@@ -50,15 +232,16 @@ const [layout, setLayout] = useState(() => {
   };
 
   const handleReorderUrls = (newUrls) => {
-    setVideoUrls(prevUrls => {
-      const reorderedUrls = newUrls.map(url => prevUrls[prevUrls.indexOf(url)]);
-      return reorderedUrls;
-    });
+    setVideoUrls(newUrls);
+    autoSwitchLayout(newUrls.length);
   };
 
   const addVideoUrl = (url, matchInfo = null) => {
     if (url && !videoUrls.includes(url)) {
-      setVideoUrls(prev => [...prev, url]);
+      const newUrls = [...videoUrls, url];
+      setVideoUrls(newUrls);
+      autoSwitchLayout(newUrls.length);
+      
       if (matchInfo) {
         setSourceIndices(prev => ({
           ...prev,
@@ -76,12 +259,16 @@ const [layout, setLayout] = useState(() => {
     if (videoUrls.indexOf(urlToDelete) === activeVideoId) {
       setActiveVideoId(null);
     }
-    // Clean up sourceIndices when a URL is deleted
     setSourceIndices(prev => {
       const newIndices = { ...prev };
       delete newIndices[urlToDelete];
       return newIndices;
     });
+    
+    // If no more streams, return to homepage
+    if (videoUrls.length <= 1) {
+      setCurrentView('homepage');
+    }
   };
 
   const handleVideoSelect = (videoId) => {
@@ -95,19 +282,54 @@ const [layout, setLayout] = useState(() => {
   const cycleSource = async (url, urlIndex, newSourceIndices) => {
     if (newSourceIndices) {
       setSourceIndices(newSourceIndices);
+    } else {
+      // If no newSourceIndices provided, handle cycling internally
+      const urlData = sourceIndices[url];
+      if (urlData?.match?.sources?.length > 1) {
+        const currentSource = urlData.sourceIndex;
+        const nextIndex = (currentSource + 1) % urlData.match.sources.length;
+        
+        try {
+          const source = urlData.match.sources[nextIndex];
+          const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+          const data = await response.json();
+
+          if (data?.[0]?.embedUrl) {
+            const newUrls = [...videoUrls];
+            newUrls[urlIndex] = data[0].embedUrl;
+            setVideoUrls(newUrls);
+
+            setSourceIndices(prev => {
+              const updated = { ...prev };
+              delete updated[url]; // Remove old URL
+              updated[data[0].embedUrl] = {
+                match: urlData.match,
+                sourceIndex: nextIndex
+              };
+              return updated;
+            });
+          }
+        } catch (error) {
+          console.error('Error cycling source:', error);
+        }
+      }
     }
   };
+
   const clearSavedState = () => {
     localStorage.removeItem('savedVideoUrls');
     localStorage.removeItem('savedLayout');
+    localStorage.removeItem('streambuddy_setup_completed');
     setVideoUrls([]);
     setLayout('single');
     setActiveVideoId(null);
     setSourceIndices({});
     setStreamRetries({});
     setMovieDetails(null);
+    setCurrentView('homepage');
+    setShowQuickStart(false);
   };
-  // Get only the videos that should be displayed based on layout
+
   const getDisplayedVideos = () => {
     if (layout === 'grid-infinite') {
       return videoUrls;
@@ -118,32 +340,28 @@ const [layout, setLayout] = useState(() => {
 
   const displayedVideos = getDisplayedVideos();
 
-useEffect(() => {
-  // Cleanup function to run when component unmounts
-  return () => {
-    // Force garbage collection of video elements
-    const iframes = document.querySelectorAll('iframe');
-    iframes.forEach(iframe => {
-      try {
-        if (iframe.contentWindow) {
-          iframe.src = '';
+  useEffect(() => {
+    return () => {
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(iframe => {
+        try {
+          if (iframe.contentWindow) {
+            iframe.src = '';
+          }
+        } catch (e) {
+          console.warn('Cleanup failed:', e);
         }
-      } catch (e) {
-        console.warn('Cleanup failed:', e);
-      }
-    });
-  };
-}, []);
+      });
+    };
+  }, []);
 
-useEffect(() => {
-  // Save URLs to localStorage whenever they change
-  localStorage.setItem('savedVideoUrls', JSON.stringify(videoUrls));
-}, [videoUrls]);
+  useEffect(() => {
+    localStorage.setItem('savedVideoUrls', JSON.stringify(videoUrls));
+  }, [videoUrls]);
 
-useEffect(() => {
-  localStorage.setItem('savedLayout', layout);
-}, [layout]);
-
+  useEffect(() => {
+    localStorage.setItem('savedLayout', layout);
+  }, [layout]);
 
   const formatApiUrl = (url) => {
     try {
@@ -180,29 +398,104 @@ useEffect(() => {
     }
   };
 
+  // Show QuickStart if needed
+  if (showQuickStart) {
+    return (
+      <div className="app">
+        <QuickStart 
+          onComplete={handleQuickStartComplete}
+          matches={matches}
+          isLoading={isLoadingMatches}
+        />
+        <Analytics />
+      </div>
+    );
+  }
+
+  // Show Homepage
+  if (currentView === 'homepage') {
+    return (
+      <div className="app">
+        <StreamHomepage
+          onStreamSelect={handleStreamSelect}
+          onEnterStreamView={handleEnterStreamView}
+          matches={matches}
+          isLoading={isLoadingMatches}
+        />
+        <Analytics />
+      </div>
+    );
+  }
+
+  // Show Stream View (multi-stream interface with modal browser)
   return (
-    <div className="app">
-      <Sidebar
-        isCollapsed={isSidebarCollapsed}
-        toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+    <div className="app stream-view">
+      {/* Stream View Header - with Edit button */}
+      <div className="stream-view-header">
+        <div className="header-left">
+          <button 
+            className="back-to-home-btn"
+            onClick={handleReturnToHomepage}
+          >
+            ← StreamBuddy
+          </button>
+        </div>
+        
+        <div className="header-right">
+          <button 
+            className="add-stream-btn-header"
+            onClick={handleOpenStreamBrowser}
+            title="Add Stream"
+          >
+            <Plus size={16} />
+            <span>Add</span>
+          </button>
+          
+          <button 
+            className="edit-streams-btn"
+            onClick={handleOpenEditStreams}
+          >
+            <span className="edit-btn-text-full">Manage Streams</span>
+            <span className="edit-btn-text-short">Manage</span>
+          </button>
+          
+          <LayoutSelector
+            onLayoutChange={handleLayoutChange}
+            currentLayout={layout}
+          />
+        </div>
+      </div>
+
+      {/* Stream Browser Modal */}
+      <StreamBrowserModal
+        isOpen={showStreamBrowser}
+        onClose={handleCloseStreamBrowser}
+        onAddStream={addVideoUrl}
+        matches={matches}
+        isLoading={isLoadingMatches}
+        onShowMovieDetails={setMovieDetails}
+      />
+
+      {/* Edit Streams Modal */}
+      <EditStreamsModal
+        isOpen={showEditStreams}
+        onClose={handleCloseEditStreams}
         videoUrls={videoUrls}
-        onReorderUrls={setVideoUrls}
-        onDeleteUrl={handleDeleteUrl}
-        activeVideoId={activeVideoId}
-        onVideoSelect={handleVideoSelect}
-        onAddUrl={addVideoUrl}
+        onDeleteStream={handleDeleteUrl}
+        onRefreshStream={handleStreamRecovery}
+        onReorderStreams={handleReorderUrls}
+        onOpenStreamBrowser={() => {
+          setShowEditStreams(false);
+          setShowStreamBrowser(true);
+        }}
+        formatApiUrl={formatApiUrl}
         sourceIndices={sourceIndices}
         onCycleSource={cycleSource}
-        formatApiUrl={formatApiUrl}
-        onShowMovieDetails={setMovieDetails}
-        onClearState={clearSavedState}
-      />
-
-      <LayoutSelector
-        onLayoutChange={handleLayoutChange}
         currentLayout={layout}
+        onLayoutChange={handleLayoutChange}
       />
 
+      {/* Video Grid */}
       <div className={`video-grid ${layout}`}>
         {getDisplayedVideos().map((url, index) => {
           const isOnDemand = url.includes('vidsrc.xyz') || url.includes('2embed.cc');
@@ -229,6 +522,7 @@ useEffect(() => {
         })}
       </div>
 
+      {/* Keep existing OnDemandBrowser for backward compatibility */}
       <OnDemandBrowser 
         onAddUrl={addVideoUrl} 
         onShowMovieDetails={setMovieDetails}
@@ -247,7 +541,7 @@ useEffect(() => {
             <MovieDetailsModal
               movieDetails={movieDetails}
               onClose={() => setMovieDetails(null)}
-              onAddUrl={addVideoUrl}  // Pass the addVideoUrl function here
+              onAddUrl={addVideoUrl}
             />
               
             <div className="movie-content">
@@ -310,6 +604,8 @@ useEffect(() => {
           )}
         </div>
       )}
+      
+      <Analytics />
     </div>
   );
 };
