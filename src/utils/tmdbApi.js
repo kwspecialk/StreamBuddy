@@ -101,6 +101,79 @@ export const tmdbApi = {
     }
   },
 
+  // Get season details
+  getSeasonDetails: async (showId, seasonNumber) => {
+    try {
+      const response = await fetch(
+        `${TMDB_BASE_URL}/tv/${showId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
+      );
+      if (!response.ok) {
+        // Season doesn't exist
+        return null;
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching season details:', error);
+      return null;
+    }
+  },
+
+  // Check if a specific episode exists
+  checkEpisodeExists: async (showId, seasonNumber, episodeNumber) => {
+    try {
+      const response = await fetch(
+        `${TMDB_BASE_URL}/tv/${showId}/season/${seasonNumber}/episode/${episodeNumber}?api_key=${TMDB_API_KEY}`
+      );
+      return response.ok;
+    } catch (error) {
+      console.error('Error checking episode existence:', error);
+      return false;
+    }
+  },
+
+  // Get the next available episode (with season jumping)
+  getNextEpisode: async (showId, currentSeason, currentEpisode) => {
+    try {
+      // First try next episode in current season
+      const nextEpisode = currentEpisode + 1;
+      const episodeExists = await tmdbApi.checkEpisodeExists(showId, currentSeason, nextEpisode);
+      
+      if (episodeExists) {
+        return {
+          season: currentSeason,
+          episode: nextEpisode,
+          found: true
+        };
+      }
+      
+      // If next episode doesn't exist, try first episode of next season
+      const nextSeason = currentSeason + 1;
+      const nextSeasonExists = await tmdbApi.checkEpisodeExists(showId, nextSeason, 1);
+      
+      if (nextSeasonExists) {
+        return {
+          season: nextSeason,
+          episode: 1,
+          found: true
+        };
+      }
+      
+      // No more episodes available
+      return {
+        season: currentSeason,
+        episode: currentEpisode,
+        found: false
+      };
+    } catch (error) {
+      console.error('Error finding next episode:', error);
+      return {
+        season: currentSeason,
+        episode: currentEpisode,
+        found: false
+      };
+    }
+  },
+
   // Search movies and TV shows (simplified)
   searchMulti: async (query) => {
     try {

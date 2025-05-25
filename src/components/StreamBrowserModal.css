@@ -1,3 +1,38 @@
+/* Movie/TV card styling to match homepage */
+.card-blur-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(32px) brightness(0.6);
+  transform: scale(1.15);
+  z-index: 1;
+}
+
+.movie-poster {
+  position: absolute;
+  z-index: 2;
+  width: 50px;
+  height: 80%;
+  object-fit: contain;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border-radius: 8px;
+  background: transparent;
+  display: block;
+  margin-left: 8px;
+  margin-right: 0;
+  transition: all 0.3s ease;
+}
+
+.movie-poster:hover {
+  transform: scale(1.05);
+}
+
+/* Ensure movie/TV cards have dark background */
+.card-thumbnail:not(.match-thumbnail) {
+  background: var(--color-dark-surface) !important;
+}
+
 /* Stream Browser Modal Styles */
 .stream-browser-backdrop {
   position: fixed;
@@ -5,7 +40,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6); /* Lighter background */
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -50,13 +85,12 @@
 /* Header */
 .browser-modal-header {
   padding: 24px 30px 20px;
-  background: rgba(15, 15, 15, 0.95); /* Match homepage header */
-  backdrop-filter: blur(20px); /* Match homepage header */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Match homepage header */
+  background: rgba(15, 15, 15, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; /* Vertically center header-left and close button */
 }
 
 .header-left h2 {
@@ -70,6 +104,25 @@
   margin: 0;
   opacity: 0.9;
   font-size: 1rem;
+}
+
+.modal-icon-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-icon-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 
@@ -177,19 +230,26 @@
 
 .browser-card.selected {
   border-color: var(--color-viridian);
-  box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.3);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.3), 0 8px 25px rgba(37, 129, 95, 0.2);
+  transform: translateY(-2px) scale(1.02);
+  background: rgba(37, 129, 95, 0.1);
 }
 
 .card-thumbnail {
   position: relative;
   width: 100%;
   height: 60px; /* Halved height */
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: var(--color-dark-surface);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+/* Match thumbnails get the sports gradient and increased height */
+.card-thumbnail.match-thumbnail {
+  height: 160px;
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
 }
 
 .card-thumbnail img, .card-thumbnail .modal-card-thumbnail-image {
@@ -217,16 +277,17 @@
 
 .live-badge {
   position: absolute;
-  top: 12px; /* Match homepage .live-indicator */
-  left: 12px; /* Match homepage .live-indicator */
+  top: 8px;
+  left: 8px;
   background: var(--color-butterscotch);
   color: white;
-  padding: 4px 8px; /* Match homepage .live-indicator */
-  border-radius: 12px; /* Match homepage .live-indicator */
-  font-size: 0.75rem; /* Match homepage .live-indicator */
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  z-index: 4;
 }
 
 .card-overlay {
@@ -241,6 +302,7 @@
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 10; /* Ensure overlay is above other elements */
 }
 
 .browser-card:hover .card-overlay {
@@ -248,8 +310,21 @@
 }
 
 .browser-card.selected .card-overlay {
-  opacity: 1;
-  background: rgba(37, 129, 95, 0.8);
+  opacity: 1 !important; /* Force visibility */
+  background: linear-gradient(135deg, rgba(37, 129, 95, 0.9), rgba(86, 183, 122, 0.8));
+  animation: successPulse 0.5s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    background: rgba(37, 129, 95, 0.8);
+  }
+  50% {
+    background: linear-gradient(135deg, rgba(37, 129, 95, 0.95), rgba(86, 183, 122, 0.9));
+  }
+  100% {
+    background: linear-gradient(135deg, rgba(37, 129, 95, 0.9), rgba(86, 183, 122, 0.8));
+  }
 }
 
 .add-button {
@@ -276,29 +351,49 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: white;
+  animation: addedFadeIn 0.3s ease-out;
+}
+
+@keyframes addedFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .checkmark {
   background: var(--color-emerald);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 20px; /* Made bigger */
   font-weight: bold;
-  animation: checkmarkBounce 0.5s ease-out;
+  animation: checkmarkBounce 0.6s ease-out;
+  box-shadow: 0 4px 12px rgba(86, 183, 122, 0.4);
+  color: white; /* Ensure text is white */
+  z-index: 11; /* Above overlay */
 }
 
 @keyframes checkmarkBounce {
   0% {
     transform: scale(0);
+    opacity: 0;
   }
   50% {
-    transform: scale(1.2);
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.9);
   }
   100% {
     transform: scale(1);
@@ -306,8 +401,21 @@
 }
 
 .added-indicator span {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  animation: textSlideUp 0.4s ease-out 0.2s both;
+}
+
+@keyframes textSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-info {
@@ -375,6 +483,149 @@
     background-position: 200% 0;
   }
 }
+
+/* Footer */
+.browser-modal-footer {
+  padding: 15px 30px;
+  border-top: 1px solid var(--color-dark-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 15, 15, 0.85); /* Slightly more transparent than header */
+}
+
+.add-custom-stream-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-platinum);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-custom-stream-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.add-custom-stream-btn svg {
+  stroke-width: 2.5px;
+}
+
+.footer-tip {
+  font-size: 0.8rem;
+  color: #888;
+  text-align: right;
+  flex-grow: 1;
+  margin-left: 20px;
+}
+
+/* Custom Stream Popup */
+.custom-stream-popup-overlay {
+  position: fixed; /* Changed to fixed to cover the whole viewport */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65); /* Darker overlay */
+  z-index: 2500; /* Above the main modal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: backdropFadeIn 0.2s ease-out;
+}
+
+.custom-stream-popup {
+  background: #1e1e1e; /* Darker than main modal for contrast */
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 480px;
+  animation: modalSlideIn 0.2s ease-out;
+  color: var(--color-platinum);
+}
+
+.custom-stream-popup h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #fff;
+}
+
+.custom-stream-popup p {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+.custom-stream-popup input[type="text"] {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-platinum);
+  font-size: 1rem;
+  margin-bottom: 25px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.custom-stream-popup input[type="text"]::placeholder {
+  color: #666;
+}
+
+.custom-stream-popup input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-viridian);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.custom-stream-popup .popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.custom-stream-popup .popup-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.custom-stream-popup .cancel-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-platinum);
+}
+
+.custom-stream-popup .cancel-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.custom-stream-popup .save-btn {
+  background-color: var(--color-viridian);
+  color: white;
+}
+
+.custom-stream-popup .save-btn:hover {
+  background-color: #2db478; /* Slightly lighter viridian */
+}
+
+.custom-stream-popup .popup-btn:active {
+  transform: scale(0.98);
+}
+
 
 /* Empty State */
 .empty-state {
@@ -506,5 +757,129 @@
   
   .sport-icon {
     font-size: 1.5rem;
+  }
+}
+
+/* Sports-specific styling from homepage */
+/* New overlay system for sport backgrounds with team badges */
+.sport-background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.sport-gradient-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  z-index: 1;
+}
+
+/* Poster overlays */
+.match-poster-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  opacity: 0.8;
+}
+
+/* Team badge overlays */
+.team-badges-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.team-badge-overlay {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 2px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.2s ease;
+}
+
+.team-badge-overlay:hover {
+  transform: scale(1.1);
+}
+
+.team-placeholder-overlay {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.team-placeholder-overlay .team-initial {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.vs-divider-overlay {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.sport-icon-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 3rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Update live badge to match homepage */
+.live-badge.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(222, 140, 58, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(222, 140, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(222, 140, 58, 0);
   }
 }

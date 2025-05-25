@@ -8,6 +8,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showAddedAnimation, setShowAddedAnimation] = useState(false);
   const posterContainerRef = useRef(null);
 
   const TMDB_API_KEY = '76e3744ab1806aa6becb288ebb3d1dc4';
@@ -94,11 +95,19 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
     }
 
     if (onPlayStream) {
+      // Show animation immediately
+      setShowAddedAnimation(true);
+      
       // onPlayStream is App.js's handleStreamSelect, which is async and returns a boolean
       const success = await onPlayStream(streamUrlToPlay, streamDetailsToPass);
       if (success) {
-        onClose(); // Close modal only if stream was successfully processed
+        // Keep animation for a moment, then close modal
+        setTimeout(() => {
+          onClose(); // Close modal after successful add
+        }, 1500);
       } else {
+        // Hide animation on error
+        setShowAddedAnimation(false);
         setStreamError('Stream not available for this selection. Please try another title or check back later.');
       }
     } else {
@@ -110,7 +119,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
 
   return (
     <div 
-      className="modal-backdrop" 
+      className="movie-details-backdrop" 
       onClick={onClose}
     >
       <div 
@@ -205,6 +214,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                 <button
                   className="watch-now-btn"
                   onClick={handleWatchNow}
+                  disabled={showAddedAnimation}
                 >
                   Watch Now
                   {movieDetails.type === 'tv' && !selectedEpisode && " (S1:E1)"}
@@ -216,6 +226,17 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                   Close
                 </button>
               </div>
+              
+              {/* Added Animation Overlay */}
+              {showAddedAnimation && (
+                <div className="movie-added-overlay">
+                  <div className="movie-added-indicator">
+                    <div className="movie-checkmark">✓</div>
+                    <span>Added to Stream!</span>
+                  </div>
+                </div>
+              )}
+              
               {streamError && (
                 <div className="stream-error-message" style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
                   {streamError}

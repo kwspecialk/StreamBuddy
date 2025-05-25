@@ -1,0 +1,505 @@
+/* Quickstart Wizard Styles */
+.quickstart-wizard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000; /* Highest z-index to be above everything */
+  pointer-events: none; /* Allow interaction with highlighted elements */
+  animation: wizardFadeIn 0.3s ease-out;
+}
+
+@keyframes wizardFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Backdrop with cutout highlight */
+.wizard-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: none; /* Allow clicks to pass through */
+  transition: background 0.3s ease-out;
+}
+
+/* Faded backdrop for intermediate phase */
+.wizard-backdrop.faded {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Intermediate phase styles */
+.quickstart-wizard-overlay.intermediate-phase {
+  overflow-y: auto;
+}
+
+.quickstart-wizard-overlay.intermediate-phase .wizard-tooltip {
+  max-width: 320px;
+  transition: all 0.3s ease-out;
+}
+
+/* Content selection phase - even more compact */
+.quickstart-wizard-overlay.content-phase .wizard-tooltip {
+  max-width: 300px;
+}
+
+/* More compact tooltips for intermediate phases */
+.quickstart-wizard-overlay.intermediate-phase .wizard-header {
+  padding: 12px 16px 10px;
+}
+
+.quickstart-wizard-overlay.intermediate-phase .wizard-body {
+  padding: 16px;
+}
+
+.quickstart-wizard-overlay.intermediate-phase .wizard-body h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.quickstart-wizard-overlay.intermediate-phase .wizard-body p {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.quickstart-wizard-overlay.intermediate-phase .wizard-footer {
+  padding: 12px 16px;
+}
+
+.wizard-highlight {
+  position: absolute;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 0 4px rgba(37, 129, 95, 0.8),
+    0 0 0 8px rgba(37, 129, 95, 0.3),
+    0 0 20px rgba(37, 129, 95, 0.4);
+  z-index: 10001;
+  pointer-events: none;
+  animation: highlightPulse 2s infinite;
+  transition: all 0.3s ease;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 0 4px rgba(37, 129, 95, 0.8),
+      0 0 0 8px rgba(37, 129, 95, 0.3),
+      0 0 20px rgba(37, 129, 95, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 
+      0 0 0 6px rgba(37, 129, 95, 0.9),
+      0 0 0 12px rgba(37, 129, 95, 0.4),
+      0 0 30px rgba(37, 129, 95, 0.6);
+  }
+}
+
+/* Tooltip */
+.wizard-tooltip {
+  position: absolute;
+  z-index: 10002;
+  pointer-events: auto; /* Ensure tooltip is clickable */
+  max-width: 420px;
+  min-width: 350px; /* Increased min-width */
+  animation: tooltipSlideIn 0.4s ease-out;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  transition: max-width 0.3s ease-out, transform 0.3s ease-out;
+}
+
+@keyframes tooltipSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.wizard-content {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+/* Header */
+.wizard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(37, 129, 95, 0.1);
+}
+
+.wizard-step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wizard-step-number {
+  color: var(--color-emerald);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wizard-progress-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.progress-dot.active {
+  background: var(--color-emerald);
+  transform: scale(1.1);
+}
+
+.progress-dot.current {
+  background: var(--color-emerald);
+  transform: scale(1.3);
+  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.3);
+}
+
+.progress-dot.completed {
+  background: #4ade80; /* Lighter green for completed steps */
+  transform: scale(1.2);
+  animation: completedPulse 1s ease-out;
+}
+
+@keyframes completedPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  }
+  70% {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+  }
+  100% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+}
+
+.wizard-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wizard-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* Body */
+.wizard-body {
+  padding: 24px;
+  color: #ffffff;
+}
+
+.wizard-body h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #ffffff;
+  line-height: 1.3;
+}
+
+.wizard-body p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #e5e5e5;
+  margin: 0 0 20px 0;
+}
+
+/* Footer */
+.wizard-footer {
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  gap: 8px; /* Reduced gap between footer buttons */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wizard-nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.wizard-main-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Button Styles */
+.wizard-btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  min-height: 44px;
+}
+
+.wizard-btn.primary {
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+}
+
+.wizard-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 129, 95, 0.4);
+}
+
+.wizard-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.wizard-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.wizard-btn.tertiary {
+  background: transparent;
+  color: #aaaaaa;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 16px;
+}
+
+.wizard-btn.tertiary:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wizard-btn:active {
+  transform: scale(0.98);
+}
+
+/* Specific overrides for nav buttons in footer for steps 1-5 tooltips */
+.wizard-footer .wizard-nav-btn {
+  padding: 8px 12px !important; /* Reduced padding */
+  font-size: 0.9rem !important; /* Reduced font size */
+}
+
+/* Arrow pointer for tooltip */
+.wizard-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 12px solid transparent;
+}
+
+.wizard-arrow.hidden {
+  display: none;
+}
+
+/* Arrow positions */
+.wizard-tooltip.bottom .wizard-arrow {
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: #2a2a2a;
+  border-top: none;
+}
+
+.wizard-tooltip.bottom-left .wizard-arrow {
+  top: -24px;
+  left: 32px;
+  border-bottom-color: #2a2a2a;
+  border-top: none;
+}
+
+.wizard-tooltip.bottom-right .wizard-arrow {
+  top: -24px;
+  right: 32px;
+  border-bottom-color: #2a2a2a;
+  border-top: none;
+}
+
+.wizard-tooltip.top .wizard-arrow {
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: #2a2a2a;
+  border-bottom: none;
+}
+
+.wizard-tooltip.left .wizard-arrow {
+  right: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: #2a2a2a;
+  border-right: none;
+}
+
+.wizard-tooltip.right .wizard-arrow {
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: #2a2a2a;
+  border-left: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .wizard-tooltip {
+    max-width: 90vw;
+    min-width: 280px;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .wizard-arrow {
+    display: none !important;
+  }
+
+  .wizard-content {
+    margin: 10px;
+  }
+
+  .wizard-nav-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .wizard-main-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wizard-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .tip-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tip-item {
+    padding: 10px;
+  }
+
+  .wizard-body {
+    padding: 20px;
+  }
+
+  .wizard-header,
+  .wizard-footer {
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wizard-tooltip {
+    min-width: 260px;
+  }
+
+  .wizard-body h3 {
+    font-size: 1.2rem;
+  }
+
+  .wizard-body p {
+    font-size: 0.9rem;
+  }
+
+  .tip-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tip-icon {
+    align-self: flex-start;
+  }
+}
+
+/* Animation for step transitions */
+.wizard-content {
+  animation: contentFadeIn 0.3s ease-out;
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure highlighted elements remain interactive */
+.wizard-backdrop {
+  -webkit-mask: 
+    radial-gradient(circle at var(--highlight-x, 50%) var(--highlight-y, 50%), transparent var(--highlight-size, 0px), black calc(var(--highlight-size, 0px) + 20px));
+  mask: 
+    radial-gradient(circle at var(--highlight-x, 50%) var(--highlight-y, 50%), transparent var(--highlight-size, 0px), black calc(var(--highlight-size, 0px) + 20px));
+}
+
+/* Special handling for center-positioned tooltips (welcome step) */
+.wizard-tooltip.center {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  max-width: 500px;
+}
+
+/* Enhanced styling for the welcome step */
+.wizard-tooltip.center .wizard-content {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 2px solid rgba(37, 129, 95, 0.3);
+}
+
+.wizard-tooltip.center .wizard-header {
+  background: linear-gradient(135deg, rgba(37, 129, 95, 0.2), rgba(86, 183, 122, 0.1));
+}

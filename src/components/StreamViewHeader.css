@@ -13,6 +13,7 @@
   justify-content: space-between;
   padding: 0 20px;
   z-index: 1100;
+  transition: transform 0.3s ease-in-out;
 }
 
 .header-left {
@@ -133,9 +134,10 @@
 
 /* Adjust video grid to account for header only (no sidebar) */
 .video-grid {
-  margin-top: 60px; /* Account for header height */
-  height: calc(100vh - 60px);
+  /* margin-top will be handled by inline styles in App.js */
+  height: calc(100vh - 60px); /* Default height, will be overridden by inline styles */
   width: 100vw; /* Full width since no sidebar */
+  overflow: hidden; /* Contain video elements */
 }
 
 /* Responsive adjustments */
@@ -196,4 +198,55 @@
   .header-right {
     gap: 8px;
   }
+}
+
+.fullscreen-btn {
+  background: rgba(255, 255, 255, 0.08); /* Subtle background */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Neutral border */
+  color: #e5e7eb; /* Light gray icon color */
+  padding: 8px; /* Square padding for icon */
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1; /* Ensure icon vertical alignment is good */
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff; /* Brighter icon on hover */
+}
+
+.help-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e5e7eb;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.help-btn:hover {
+  background: var(--color-viridian);
+  border-color: var(--color-viridian);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+}
+
+/* Ensure consistent sizing for icons within header buttons if needed */
+.stream-view-header .header-right button svg {
+  display: block; /* Helps with alignment and sizing consistency */
+}
+
+.stream-view-header.header-hidden-fullscreen {
+  transform: translateY(-100%);
 }

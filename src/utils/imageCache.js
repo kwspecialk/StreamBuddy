@@ -12,12 +12,13 @@ const SPORTS_IMAGE_MAP = {
   'baseball': '/images/sports/baseball.png',
   'hockey': '/images/sports/hockey.png',
   'golf': '/images/sports/golf.png',
+  'cricket': '/images/sports/cricket.png',
   'rugby': '/images/sports/rugby.png',
   'motor-sports': '/images/sports/racing.png',
   'racing': '/images/sports/racing.png',
-  'boxing': '/images/sports/fighting.png',
-  'mma': '/images/sports/fighting.png',
-  'fighting': '/images/sports/fighting.png',
+  'boxing': '/images/sports/fight.png',
+  'mma': '/images/sports/fight.png',
+  'fight': '/images/sports/fight.png',
   'darts': '/images/sports/darts.png',
   'generic': '/images/sports/generic.png'
 };

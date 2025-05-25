@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, Play, Plus } from 'lucide-react';
-import { imageCache } from '../utils/imageCache'; // Added for image URLs
-import CachedImage from './CachedImage'; // Added for image rendering
+import { imageCache } from '../utils/imageCache';
+import CachedImage from './CachedImage';
+import { tmdbApi } from '../utils/tmdbApi'; // Import TMDB API
 
 const StreamBrowserModal = ({ 
   isOpen, 
@@ -14,6 +15,20 @@ const StreamBrowserModal = ({
   const [activeCategory, setActiveCategory] = useState('live-sports');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStreams, setSelectedStreams] = useState([]);
+  
+  // Enhanced search states (duplicated from StreamHomepage)
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  
+  // TMDB data states
+  const [trendingMovies, setTrendingMovies] = useState([]);
+  const [trendingTVShows, setTrendingTVShows] = useState([]);
+  const [moviesLoading, setMoviesLoading] = useState(false);
+  const [tvShowsLoading, setTVShowsLoading] = useState(false);
+
+  // State for custom stream URL popup
+  const [isCustomStreamPopupOpen, setIsCustomStreamPopupOpen] = useState(false);
+  const [customStreamUrl, setCustomStreamUrl] = useState('');
 
   // Reset when modal opens/closes
   useEffect(() => {
@@ -21,54 +36,152 @@ const StreamBrowserModal = ({
       setSelectedStreams([]);
       setSearchTerm('');
       setActiveCategory('live-sports');
+      setSearchResults([]); // Clear search results
+      setSearchLoading(false);
+      // Load TMDB data when modal opens
+      loadTrendingMovies();
+      loadTrendingTVShows();
     }
   }, [isOpen]);
 
+  // Enhanced search effect (duplicated from StreamHomepage)
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      handleSearch(searchTerm);
+    } else {
+      setSearchResults([]);
+      setSearchLoading(false);
+    }
+  }, [searchTerm, activeCategory]); // Re-run when searchTerm OR activeCategory changes
+
+  // Load TMDB data functions
+  const loadTrendingMovies = async () => {
+    if (trendingMovies.length > 0) return; // Don't reload if already loaded
+    
+    setMoviesLoading(true);
+    try {
+      console.log('Loading trending movies...');
+      const movies = await tmdbApi.getTrendingMovies('day');
+      console.log('Movies loaded:', movies?.length || 0);
+      setTrendingMovies(movies || []);
+    } catch (error) {
+      console.error('Failed to load trending movies:', error);
+      setTrendingMovies([]);
+    }
+    setMoviesLoading(false);
+  };
+
+  const loadTrendingTVShows = async () => {
+    if (trendingTVShows.length > 0) return; // Don't reload if already loaded
+    
+    setTVShowsLoading(true);
+    try {
+      console.log('Loading trending TV shows...');
+      const shows = await tmdbApi.getTrendingTVShows('day');
+      console.log('TV shows loaded:', shows?.length || 0);
+      setTrendingTVShows(shows || []);
+    } catch (error) {
+      console.error('Failed to load trending TV shows:', error);
+      setTrendingTVShows([]);
+    }
+    setTVShowsLoading(false);
+  };
+
+  // Enhanced search function (duplicated from StreamHomepage)
+  const handleSearch = async (query) => {
+    if (!query.trim()) return;
+
+    setSearchLoading(true);
+    let finalResults = [];
+
+    try {
+      const queryLower = query.toLowerCase();
+
+      if (activeCategory === 'movies') {
+        const allTmdbResults = await tmdbApi.searchMulti(query);
+        finalResults = allTmdbResults.filter(item => item.type === 'movie');
+      } else if (activeCategory === 'tv-shows') {
+        const allTmdbResults = await tmdbApi.searchMulti(query);
+        finalResults = allTmdbResults.filter(item => item.type === 'tv');
+      } else if (activeCategory === 'live-sports') {
+        finalResults = (matches && Array.isArray(matches))
+          ? matches.filter(match => {
+              const title = getMatchTitle(match)?.toLowerCase() || '';
+              const categoryName = match.category?.toLowerCase() || '';
+              return title.includes(queryLower) || categoryName.includes(queryLower);
+            }).map(sport => ({ ...sport, type: 'sport' }))
+          : [];
+      } else { // No specific category - search all
+        const tmdbResults = await tmdbApi.searchMulti(query);
+        const sportsResults = (matches && Array.isArray(matches))
+          ? matches.filter(match => {
+              const title = getMatchTitle(match)?.toLowerCase() || '';
+              const categoryName = match.category?.toLowerCase() || '';
+              return title.includes(queryLower) || categoryName.includes(queryLower);
+            }).map(sport => ({ ...sport, type: 'sport' }))
+          : [];
+        finalResults = [...tmdbResults, ...sportsResults];
+      }
+      setSearchResults(finalResults);
+    } catch (error) {
+      console.error('Search failed for category:', activeCategory, 'query:', query, error);
+      setSearchResults([]);
+    }
+    setSearchLoading(false);
+  };
+
   if (!isOpen) return null;
 
-  // Mock data for movies/TV (you can integrate with your existing data)
   const categories = {
     'live-sports': {
       title: 'Live Sports',
-      items: matches.filter(match => match.popular).slice(0, 12)
+      items: searchTerm ? searchResults.filter(item => item.type === 'sport') : (matches && Array.isArray(matches) ? matches.filter(match => match.popular).slice(0, 12) : [])
     },
     'all-sports': {
       title: 'All Sports', 
-      items: matches.filter(match => !match.popular).slice(0, 20)
+      items: searchTerm ? searchResults.filter(item => item.type === 'sport') : (matches && Array.isArray(matches) ? matches.filter(match => !match.popular).slice(0, 20) : [])
     },
     'movies': {
-      title: 'Movies',
-      items: [
-        { id: 'movie1', title: 'The Last Frontier', genre: 'Action', thumbnail: '/api/placeholder/300/170' },
-        { id: 'movie2', title: 'Echoes of the Past', genre: 'Drama', thumbnail: '/api/placeholder/300/170' },
-        { id: 'movie3', title: 'City of Dreams', genre: 'Thriller', thumbnail: '/api/placeholder/300/170' },
-        { id: 'movie4', title: 'Ocean Edge', genre: 'Adventure', thumbnail: '/api/placeholder/300/170' },
-        { id: 'movie5', title: 'Midnight Express', genre: 'Action', thumbnail: '/api/placeholder/300/170' },
-        { id: 'movie6', title: 'Silent Valley', genre: 'Mystery', thumbnail: '/api/placeholder/300/170' }
-      ]
+      title: 'Trending Movies',
+      items: searchTerm ? searchResults.filter(item => item.type === 'movie') : trendingMovies
     },
     'tv-shows': {
-      title: 'TV Shows',
-      items: [
-        { id: 'tv1', title: 'The Daily Grind', season: 'Season 2', thumbnail: '/api/placeholder/300/170' },
-        { id: 'tv2', title: 'Tech Titans', episode: 'New Episode', thumbnail: '/api/placeholder/300/170' },
-        { id: 'tv3', title: 'Culinary Journeys', status: 'Watch Now', thumbnail: '/api/placeholder/300/170' },
-        { id: 'tv4', title: 'Urban Legends', season: 'Season 3', thumbnail: '/api/placeholder/300/170' },
-        { id: 'tv5', title: 'Space Odyssey', episode: 'Latest', thumbnail: '/api/placeholder/300/170' },
-        { id: 'tv6', title: 'Crime Chronicles', season: 'Season 1', thumbnail: '/api/placeholder/300/170' }
-      ]
+      title: 'Popular TV Shows',
+      items: searchTerm ? searchResults.filter(item => item.type === 'tv') : trendingTVShows
     }
   };
 
+  // Helper functions from StreamHomepage for consistent styling
+  const getTeamBadgeUrl = (badgeId) => {
+    return imageCache.getTeamBadgeUrl(badgeId);
+  };
+
+  const getSportIcon = (category) => {
+    return imageCache.getSportsEmoji(category);
+  };
+
+  const getSportFallbackImage = (category) => {
+    return imageCache.getSportsImageUrl(category);
+  };
+
+  const getMatchPosterUrl = (posterId) => {
+    return imageCache.getMatchPosterUrl(posterId);
+  };
+
+  const formatSportName = (sport) => {
+    const formatted = sport.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+    
+    // Map specific sport names for better display
+    if (formatted === 'American Football') return 'Football';
+    if (formatted === 'Football' && !sport.includes('american')) return 'Soccer';
+    
+    return formatted;
+  };
+
   const getSportsThumbnail = (match) => {
-    const sport = match.title.toLowerCase();
-    if (sport.includes('football') || sport.includes('nfl')) return '🏈';
-    if (sport.includes('basketball') || sport.includes('nba')) return '🏀';
-    if (sport.includes('soccer') || sport.includes('premier')) return '⚽';
-    if (sport.includes('tennis')) return '🎾';
-    if (sport.includes('baseball')) return '⚾';
-    if (sport.includes('hockey')) return '🏒';
-    return '🏟️';
+    return getSportIcon(match.category || match.title);
   };
 
   const getMatchTitle = (match) => {
@@ -79,7 +192,13 @@ const StreamBrowserModal = ({
   };
 
   const handleItemClick = async (item, category) => {
-    if (category.includes('sports')) {
+    // Check if it's a sports item (either by category name or item type)
+    const isSportsItem = category.includes('sports') || item.type === 'sport';
+    
+    if (isSportsItem) {
+      // Add visual feedback immediately for sports
+      setSelectedStreams(prev => [...prev, item.id]);
+      
       // Handle sports streams
       if (item.sources && item.sources.length > 0) {
         try {
@@ -90,47 +209,59 @@ const StreamBrowserModal = ({
             const data = await response.json();
             if (data?.[0]?.embedUrl) {
               onAddStream(data[0].embedUrl, item);
-              // Add visual feedback
-              setSelectedStreams(prev => [...prev, item.id]);
+              
+              // Keep the animation for longer for successful streams
               setTimeout(() => {
                 setSelectedStreams(prev => prev.filter(id => id !== item.id));
-              }, 2000);
+              }, 1500); // Shortened from 2500ms to 1500ms
+              return; // Success, keep animation
             }
           }
         } catch (error) {
           console.error('Error fetching stream:', error);
         }
       }
-    } else {
-      // Handle movies/TV shows
-      if (category === 'movies') {
-        onAddStream(`https://vidsrc.xyz/embed/movie/${item.id}`);
-      } else {
-        // For TV shows, you might want to show episode selector
-        console.log('TV show selected:', item);
-      }
-      
-      setSelectedStreams(prev => [...prev, item.id]);
+      // If we get here, there was an error - remove animation faster
       setTimeout(() => {
         setSelectedStreams(prev => prev.filter(id => id !== item.id));
-      }, 2000);
+      }, 1000);
+    } else {
+      // Handle movies/TV shows - NO animation here, just open modal
+      if (category === 'movies' || item.type === 'movie') {
+        // Open movie details modal
+        if (onShowMovieDetails) {
+          onShowMovieDetails(item);
+        }
+      } else if (category === 'tv-shows' || item.type === 'tv') {
+        // Open TV show details modal for episode selection
+        if (onShowMovieDetails) {
+          onShowMovieDetails(item);
+        }
+      }
+      // No animation or setTimeout for movies/TV shows
     }
   };
 
   const getCurrentItems = () => {
-    let items = [];
+    // If searching, return search results filtered by category
+    if (searchTerm.trim()) {
+      if (activeCategory === 'live-sports') {
+        return searchResults.filter(item => item.type === 'sport');
+      } else if (activeCategory === 'movies') {
+        return searchResults.filter(item => item.type === 'movie');
+      } else if (activeCategory === 'tv-shows') {
+        return searchResults.filter(item => item.type === 'tv');
+      } else {
+        return searchResults; // Return all search results if no specific category
+      }
+    }
     
+    // If not searching, return normal category items
+    let items = [];
     if (activeCategory === 'live-sports') {
       items = [...categories['live-sports'].items, ...categories['all-sports'].items];
     } else {
       items = categories[activeCategory]?.items || [];
-    }
-
-    if (searchTerm) {
-      return items.filter(item => {
-        const title = activeCategory.includes('sports') ? getMatchTitle(item) : item.title;
-        return title.toLowerCase().includes(searchTerm.toLowerCase());
-      });
     }
     
     return items;
@@ -138,9 +269,30 @@ const StreamBrowserModal = ({
 
   const currentItems = getCurrentItems();
 
+  const openCustomStreamPopup = () => setIsCustomStreamPopupOpen(true);
+  const closeCustomStreamPopup = () => {
+    setIsCustomStreamPopupOpen(false);
+    setCustomStreamUrl(''); // Reset URL on close
+  };
+
+  const handleSaveCustomStream = () => {
+    if (customStreamUrl.trim()) {
+      // Create a unique ID for the custom stream for keying and selection purposes
+      const streamId = `custom-${Date.now()}`;
+      const streamDetails = {
+        id: streamId,
+        title: 'Custom Stream',
+        type: 'custom', // Differentiate from other types
+        // Potentially add a generic icon or allow user to name it in a future enhancement
+      };
+      onAddStream(customStreamUrl.trim(), streamDetails);
+      closeCustomStreamPopup();
+    }
+  };
+
   return (
-    <div className="stream-browser-backdrop">
-      <div className="stream-browser-modal">
+    <div className="stream-browser-backdrop" onClick={onClose}>
+      <div className="stream-browser-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="browser-modal-header">
           <div className="header-left">
@@ -188,7 +340,33 @@ const StreamBrowserModal = ({
 
         {/* Content */}
         <div className="browser-modal-content">
-          {isLoading && currentItems.length === 0 ? (
+          {/* Show search loading if searching */}
+          {searchLoading ? (
+            <div className="loading-grid">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="browser-card loading">
+                  <div className="card-thumbnail loading-shimmer"></div>
+                  <div className="card-info">
+                    <div className="loading-text loading-shimmer"></div>
+                    <div className="loading-text short loading-shimmer"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : /* Show initial loading for non-search content */
+          isLoading && currentItems.length === 0 && !searchTerm ? (
+            <div className="loading-grid">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="browser-card loading">
+                  <div className="card-thumbnail loading-shimmer"></div>
+                  <div className="card-info">
+                    <div className="loading-text loading-shimmer"></div>
+                    <div className="loading-text short loading-shimmer"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (moviesLoading && activeCategory === 'movies' && !searchTerm) || (tvShowsLoading && activeCategory === 'tv-shows' && !searchTerm) ? (
             <div className="loading-grid">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="browser-card loading">
@@ -204,7 +382,7 @@ const StreamBrowserModal = ({
             <div className="browser-content-grid">
               {currentItems.map((item) => {
                 const isSelected = selectedStreams.includes(item.id);
-                const isStreamItem = activeCategory.includes('sports');
+                const isStreamItem = activeCategory.includes('sports') || item.type === 'sport';
                 
                 return (
                   <div 
@@ -212,42 +390,92 @@ const StreamBrowserModal = ({
                     className={`browser-card ${isSelected ? 'selected' : ''}`}
                     onClick={() => handleItemClick(item, activeCategory)}
                   >
-                    <div className="card-thumbnail">
+                    <div className={`card-thumbnail ${isStreamItem ? 'match-thumbnail' : ''}`}>
                       {isStreamItem ? (
-                        (() => {
-                          const posterUrl = item.poster ? imageCache.getMatchPosterUrl(item.poster) : null;
-                          const sportImageUrl = item.category ? imageCache.getSportsImageUrl(item.category) : null;
-                          const imageUrl = posterUrl || sportImageUrl;
-
-                          return (
-                            <>
-                              {imageUrl ? (
-                                <CachedImage 
-                                  src={imageUrl} 
-                                  alt={item.title || 'Sports Event'}
-                                  className="modal-card-thumbnail-image" // Specific class for modal card images
-                                  fallbackElement={<div className="sport-icon">{getSportsThumbnail(item)}</div>}
-                                />
-                              ) : (
-                                <div className="sport-icon">{getSportsThumbnail(item)}</div>
-                              )}
-                              <div className="live-badge">● LIVE</div>
-                            </>
-                          );
-                        })()
-                      ) : (
                         <>
+                          {/* Always try to load sport fallback image first */}
                           <img 
-                            src={item.thumbnail} 
-                            alt={item.title}
+                            src={getSportFallbackImage(item.category)}
+                            alt={formatSportName(item.category || 'Sports')}
+                            className="sport-background-image"
                             onError={(e) => {
                               e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
+                              e.target.nextElementSibling.style.display = 'flex';
                             }}
                           />
-                          <div className="thumbnail-fallback">
-                            <Play size={24} />
+                          
+                          {/* Fallback to green gradient + emoji if image fails */}
+                          <div className="sport-gradient-fallback" style={{ display: 'none' }}>
+                            <div className="sport-icon-fallback">
+                              {getSportIcon(item.category)}
+                            </div>
                           </div>
+                          
+                          {/* Overlay poster if available */}
+                          {item.poster && (
+                            <img 
+                              src={getMatchPosterUrl(item.poster)}
+                              alt={item.title || getMatchTitle(item)}
+                              className="match-poster-overlay"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          )}
+                          
+                          {/* Overlay team badges if available - show VS layout whenever teams exist */}
+                          {(item.teams?.home?.name || item.teams?.away?.name) && (
+                            <div className="team-badges-overlay">
+                              {item.teams?.home?.badge ? (
+                                <img 
+                                  src={getTeamBadgeUrl(item.teams.home.badge)} 
+                                  alt={item.teams.home.name}
+                                  className="team-badge-overlay home-badge"
+                                  onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                              ) : item.teams?.home?.name && (
+                                <div className="team-placeholder-overlay home-placeholder">
+                                  <span className="team-initial">{item.teams.home.name.charAt(0)}</span>
+                                </div>
+                              )}
+                              
+                              {(item.teams?.home?.name && item.teams?.away?.name) && (
+                                <div className="vs-divider-overlay">VS</div>
+                              )}
+                              
+                              {item.teams?.away?.badge ? (
+                                <img 
+                                  src={getTeamBadgeUrl(item.teams.away.badge)} 
+                                  alt={item.teams.away.name}
+                                  className="team-badge-overlay away-badge"
+                                  onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                              ) : item.teams?.away?.name && (
+                                <div className="team-placeholder-overlay away-placeholder">
+                                  <span className="team-initial">{item.teams.away.name.charAt(0)}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="live-badge pulse">● LIVE</div>
+                        </>
+                      ) : (
+                        <>
+                          <CachedImage 
+                            src={item.thumbnail}
+                            alt={item.title}
+                            className="movie-poster"
+                            fallbackElement={
+                              <div className="thumbnail-fallback">
+                                <Play size={24} />
+                              </div>
+                            }
+                          />
+                          {item.thumbnail && (
+                            <div
+                              className="card-blur-bg"
+                              style={{ backgroundImage: `url(${item.thumbnail})` }}
+                            />
+                          )}
                         </>
                       )}
                       
@@ -260,7 +488,7 @@ const StreamBrowserModal = ({
                         ) : (
                           <button className="add-button">
                             <Plus size={20} />
-                            <span>Add Stream</span>
+                            <span>{isStreamItem ? 'Add Stream' : 'Details'}</span>
                           </button>
                         )}
                       </div>
@@ -270,8 +498,8 @@ const StreamBrowserModal = ({
                       <h3>{isStreamItem ? getMatchTitle(item) : item.title}</h3>
                       <p>
                         {isStreamItem 
-                          ? (item.category || 'Sports')
-                          : (item.genre || item.season || item.episode || item.status)
+                          ? formatSportName(item.category || 'Sports')
+                          : (item.genre || (item.year ? `${item.year}` : '') || item.season || item.episode || item.status)
                         }
                       </p>
                     </div>
@@ -281,18 +509,44 @@ const StreamBrowserModal = ({
             </div>
           ) : (
             <div className="empty-state">
-              <h3>No results found</h3>
-              <p>Try adjusting your search or browse different categories.</p>
+              <h3>{searchTerm ? `No results found for "${searchTerm}"` : 'No content available'}</h3>
+              <p>{searchTerm ? 'Try adjusting your search or browse different categories.' : 'Please try again later.'}</p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer for Add Stream button and Tip */}
         <div className="browser-modal-footer">
-          <p className="footer-tip">
-            💡 Tip: Click any content to instantly add it to your current viewing session
-          </p>
+          <button className="add-custom-stream-btn" onClick={openCustomStreamPopup}>
+            <Plus size={18} /> Custom
+          </button>
+          {currentItems.length > 0 && (
+            <div className="browser-modal-tip footer-tip">
+              <span role="img" aria-label="tip">💡</span> Tip: Use search to find specific content. Click sports to add instantly. Click movies/shows to see details.
+            </div>
+          )}
         </div>
+
+        {/* Custom Stream URL Popup */}
+        {isCustomStreamPopupOpen && (
+          <div className="custom-stream-popup-overlay" onClick={closeCustomStreamPopup}>
+            <div className="custom-stream-popup" onClick={(e) => e.stopPropagation()}>
+              <h3>Custom Stream</h3>
+              <p>Enter the direct URL to a stream (e.g., .m3u8, .mpd).</p>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={customStreamUrl}
+                onChange={(e) => setCustomStreamUrl(e.target.value)}
+                autoFocus
+              />
+              <div className="popup-actions">
+                <button className="popup-btn cancel-btn" onClick={closeCustomStreamPopup}>Cancel</button>
+                <button className="popup-btn save-btn" onClick={handleSaveCustomStream}>Save Stream</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

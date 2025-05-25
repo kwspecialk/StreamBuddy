@@ -1,4 +1,288 @@
-/* Edit Streams Modal Styles */
+/* Drag and drop specific fixes */
+[data-rbd-draggable-context-id] {
+  transform: none !important;
+}
+
+[data-rbd-draggable-context-id].dragging {
+  opacity: 0.5;
+}
+
+/* Ensure proper stacking context */
+[data-rbd-droppable-id] {
+  position: relative;
+  z-index: 1;
+}.clickable-title {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+  margin: -2px -4px;
+  display: inline-block;
+}
+
+.clickable-title:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-emerald);
+}
+
+.title-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-viridian);
+  border-radius: 4px;
+  color: var(--color-platinum);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 4px 8px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.title-input:focus {
+  border-color: var(--color-emerald);
+  box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.2);
+}/* New layout with fixed numbers and draggable streams */
+.streams-container {
+  width: 100%;
+}
+
+.streams-draggable-column {
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.streams-draggable-column.full-width {
+  width: 100%;
+}
+
+.streams-list {
+  padding: 8px;
+  width: 100%;
+}
+
+/* Stream item container adjustments */
+/* .stream-item-container class is no longer used. */
+
+.stream-item-new {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+}
+
+.stream-item-new:hover:not(.dragging) {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.stream-item-new.dragging {
+  opacity: 0.5;
+}
+
+/* Draggable Content */
+.stream-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+.drag-handle-new {
+  color: #6b7280;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.drag-handle-new:hover {
+  color: var(--color-platinum);
+}
+
+.stream-info-new {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center; /* Vertically center number lozenge and title */
+}
+
+.stream-item-number-inline {
+  background-color: var(--color-emerald);
+  color: white;
+  font-weight: 600;
+  font-size: 14px; /* Slightly smaller for better fit in lozenge */
+  padding: 3px 8px;
+  border-radius: 12px; /* Pill shape */
+  margin-right: 10px; /* Adjusted margin */
+  flex-shrink: 0; /* Prevent number from shrinking */
+  display: inline-flex; /* To allow padding and centering if text is short */
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* Ensure consistent height */
+  min-width: 24px; /* Ensure a minimum width for single digit numbers */
+  text-align: center;
+}
+
+.stream-title-new {
+  color: var(--color-platinum);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.3;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+
+.stream-source-new {
+  color: #9ca3af;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.stream-actions-new {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-btn-new {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn-new:hover {
+  transform: translateY(-1px);
+}
+
+.action-btn-new.refresh-btn {
+  color: var(--color-viridian);
+}
+
+.action-btn-new.refresh-btn:hover {
+  background: rgba(37, 129, 95, 0.2);
+  border-color: var(--color-viridian);
+}
+
+.action-btn-new.refresh-btn.refreshing {
+  color: var(--color-emerald);
+  cursor: wait;
+}
+
+.action-btn-new.refresh-btn.refreshing svg {
+  animation: spin 1s linear infinite;
+}
+
+.action-btn-new.next-episode-btn {
+  color: var(--color-butterscotch);
+}
+
+.action-btn-new.next-episode-btn:hover {
+  background: rgba(222, 140, 58, 0.2);
+  border-color: var(--color-butterscotch);
+}
+
+.action-btn-new.next-episode-btn.loading {
+  color: rgba(222, 140, 58, 0.6);
+  cursor: wait;
+}
+
+.action-btn-new.next-episode-btn.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+.action-btn-new.delete-btn {
+  color: #ef4444;
+}
+
+.action-btn-new.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+}
+
+/* Responsive adjustments for new design */
+@media (max-width: 768px) {
+  .stream-numbers-column {
+    width: 40px;
+  }
+  
+  .stream-number-fixed {
+    min-height: 68px; /* Tablet min-height */
+  }
+  
+  .stream-item-new {
+    min-height: 68px; /* Tablet min-height */
+  }
+
+  .stream-number-text {
+    font-size: 14px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .stream-content {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .stream-title-new {
+    font-size: 14px;
+  }
+  
+  .action-btn-new {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .streams-container {
+    padding: 4px;
+  }
+  
+  .stream-numbers-column {
+    width: 36px;
+  }
+  
+  .stream-number-fixed {
+    min-height: 64px; /* Mobile min-height */
+  }
+
+  .stream-item-new {
+    min-height: 64px; /* Mobile min-height */
+  }
+  
+  .stream-number-text {
+    font-size: 12px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .drag-handle-new {
+    display: none; /* Hide on mobile for cleaner UI */
+  }
+  
+  .stream-content {
+    padding: 10px;
+    gap: 8px;
+  }
+}
+
+/* Original styles for backward compatibility */
 .edit-streams-backdrop {
   position: fixed;
   top: 0;
@@ -26,6 +310,8 @@
   display: flex;
   flex-direction: column;
   animation: modalSlideIn 0.3s ease-out;
+  position: relative;
+  z-index: 2101;
 }
 
 /* Header */
@@ -66,6 +352,7 @@
   padding: 0;
   min-height: 300px;
   background: transparent;
+  position: relative;
 }
 
 .streams-list {
@@ -240,6 +527,24 @@
   animation: spin 1s linear infinite;
 }
 
+.next-episode-btn {
+  color: var(--color-butterscotch);
+}
+
+.next-episode-btn:hover {
+  background: rgba(222, 140, 58, 0.2);
+  border-color: var(--color-butterscotch);
+}
+
+.next-episode-btn.loading {
+  color: rgba(222, 140, 58, 0.6);
+  cursor: wait;
+}
+
+.next-episode-btn.loading svg {
+  animation: spin 1s linear infinite;
+}
+
 .delete-btn {
   color: #ef4444;
 }
@@ -302,6 +607,19 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 0 0 auto;
+}
+
+.footer-center {
+  flex: 1;
+  text-align: center;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
 }
 
 .current-layout-preview {
@@ -488,12 +806,67 @@
   box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
 }
 
+.clear-all-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.clear-all-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
+.clear-all-btn.holding {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.clear-all-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  transition: width 0.016s linear;
+  border-radius: 7px;
+  z-index: 1;
+}
+
+.clear-all-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.clear-all-btn.holding .clear-all-content {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 .footer-tip {
   margin: 0;
   color: #6b7280;
   font-size: 0.8rem;
-  flex: 1;
-  text-align: right;
 }
 
 /* Scrollbar Styling */
@@ -558,6 +931,16 @@
     justify-content: center;
   }
   
+  .footer-center {
+    order: 3; /* Put tip at bottom */
+  }
+  
+  .footer-right {
+    order: 2; /* Put clear all before tip */
+    align-self: stretch;
+    justify-content: center;
+  }
+  
   .footer-tip {
     text-align: center;
     font-size: 0.75rem;
@@ -592,6 +975,11 @@
   }
   
   .add-stream-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .clear-all-btn {
     width: 100%;
     justify-content: center;
   }

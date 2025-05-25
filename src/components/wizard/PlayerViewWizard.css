@@ -1,0 +1,499 @@
+/* Player View Wizard Specific Styles */
+.player-view-wizard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999; /* High z-index to be above most content */
+  pointer-events: auto; /* Allow interaction with the wizard */
+}
+
+/* Generic Wizard Styles */
+.wizard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000; /* High z-index to be above most content */
+  pointer-events: none; /* Allow interaction with highlighted elements */
+  animation: wizardFadeIn 0.3s ease-out;
+}
+
+@keyframes wizardFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Backdrop with cutout highlight */
+.wizard-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  pointer-events: none; /* Allow clicks to pass through */
+  transition: background 0.3s ease-out;
+}
+
+/* Faded backdrop for intermediate phase */
+.wizard-backdrop.faded {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Intermediate phase styles */
+.wizard-overlay.intermediate-phase {
+  overflow-y: auto;
+}
+
+.wizard-overlay.intermediate-phase .wizard-tooltip {
+  max-width: 320px;
+  transition: all 0.3s ease-out;
+}
+
+/* Content selection phase - even more compact */
+.wizard-overlay.content-phase .wizard-tooltip {
+  max-width: 300px;
+}
+
+/* More compact tooltips for intermediate phases */
+.wizard-overlay.intermediate-phase .wizard-header {
+  padding: 12px 16px 10px;
+}
+
+.wizard-overlay.intermediate-phase .wizard-body {
+  padding: 16px;
+}
+
+.wizard-overlay.intermediate-phase .wizard-body h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.wizard-overlay.intermediate-phase .wizard-body p {
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.wizard-overlay.intermediate-phase .wizard-footer {
+  padding: 12px 16px;
+}
+
+.wizard-highlight {
+  position: absolute;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 0 4px rgba(37, 129, 95, 0.8),
+    0 0 0 8px rgba(37, 129, 95, 0.3),
+    0 0 20px rgba(37, 129, 95, 0.4);
+  z-index: 10001;
+  pointer-events: none;
+  animation: highlightPulse 2s infinite;
+  transition: all 0.3s ease;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 0 4px rgba(37, 129, 95, 0.8),
+      0 0 0 8px rgba(37, 129, 95, 0.3),
+      0 0 20px rgba(37, 129, 95, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 
+      0 0 0 6px rgba(37, 129, 95, 0.9),
+      0 0 0 12px rgba(37, 129, 95, 0.4),
+      0 0 30px rgba(37, 129, 95, 0.6);
+  }
+}
+
+/* Tooltip */
+.wizard-tooltip.wizard-tooltip-step-6 {
+  /* General styles for Step 6 tooltip, including positioning */
+  top: 30px; /* Position from the top of the viewport */
+  left: 50%;
+  transform: translateX(-50%);
+  position: fixed; /* Use fixed positioning to be relative to viewport */
+  max-width: 650px; /* Further increased width for step 6 */
+}
+
+.wizard-tooltip {
+  position: absolute;
+  z-index: 10002;
+  pointer-events: auto; /* Ensure tooltip is clickable */
+  max-width: 420px;
+  min-width: 350px; /* Increased min-width */
+  animation: tooltipSlideIn 0.4s ease-out;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  transition: max-width 0.3s ease-out, transform 0.3s ease-out;
+}
+
+@keyframes tooltipSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.wizard-content {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+/* Step 6 Pro Tips Text Size Adjustments */
+.wizard-tooltip-step-6 .wizard-final-tips .tip-item {
+  padding: 8px; /* Reduced padding for tip items in step 6 */
+}
+
+.wizard-tooltip-step-6 .wizard-final-tips .tip-item strong {
+  font-size: 0.9rem; /* Slightly smaller tip titles */
+}
+
+.wizard-tooltip-step-6 .wizard-final-tips .tip-item p {
+  font-size: 0.8rem; /* Slightly smaller tip descriptions */
+  line-height: 1.4;
+}
+
+.wizard-tooltip-step-6 .wizard-disclaimer p {
+  font-size: 0.75rem; /* Slightly smaller disclaimer text */
+  line-height: 1.3;
+}
+
+/* Header */
+.wizard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(37, 129, 95, 0.1);
+}
+
+.wizard-step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wizard-step-number {
+  color: var(--color-emerald);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wizard-progress-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.progress-dot.active {
+  background: var(--color-emerald);
+  transform: scale(1.2);
+}
+
+.progress-dot.completed {
+  background: var(--color-emerald-dark);
+  opacity: 0.7;
+}
+
+.wizard-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wizard-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+/* Body */
+.wizard-body {
+  padding: 24px;
+  color: #e0e0e0;
+}
+
+.wizard-body h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.wizard-body p {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #b0b0b0;
+}
+
+/* Final Step (Pro Tips) Specific Styles */
+.wizard-final-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-final-tips {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.tip-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start; /* Align icon with top of text */
+  gap: 12px;
+  transition: background 0.2s ease;
+}
+
+.tip-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tip-icon {
+  color: var(--color-emerald);
+  flex-shrink: 0;
+  margin-top: 3px; /* Align icon better with text */
+}
+.disclaimer-icon {
+  color: #e4c125;
+  flex-shrink: 0;
+  margin-top: 3px; /* Align icon better with text */
+}
+.tip-item strong {
+  display: block;
+  font-weight: 600;
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.tip-item p {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.wizard-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.2);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.wizard-disclaimer svg {
+  flex-shrink: 0;
+}
+
+.wizard-disclaimer p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Footer */
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  gap: 8px; /* Reduced gap between footer buttons */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wizard-btn {
+  border: none;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.wizard-nav-btn {
+  /* Base styles from .wizard-btn */
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* Specific overrides for nav buttons in footer for steps 1-5 tooltips */
+.wizard-footer .wizard-nav-btn {
+  padding: 8px 12px !important; /* Reduced padding */
+  font-size: 0.9rem !important; /* Reduced font size */
+}
+
+/* Base and Hover states for navigation buttons */
+.wizard-nav-btn.prev {
+  background-color: rgba(70, 70, 70, 0.8); /* Darker base for prev */
+  color: #fff;
+}
+
+.wizard-nav-btn.next {
+  background-color: #007bff; /* Primary action color for next */
+  color: #fff;
+}
+
+.wizard-nav-btn.skip-tour {
+  background-color: rgba(100, 100, 100, 0.7); /* Neutral base for skip */
+  color: #ddd;
+}
+
+.wizard-nav-btn.prev:hover {
+  background-color: rgba(90, 90, 90, 0.9); /* Slightly lighter hover for prev */
+  color: #fff;
+}
+
+.wizard-nav-btn.next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 129, 95, 0.4);
+}
+
+.wizard-nav-btn.skip-tour:hover {
+  background-color: rgba(120, 120, 120, 0.8); /* Slightly lighter hover for skip */
+  color: #fff;
+}
+
+.wizard-nav-btn.skip-tour {
+  background: transparent;
+  color: #a0a0a0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.wizard-nav-btn.skip-tour:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.wizard-nav-btn.next {
+  background: var(--color-emerald);
+  color: #0a1a13; /* Dark text for contrast on bright green */
+}
+
+.wizard-nav-btn.next:hover {
+  background: var(--color-emerald-light);
+}
+
+.wizard-nav-btn.finish {
+  background: var(--color-blue-accent);
+  color: #fff;
+}
+
+.wizard-nav-btn.finish:hover {
+  background: var(--color-blue-accent-hover);
+}
+
+.wizard-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wizard-nav-btn:active {
+  transform: scale(0.98);
+}
+
+/* Arrow pointer for tooltip */
+.wizard-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.wizard-arrow.top, .wizard-arrow.top-left, .wizard-arrow.top-right {
+  border-width: 12px 12px 0 12px;
+  border-color: #2a2a2a transparent transparent transparent;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.wizard-arrow.top-left { left: 20px; }
+.wizard-arrow.top-right { left: auto; right: 20px; }
+
+.wizard-arrow.bottom, .wizard-arrow.bottom-left, .wizard-arrow.bottom-right {
+  border-width: 0 12px 12px 12px;
+  border-color: transparent transparent #1e1e1e transparent;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.wizard-arrow.bottom-left { left: 20px; }
+.wizard-arrow.bottom-right { left: auto; right: 20px; }
+
+.wizard-arrow.left {
+  border-width: 12px 0 12px 12px;
+  border-color: transparent transparent transparent #2a2a2a;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.wizard-arrow.right {
+  border-width: 12px 12px 12px 0;
+  border-color: transparent #1e1e1e transparent transparent;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Ensure fixed step 4 tooltip doesn't get unwanted arrow */
+.wizard-tooltip-step-4 .wizard-arrow {
+  display: none !important;
+}

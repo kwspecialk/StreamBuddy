@@ -9,6 +9,7 @@ import './components/StreamViewHeader.css';
 import './components/AddStreamButton.css';
 import './components/StreamBrowserModal.css';
 import './components/EditStreamsModal.css';
+import './components/wizard/QuickstartWizard.css';
 import ErrorBoundary from './components/ErrorBoundary';
 import OnDemandBrowser from './components/OnDemandBrowser';
 import MovieDetailsModal from './components/MovieDetailsModal';
@@ -18,8 +19,11 @@ import StreamHomepage from './components/StreamHomepage';
 import DebugHomepage from './components/DebugHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
-import { Plus } from 'lucide-react';
+import { Plus, Maximize, Minimize, HelpCircle } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
+import QuickstartWizard from './components/wizard/QuickstartWizard';
+import PlayerViewWizard from './components/wizard/PlayerViewWizard';
+import './components/wizard/PlayerViewWizard.css';
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -35,6 +39,7 @@ const App = () => {
 
   // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
+  const [playerViewWizardResetToken, setPlayerViewWizardResetToken] = useState(0);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
 
   const [videoUrls, setVideoUrls] = useState(() => {
@@ -53,6 +58,182 @@ const App = () => {
   const [streamRetries, setStreamRetries] = useState({});
   const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
   const [selectedShow, setSelectedShow] = useState(null);
+  const [isActuallyFullscreen, setIsActuallyFullscreen] = useState(false);
+  const [isHeaderVisibleInFullscreen, setIsHeaderVisibleInFullscreen] = useState(false);
+  const [showQuickstartWizard, setShowQuickstartWizard] = useState(() => {
+    const quickstartCompleted = localStorage.getItem('streambuddy_quickstart_completed');
+    console.log('[App.js Init] quickstartCompleted from localStorage:', quickstartCompleted, 'Setting showQuickstartWizard to:', quickstartCompleted !== 'true');
+    return quickstartCompleted !== 'true';
+  });
+
+  const [showPlayerViewWizard, setShowPlayerViewWizard] = useState(() => {
+    const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
+    console.log('[App.js Init] Initializing showPlayerViewWizard. Completed status:', pvwCompleted);
+    return !pvwCompleted; // Show wizard if not completed
+  });
+
+  // Fullscreen logic
+  const toggleFullScreen = async () => {
+    if (!document.fullscreenElement) {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (err) {
+        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        // Optionally, inform the user that fullscreen failed
+      }
+    } else {
+      if (document.exitFullscreen) {
+        try {
+          await document.exitFullscreen();
+        } catch (err) {
+          console.error(`Error attempting to disable full-screen mode: ${err.message} (${err.name})`);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsActuallyFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);    // Firefox
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);   // IE/Edge
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Ref for checking current header visibility in callbacks
+  const isHeaderVisibleInFullscreenRef = React.useRef(isHeaderVisibleInFullscreen);
+  useEffect(() => {
+    isHeaderVisibleInFullscreenRef.current = isHeaderVisibleInFullscreen;
+  }, [isHeaderVisibleInFullscreen]);
+
+  // Effect for auto-hiding header in fullscreen stream view
+  useEffect(() => {
+    const HOVER_THRESHOLD_PX = 70;
+    let hideTimeoutId = null;
+    let lastKnownMouseY = window.innerHeight; // Initialize safely
+
+    const handleMouseMove = (event) => {
+      lastKnownMouseY = event.clientY;
+      if (event.clientY < HOVER_THRESHOLD_PX) {
+        if (!isHeaderVisibleInFullscreenRef.current) {
+          setIsHeaderVisibleInFullscreen(true);
+        }
+        if (hideTimeoutId) clearTimeout(hideTimeoutId);
+        hideTimeoutId = setTimeout(() => {
+          if (lastKnownMouseY >= HOVER_THRESHOLD_PX) {
+            setIsHeaderVisibleInFullscreen(false);
+          }
+        }, 2000); // Hide after 2s if mouse not in top area
+      } else {
+        if (isHeaderVisibleInFullscreenRef.current && !hideTimeoutId) {
+          setIsHeaderVisibleInFullscreen(false);
+        }
+      }
+    };
+
+    if (isActuallyFullscreen && currentView === 'stream-view') {
+      document.addEventListener('mousemove', handleMouseMove);
+      // Initial state based on mouse position
+      if (lastKnownMouseY < HOVER_THRESHOLD_PX) {
+        setIsHeaderVisibleInFullscreen(true);
+        // Schedule a hide if it moves out
+        if (hideTimeoutId) clearTimeout(hideTimeoutId);
+        hideTimeoutId = setTimeout(() => {
+            if (lastKnownMouseY >= HOVER_THRESHOLD_PX) setIsHeaderVisibleInFullscreen(false);
+        }, 2000);
+      } else {
+        setIsHeaderVisibleInFullscreen(false);
+      }
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      setIsHeaderVisibleInFullscreen(false);
+      if (hideTimeoutId) clearTimeout(hideTimeoutId);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (hideTimeoutId) clearTimeout(hideTimeoutId);
+    };
+  }, [isActuallyFullscreen, currentView]); // isHeaderVisibleInFullscreen removed from deps
+
+  // Wizard Handlers & Logic
+  const handleCloseQuickstartWizard = () => {
+    console.log('[App.js handleCloseQuickstartWizard] Closing QuickstartWizard');
+    setShowQuickstartWizard(false);
+    localStorage.setItem('streambuddy_quickstart_wizard_completed', 'true');
+  };
+
+  const handleOpenPlayerViewWizardManual = () => {
+    console.log('[App.js] Manually opening PlayerViewWizard via help button.');
+    // Ensure PVW doesn't show if QSW is active and not completed
+    const qswCompleted = localStorage.getItem('streambuddy_quickstart_wizard_completed') === 'true';
+    if (showQuickstartWizard && !qswCompleted) {
+      console.log('[App.js] Quickstart wizard is active and not completed, not opening PVW manually.');
+      return; // Don't open PVW if QSW should be active
+    }
+    setPlayerViewWizardResetToken(prevToken => prevToken + 1);
+    setShowPlayerViewWizard(true);
+    // Consider if PVW should reset to its first step when opened manually.
+    // This might require passing a prop or a ref to PlayerViewWizard to call a reset function.
+  };
+
+  const handleClosePlayerViewWizard = () => {
+    console.log('[App.js handleClosePlayerViewWizard] Closing PlayerViewWizard');
+    setShowPlayerViewWizard(false);
+    localStorage.setItem('streambuddy_player_wizard_completed', 'true');
+  };
+
+  useEffect(() => {
+    const qswCompleted = localStorage.getItem('streambuddy_quickstart_completed') === 'true';
+    const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
+
+    console.log('[App.js Wizards useEffect] Checking states:', {
+      currentView, 
+      qswCompleted,
+      pvwCompleted,
+      showQuickstartWizard_state: showQuickstartWizard,
+      showPlayerViewWizard_state: showPlayerViewWizard
+    });
+
+    // Handle QuickstartWizard (homepage only)
+    if (currentView === 'homepage') {
+      // Hide PlayerViewWizard if somehow shown on homepage
+      if (showPlayerViewWizard) {
+        console.log('[App.js] Hiding PlayerViewWizard on homepage');
+        setShowPlayerViewWizard(false);
+      }
+      
+      // Show QuickstartWizard if not completed
+      if (!qswCompleted && !showQuickstartWizard) {
+        console.log('[App.js] Showing QuickstartWizard (first time on homepage)');
+        setShowQuickstartWizard(true);
+      }
+    } 
+    // Handle PlayerViewWizard (stream-view only)
+    else if (currentView === 'stream-view') {
+      // Hide QuickstartWizard if shown in stream-view
+      if (showQuickstartWizard) {
+        console.log('[App.js] Hiding QuickstartWizard in stream-view');
+        setShowQuickstartWizard(false);
+      }
+      
+      // Show PlayerViewWizard if not completed
+      if (!pvwCompleted && !showPlayerViewWizard) {
+        console.log('[App.js] Showing PlayerViewWizard (first time in stream-view)');
+        setShowPlayerViewWizard(true);
+      }
+    }
+  }, [currentView, showQuickstartWizard, showPlayerViewWizard]);
 
   // Fetch matches for Homepage and Stream Browser
   const fetchMatches = async () => {
@@ -184,7 +365,17 @@ const App = () => {
 
   const handleEnterStreamView = () => {
     console.log('[App.js] handleEnterStreamView: Setting currentView to stream-view. Previous view:', currentView);
+    const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
+    console.log('[App.js] handleEnterStreamView: PlayerViewWizard completed status:', pvwCompleted);
+    
+    // Set the view to stream-view
     setCurrentView('stream-view');
+    
+    // Only show the wizard if it hasn't been completed
+    if (!pvwCompleted) {
+      console.log('[App.js] handleEnterStreamView: Showing PlayerViewWizard');
+      setShowPlayerViewWizard(true);
+    }
   };
 
   const handleReturnToHomepage = () => {
@@ -207,18 +398,32 @@ const App = () => {
     setShowEditStreams(false);
   };
 
-  const handleStreamRecovery = (index) => {
+
+  const handleStreamRecovery = (urlToRefresh, index) => {
     setStreamRetries(prev => {
       const currentRetries = prev[index] || 0;
-      if (currentRetries < 3) {
+      // Keeping retry limit, but can be removed if refresh should always be allowed.
+      if (currentRetries < 5) { // Increased retry limit slightly, or remove for unlimited retries
         const newUrls = [...videoUrls];
-        const currentUrl = newUrls[index];
-        newUrls[index] = '';
-        setVideoUrls(newUrls);
-        setTimeout(() => {
-          newUrls[index] = currentUrl;
-          setVideoUrls(newUrls);
-        }, 1000);
+        
+        // Use urlToRefresh as the source of truth for the original URL
+        let originalUrl = urlToRefresh;
+
+        // Remove any existing refresh_id query param to prevent them from stacking up
+        let baseOriginalUrl = originalUrl.split('?refresh_id=')[0];
+        baseOriginalUrl = baseOriginalUrl.split('&refresh_id=')[0]; // In case it's not the first param
+
+        // Append a new unique query parameter to force reload
+        const refreshedUrl = `${baseOriginalUrl}${baseOriginalUrl.includes('?') ? '&' : '?'}refresh_id=${Date.now()}`;
+        
+        newUrls[index] = refreshedUrl;
+        setVideoUrls([...newUrls]); // Ensure a new array instance for React state update
+
+        // The URL will now contain refresh_id. If this becomes an issue for display
+        // or long-term storage, a mechanism to revert it after a delay could be added,
+        // but that adds complexity and potential race conditions.
+        // Forcing a reload is the primary goal here.
+
         return { ...prev, [index]: currentRetries + 1 };
       }
       return prev;
@@ -227,7 +432,7 @@ const App = () => {
 
   const handleReorderUrls = (newUrls) => {
     setVideoUrls(newUrls);
-    autoSwitchLayout(newUrls.length);
+    // autoSwitchLayout(newUrls.length); // Temporarily commented out for debugging DND
   };
 
   const addVideoUrl = (url, matchInfo = null) => {
@@ -263,6 +468,14 @@ const App = () => {
     if (videoUrls.length <= 1) {
       setCurrentView('homepage');
     }
+  };
+
+  const handleClearAllStreams = () => {
+    setVideoUrls([]);
+    setActiveVideoId(null);
+    setSourceIndices({});
+    setStreamRetries({});
+    setCurrentView('homepage');
   };
 
   const handleVideoSelect = (videoId) => {
@@ -314,6 +527,7 @@ const App = () => {
     localStorage.removeItem('savedVideoUrls');
     localStorage.removeItem('savedLayout');
     localStorage.removeItem('streambuddy_setup_completed');
+    localStorage.removeItem('streambuddy_quickstart_completed');
     setVideoUrls([]);
     setLayout('single');
     setActiveVideoId(null);
@@ -321,6 +535,10 @@ const App = () => {
     setStreamRetries({});
     setMovieDetails(null);
     setCurrentView('homepage');
+  };
+
+  const handleShowQuickstartWizard = () => {
+    setShowQuickstartWizard(true);
   };
 
   const getDisplayedVideos = () => {
@@ -389,30 +607,61 @@ const App = () => {
       console.error('Error formatting URL:', error);
       return url;
     }
-  };
+};
 
-
-  // Show Homepage
-  if (currentView === 'homepage') {
-    return (
-      <div className="app">
-        <StreamHomepage
-          onStreamSelect={handleStreamSelect}
-          onEnterStreamView={handleEnterStreamView}
-          matches={matches}
-          isLoading={isLoadingMatches}
-          onAddUrl={addVideoUrl}
-        />
-        <Analytics />
-      </div>
-    );
-  }
-
-  // Show Stream View (multi-stream interface with modal browser)
+// Render common components that should persist across views
+const renderQuickstartWizard = () => {
+  console.log('[App.js render] QuickstartWizard isOpen prop:', showQuickstartWizard);
   return (
-    <div className="app stream-view">
-      {/* Stream View Header - with Edit button */}
-      <div className="stream-view-header">
+  <QuickstartWizard
+    isOpen={showQuickstartWizard}
+    onClose={handleCloseQuickstartWizard} // Uses the new handler
+    currentView={currentView}
+    isMovieDetailsModalOpen={!!movieDetails} // Only pass necessary props
+  />
+); // End of renderQuickstartWizard function
+}
+
+// Show Homepage
+if (currentView === 'homepage') {
+  return (
+    <div className="app">
+      <StreamHomepage
+        onStreamSelect={handleStreamSelect}
+        onEnterStreamView={handleEnterStreamView}
+        matches={matches}
+        isLoading={isLoadingMatches}
+        onAddUrl={addVideoUrl}
+        onShowQuickstartWizard={handleShowQuickstartWizard}
+      />
+      {renderQuickstartWizard()}
+      <Analytics />
+    </div>
+  );
+}
+
+// Show Stream View (multi-stream interface with modal browser)
+console.log('[App.js] Rendering PlayerViewWizard with props:', {
+  isOpen: showPlayerViewWizard,
+  currentView,
+  showStreamBrowser,
+  showEditStreams
+});
+
+return (
+  <div className="app stream-view">
+    <PlayerViewWizard
+      isOpen={showPlayerViewWizard}
+      onClose={handleClosePlayerViewWizard}
+      forceReset={playerViewWizardResetToken}
+      currentView={currentView}
+      showStreamBrowser={showStreamBrowser}
+      showEditStreams={showEditStreams}
+    />
+    {/* Stream View Header - with Edit button */}
+    <div className={`stream-view-header ${
+      isActuallyFullscreen && currentView === 'stream-view' && !isHeaderVisibleInFullscreen ? 'header-hidden-fullscreen' : ''
+    }`.trim()}>
         <div className="header-left">
           <button 
             className="back-to-home-btn"
@@ -440,6 +689,21 @@ const App = () => {
             <span className="edit-btn-text-short">Manage</span>
           </button>
           
+          <button 
+            className="fullscreen-btn header-icon-btn"
+            onClick={toggleFullScreen} 
+            title={isActuallyFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          >
+            {isActuallyFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+          </button>
+
+          {/* Help button for PlayerViewWizard - only in stream-view */}
+          {currentView === 'stream-view' && (
+            <button onClick={handleOpenPlayerViewWizardManual} className="action-btn help-btn" title="Player View Tour">
+              <HelpCircle size={20} />
+            </button>
+          )}
+
           <LayoutSelector
             onLayoutChange={handleLayoutChange}
             currentLayout={layout}
@@ -463,6 +727,7 @@ const App = () => {
         onClose={handleCloseEditStreams}
         videoUrls={videoUrls}
         onDeleteStream={handleDeleteUrl}
+        onClearAllStreams={handleClearAllStreams}
         onRefreshStream={handleStreamRecovery}
         onReorderStreams={handleReorderUrls}
         onOpenStreamBrowser={() => {
@@ -477,13 +742,45 @@ const App = () => {
       />
 
       {/* Video Grid */}
-      <div className={`video-grid ${layout}`}>
+      <div 
+        className={`video-grid ${layout}`}
+        style={(() => {
+          const HEADER_HEIGHT = 60; // px
+
+          let marginTop = 0;
+          let availableHeight = '100vh';
+
+          const isImmersiveFullscreen = isActuallyFullscreen && currentView === 'stream-view' && !isHeaderVisibleInFullscreen;
+
+          if (isImmersiveFullscreen) {
+            // Fullscreen, stream view, header hidden
+            marginTop = 0;
+            availableHeight = '100vh';
+          } else {
+            // Not immersive fullscreen OR fullscreen with header visible
+            if (isActuallyFullscreen && currentView === 'stream-view' && isHeaderVisibleInFullscreen) {
+              // Fullscreen, stream view, header visible on hover
+              marginTop = 0; // Header overlays
+              availableHeight = '100vh'; // Video grid takes full height behind header
+            } else {
+              // Not fullscreen (standard view)
+              marginTop = HEADER_HEIGHT; // Header pushes content down
+              availableHeight = `calc(100vh - ${HEADER_HEIGHT}px)`;
+            }
+          }
+
+          return {
+            marginTop: `${marginTop}px`,
+            height: availableHeight
+          };
+        })()}
+      >
         {getDisplayedVideos().map((url, index) => {
           const isOnDemand = url.includes('vidsrc.xyz') || url.includes('2embed.cc');
           
           return (
             <div key={url} className="video-container">
-              <div className="video-number">{index + 1}</div>
+              {showEditStreams && <div className="video-number">{index + 1}</div>}
               <ErrorBoundary>
                 {isOnDemand ? (
                   <OnDemandVideoFeed 
@@ -503,88 +800,17 @@ const App = () => {
         })}
       </div>
 
-      {/* Keep existing OnDemandBrowser for backward compatibility */}
-      <OnDemandBrowser 
-        onAddUrl={addVideoUrl} 
-        onShowMovieDetails={setMovieDetails}
-      />
-
       {/* Movie Details Modal */}
       {movieDetails && (
-        <div 
-          className="modal-backdrop" 
-          onClick={() => setMovieDetails(null)}
-        >
-          <div 
-            className="modal-content"
-            onClick={e => e.stopPropagation()}
-          >
-            <MovieDetailsModal
-              movieDetails={movieDetails}
-              onClose={() => setMovieDetails(null)}
-              onAddUrl={addVideoUrl}
-            />
-              
-            <div className="movie-content">
-              <div className="movie-poster">
-                <img 
-                  src={`https://image.tmdb.org/t/p/w300${movieDetails.posterPath}`}
-                  alt={movieDetails.title}
-                />
-              </div>
-              
-              <div className="movie-info">
-                <h1>{movieDetails.title}</h1>
-                <div className="movie-meta">
-                  <span className="year">{movieDetails.year}</span>
-                  {movieDetails.type === 'movie' && <span className="badge">Movie</span>}
-                  {movieDetails.type === 'tv' && <span className="badge">TV Series</span>}
-                </div>
-                
-                <p className="overview">{movieDetails.overview}</p>
-                
-                <div className="action-buttons">
-                  <button
-                    className="watch-now-btn"
-                    onClick={() => {
-                      if (movieDetails.type === 'movie') {
-                        addVideoUrl(`https://vidsrc.xyz/embed/movie/${movieDetails.tmdb}`);
-                      } else {
-                        setSelectedShow(movieDetails);
-                        setShowEpisodeSelector(true);
-                      }
-                      setMovieDetails(null);
-                    }}
-                  >
-                    Watch Now
-                  </button>
-                  <button
-                    className="close-btn"
-                    onClick={() => setMovieDetails(null)}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {showEpisodeSelector && selectedShow && (
-            <MovieDetailsModal
-              show={selectedShow}
-              onSelectMovie={(url) => {
-                addVideoUrl(url);
-                setShowEpisodeSelector(false);
-                setSelectedShow(null);
-              }}
-              onClose={() => {
-                setShowEpisodeSelector(false);
-                setSelectedShow(null);
-              }}
-            />
-          )}
-        </div>
+        <MovieDetailsModal
+          movieDetails={movieDetails}
+          onClose={() => setMovieDetails(null)}
+          onPlayStream={handleStreamSelect}
+        />
       )}
+      
+      {/* Quickstart Wizard */}
+      {renderQuickstartWizard()}
       
       <Analytics />
     </div>

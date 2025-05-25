@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, User, Play, ArrowLeft, Maximize, Minimize } from 'lucide-react';
+import { Search, User, Play, ArrowLeft, Maximize, Minimize, HelpCircle } from 'lucide-react';
 import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
 import CachedImage from './CachedImage';
 
-const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl }) => {
+const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl, onShowQuickstartWizard }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('home'); // Start with home
   const [selectedSport, setSelectedSport] = useState('all'); // For sports filtering
@@ -191,7 +191,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     setSelectedMovieDetails(null);
   };
 
-  // Legacy function - keeping for backward compatibility
+  // Legacy function - keeping for backward compatibility  
   const getSportsThumbnail = (match) => {
     return getSportIcon(match.category || match.title);
   };
@@ -312,67 +312,78 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
       onClick={() => handleItemClick(item, categoryKey)} 
     >
       <div className="card-thumbnail match-thumbnail">
+        {/* Always try to load sport fallback image first */}
         <img 
           src={getSportFallbackImage(item.category)}
           alt={formatSportName(item.category || 'Sports')}
           className="sport-background-image"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextElementSibling.style.display = 'flex';
+          }}
         />
+        
+        {/* Fallback to green gradient + emoji if image fails */}
         <div className="sport-gradient-fallback" style={{ display: 'none' }}>
           <div className="sport-icon-fallback">
             {getSportIcon(item.category)}
-      </div>
-    </div>
-    {item.poster && (
-      <img 
-        src={getMatchPosterUrl(item.poster)}
-        alt={item.title || getMatchTitle(item)}
-        className="match-poster-overlay"
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
-    )}
-    {(item.teams?.home?.badge || item.teams?.away?.badge) && (
-      <div className="team-badges-overlay">
-        {item.teams.home?.badge ? (
+          </div>
+        </div>
+        
+        {/* Overlay poster if available */}
+        {item.poster && (
           <img 
-            src={getTeamBadgeUrl(item.teams.home.badge)} 
-            alt={item.teams.home.name}
-            className="team-badge-overlay home-badge"
+            src={getMatchPosterUrl(item.poster)}
+            alt={item.title || getMatchTitle(item)}
+            className="match-poster-overlay"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-        ) : item.teams.home?.name && (
-          <div className="team-placeholder-overlay home-placeholder">
-            <span className="team-initial">{item.teams.home.name.charAt(0)}</span>
+        )}
+        
+        {/* Overlay team badges if available */}
+        {(item.teams?.home?.badge || item.teams?.away?.badge) && (
+          <div className="team-badges-overlay">
+            {item.teams.home?.badge ? (
+              <img 
+                src={getTeamBadgeUrl(item.teams.home.badge)} 
+                alt={item.teams.home.name}
+                className="team-badge-overlay home-badge"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : item.teams.home?.name && (
+              <div className="team-placeholder-overlay home-placeholder">
+                <span className="team-initial">{item.teams.home.name.charAt(0)}</span>
+              </div>
+            )}
+            <div className="vs-divider-overlay">VS</div>
+            {item.teams.away?.badge ? (
+              <img 
+                src={getTeamBadgeUrl(item.teams.away.badge)} 
+                alt={item.teams.away.name}
+                className="team-badge-overlay away-badge"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : item.teams.away?.name && (
+              <div className="team-placeholder-overlay away-placeholder">
+                <span className="team-initial">{item.teams.away.name.charAt(0)}</span>
+              </div>
+            )}
           </div>
         )}
-        <div className="vs-divider-overlay">VS</div>
-        {item.teams.away?.badge ? (
-          <img 
-            src={getTeamBadgeUrl(item.teams.away.badge)} 
-            alt={item.teams.away.name}
-            className="team-badge-overlay away-badge"
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        ) : item.teams.away?.name && (
-          <div className="team-placeholder-overlay away-placeholder">
-            <span className="team-initial">{item.teams.away.name.charAt(0)}</span>
-          </div>
-        )}
+        
+        <div className="live-badge pulse">● LIVE</div>
+        <div className="card-overlay">
+          <button className="play-button">
+            <Play size={20} fill="white" />
+          </button>
+        </div>
       </div>
-    )}
-    {/* Consider if all sports in search are live, or if badge needs to be conditional */}
-    {/* <div className="live-badge pulse">● LIVE</div> */}
-    <div className="card-overlay">
-      <button className="play-button">
-        <Play size={20} fill="white" />
-      </button>
+      <div className="card-info">
+        <h3>{getMatchTitle(item)}</h3>
+        <p>{formatSportName(item.category || 'Sports')}</p>
+      </div>
     </div>
-  </div>
-  <div className="card-info">
-    <h3>{getMatchTitle(item)}</h3>
-    <p>{formatSportName(item.category || 'Sports')}</p>
-  </div>
-</div>
-);
+  );
 
 const renderSearchResultsSection = () => {
 if (searchLoading) {
@@ -472,6 +483,11 @@ return (
             <button onClick={toggleFullscreen} className="action-btn fullscreen-btn" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
               {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
             </button>
+            {onShowQuickstartWizard && (
+              <button onClick={onShowQuickstartWizard} className="action-btn help-btn" title="Show Quick Tour">
+                <HelpCircle size={20} />
+              </button>
+            )}
             <button className="user-btn">
               <User size={24} />
             </button>
@@ -505,8 +521,8 @@ return (
               {/* Hero Section with Search */}
               <section className="hero-section">
                 <div className="hero-content">
-                  <h1 className="hero-title">Stream Live Sports, Movies & Shows</h1>
-                  <p className="hero-subtitle">All your favorite content. One powerful platform</p>
+                  <h1 className="hero-title">Your New Home for Streaming</h1>
+                  <p className="hero-subtitle">Sports. Movies. TV. Don't miss a moment</p>
                   
                   <div className="hero-search" ref={searchInputRef}>
                     <Search size={24} />

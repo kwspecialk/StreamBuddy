@@ -4,14 +4,6 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
 
-// Simple reorder function
-const reorder = (list, startIndex, endIndex) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-  return result;
-};
-
 const EditStreamsModal = ({ 
   isOpen, 
   onClose, 
@@ -39,7 +31,6 @@ const EditStreamsModal = ({
     const saved = localStorage.getItem('streamTitles');
     return saved ? JSON.parse(saved) : {};
   });
-  
   // Save stream titles to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('streamTitles', JSON.stringify(streamTitles));
@@ -69,7 +60,7 @@ const EditStreamsModal = ({
     if (changed) {
       setStreamTitles(cleanedTitles);
     }
-  }, [videoUrls, streamTitles]);
+  }, [videoUrls, streamTitles]); // Rerun if videoUrls or streamTitles change
 
   // Helper function to detect TV show URLs
   const isTVShowUrl = (url) => {
@@ -270,7 +261,7 @@ const EditStreamsModal = ({
       const storedTitle = streamTitles[baseKeyUrl];
       
       // If it's a TV show and we have a non-generic title, append current episode
-      if (tvInfo && !/^S\d+E\d+$/.test(storedTitle) && !storedTitle.includes(' - S') && !/S\d+E\d+/.test(storedTitle)) {
+      if (tvInfo && !/^S\d+E\d+$/.test(storedTitle)) {
         return `${storedTitle} - S${tvInfo.season}E${tvInfo.episode.toString().padStart(2, '0')}`;
       }
       
@@ -329,6 +320,8 @@ const EditStreamsModal = ({
       });
     }
   }, [isOpen, videoUrls.length]); // Run when modal opens or stream count changes
+  
+
 
   const getSourceInfo = (url) => {
     const urlData = sourceIndices[url];
@@ -338,19 +331,25 @@ const EditStreamsModal = ({
     return null;
   };
 
-  // Simple drag end handler
-  const onDragEnd = (result) => {
-    // dropped outside the list
+  // Handle drag end event
+  const handleDragEnd = (result) => {
     if (!result.destination) {
       return;
     }
 
-    const items = reorder(
-      videoUrls,
-      result.source.index,
-      result.destination.index
-    );
+    const { source, destination } = result;
 
+    // If item didn't move, return
+    if (source.index === destination.index) {
+      return;
+    }
+
+    // Create a new array with the reordered items
+    const items = Array.from(videoUrls);
+    const [reorderedItem] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, reorderedItem);
+
+    // Update the streams order
     onReorderStreams(items);
   };
 
@@ -484,91 +483,94 @@ const EditStreamsModal = ({
               <p>Add some streams to get started</p>
             </div>
           ) : (
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="droppable">
-                {(provided, snapshot) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="streams-list"
-                    style={{
-                      background: snapshot.isDraggingOver ? 'rgba(37, 129, 95, 0.05)' : 'transparent'
-                    }}
-                  >
-                    {videoUrls.map((url, index) => {
-                      const isRefreshing = refreshingStreams.has(index);
-                      const isNextEpisodeLoading = nextEpisodeLoading.has(index);
-                      const sourceInfo = getSourceInfo(url);
+            <div className="streams-container">
+              {/* Draggable Streams Column */}
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId="streams-list">
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="streams-list"
+                    >
+                      {videoUrls.map((url, index) => {
+                        const isRefreshing = refreshingStreams.has(index);
+                        const isNextEpisodeLoading = nextEpisodeLoading.has(index);
+                        const sourceInfo = getSourceInfo(url);
 
-                      return (
-                        <Draggable key={`stream-${index}`} draggableId={`stream-${index}`} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={`stream-item-new ${snapshot.isDragging ? 'dragging' : ''}`}
-                              style={{
-                                ...provided.draggableProps.style,
-                                opacity: snapshot.isDragging ? '0.5' : '1',
-                              }}
-                            >
-                              <div className="stream-content">
-                                {/* Drag Handle */}
-                                <div {...provided.dragHandleProps} className="drag-handle-new">
-                                  <GripVertical size={16} />
-                                </div>
-                                {/* Stream Info */}
-                                <div className="stream-info-new">
-                                  <span className="stream-item-number-inline">{index + 1}</span>
-                                  <div className="stream-title-new">
-                                    <span title={getStreamTitle(url, index)}>{getStreamTitle(url, index)}</span>
+                        return (
+                          <Draggable 
+                            key={`item-${index}`} 
+                            draggableId={`item-${index}`} 
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                }}
+                                className={`stream-item-new ${snapshot.isDragging ? 'dragging' : ''}`}
+                              >
+                                <div className="stream-content">
+                                  {/* Drag Handle */}
+                                  <div {...provided.dragHandleProps} className="drag-handle-new">
+                                    <GripVertical size={16} />
                                   </div>
-                                  {sourceInfo && (
-                                    <div className="stream-source-new">
-                                      {sourceInfo}
+                                  {/* Stream Info */}
+                                  <div className="stream-info-new">
+                                    <span className="stream-item-number-inline">{index + 1}</span>
+                                    <div className="stream-title-new">
+                                      <span title={getStreamTitle(url, index)}>{getStreamTitle(url, index)}</span>
                                     </div>
-                                  )}
-                                </div>
-                                {/* Actions */}
-                                <div className="stream-actions-new">
-                                  <button
-                                    className={`action-btn-new refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
-                                    onClick={() => handleRefreshStream(url, index)}
-                                    disabled={isRefreshing}
-                                    title={sourceInfo ? 'Cycle Source' : 'Refresh Stream'}
-                                  >
-                                    <RefreshCw size={16} />
-                                  </button>
-                                  {/* Next Episode button for TV shows */}
-                                  {isTVShowUrl(url) && (
+                                    {sourceInfo && (
+                                      <div className="stream-source-new">
+                                        {sourceInfo}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Actions */}
+                                  <div className="stream-actions-new">
                                     <button
-                                      className={`action-btn-new next-episode-btn ${isNextEpisodeLoading ? 'loading' : ''}`}
-                                      onClick={() => handleNextEpisode(url, index)}
-                                      disabled={isNextEpisodeLoading}
-                                      title={isNextEpisodeLoading ? 'Loading next episode...' : 'Next Episode'}
+                                      className={`action-btn-new refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
+                                      onClick={() => handleRefreshStream(url, index)}
+                                      disabled={isRefreshing}
+                                      title={sourceInfo ? 'Cycle Source' : 'Refresh Stream'}
                                     >
-                                      <ChevronRight size={16} />
+                                      <RefreshCw size={16} />
                                     </button>
-                                  )}
-                                  <button
-                                    className="action-btn-new delete-btn"
-                                    onClick={() => onDeleteStream(url)}
-                                    title="Remove Stream"
-                                  >
-                                    <X size={16} />
-                                  </button>
+                                    {/* Next Episode button for TV shows */}
+                                    {isTVShowUrl(url) && (
+                                      <button
+                                        className={`action-btn-new next-episode-btn ${isNextEpisodeLoading ? 'loading' : ''}`}
+                                        onClick={() => handleNextEpisode(url, index)}
+                                        disabled={isNextEpisodeLoading}
+                                        title={isNextEpisodeLoading ? 'Loading next episode...' : 'Next Episode'}
+                                      >
+                                        <ChevronRight size={16} />
+                                      </button>
+                                    )}
+                                    <button
+                                      className="action-btn-new delete-btn"
+                                      onClick={() => onDeleteStream(url)}
+                                      title="Remove Stream"
+                                    >
+                                      <X size={16} />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
           )}
         </div>
 

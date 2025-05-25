@@ -169,6 +169,28 @@
   /* margin-left: 0; /* Removed, using gap on parent */
 }
 
+.action-btn.help-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.action-btn.help-btn:hover {
+  background: var(--color-viridian);
+  border-color: var(--color-viridian);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+}
+
 /* Main Content */
 .homepage-content {
   padding: 2rem;
