@@ -6,7 +6,6 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -25,7 +24,7 @@
 }
 
 .stream-browser-modal {
-  background: var(--color-dark-surface);
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); /* Match homepage */
   border-radius: 16px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   width: 100%;
@@ -51,7 +50,9 @@
 /* Header */
 .browser-modal-header {
   padding: 24px 30px 20px;
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: rgba(15, 15, 15, 0.95); /* Match homepage header */
+  backdrop-filter: blur(20px); /* Match homepage header */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Match homepage header */
   color: white;
   display: flex;
   justify-content: space-between;
@@ -71,24 +72,7 @@
   font-size: 1rem;
 }
 
-.close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
 
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
 
 /* Navigation */
 .browser-modal-nav {
@@ -106,44 +90,41 @@
 }
 
 .nav-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  background: none;
+  border: none;
+  color: #9ca3af; /* Match homepage inactive tab color */
+  padding: 0.5rem 1rem; /* Match homepage tab padding */
+  border-radius: 6px; /* Match homepage tab radius */
+  font-size: 1rem; /* Match homepage tab font size */
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.nav-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-platinum);
+  transition: color 0.2s ease, background-color 0.2s ease; /* Match homepage transition */
 }
 
 .nav-btn.active {
-  background: var(--color-viridian);
-  border-color: var(--color-viridian);
   color: white;
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
+  background-color: rgba(255, 255, 255, 0.1); /* Match homepage active tab */
 }
 
-.search-container {
+.nav-btn:hover:not(.active) {
+  color: white; /* Match homepage hover */
+}
+
+.stream-browser-modal .search-container {
   position: relative;
   display: flex;
   align-items: center;
   min-width: 250px;
 }
 
-.search-container svg {
+.stream-browser-modal .search-container svg {
   position: absolute;
   left: 12px;
   color: #6b7280;
   z-index: 1;
 }
 
-.search-container input {
+.stream-browser-modal .search-container input {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
@@ -154,11 +135,11 @@
   transition: all 0.2s ease;
 }
 
-.search-container input::placeholder {
+.stream-browser-modal .search-container input::placeholder {
   color: #6b7280;
 }
 
-.search-container input:focus {
+.stream-browser-modal .search-container input:focus {
   outline: none;
   border-color: var(--color-viridian);
   box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
@@ -203,7 +184,7 @@
 .card-thumbnail {
   position: relative;
   width: 100%;
-  height: 120px;
+  height: 60px; /* Halved height */
   background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
   display: flex;
   align-items: center;
@@ -211,10 +192,15 @@
   overflow: hidden;
 }
 
-.card-thumbnail img {
+.card-thumbnail img, .card-thumbnail .modal-card-thumbnail-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.modal-card-thumbnail-image {
+  /* Ensures CachedImage behaves like the original img */
+  display: block; 
 }
 
 .thumbnail-fallback {
@@ -231,13 +217,13 @@
 
 .live-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 12px; /* Match homepage .live-indicator */
+  left: 12px; /* Match homepage .live-indicator */
   background: var(--color-butterscotch);
   color: white;
-  padding: 3px 6px;
-  border-radius: 6px;
-  font-size: 0.7rem;
+  padding: 4px 8px; /* Match homepage .live-indicator */
+  border-radius: 12px; /* Match homepage .live-indicator */
+  font-size: 0.75rem; /* Match homepage .live-indicator */
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -325,7 +311,7 @@
 }
 
 .card-info {
-  padding: 12px;
+  padding: .25rem;
 }
 
 .card-info h3 {
@@ -336,6 +322,7 @@
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2; /* Standard property */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

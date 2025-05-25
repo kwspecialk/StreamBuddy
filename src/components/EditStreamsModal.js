@@ -260,7 +260,7 @@ const EditStreamsModal = ({
               <p>Manage your current streams ({videoUrls.length} active)</p>
             </div>
           </div>
-          <button className="close-btn" onClick={onClose}>
+          <button className="modal-icon-close-btn" onClick={onClose}>
             <X size={24} />
           </button>
         </div>

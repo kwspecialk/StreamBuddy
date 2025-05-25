@@ -302,6 +302,31 @@
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Icon-based close button for modals */
+.modal-icon-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-icon-close-btn svg {
+  width: 20px;
+  height: 20px;
+  color: #ffffff; /* Medium gray for visibility */
+}
+
+.modal-icon-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 768px) {
   .movie-content {
     flex-direction: column;
@@ -1100,7 +1125,6 @@
   align-items: center;
   cursor: pointer;
   padding: 10px 20px;
-  background-color: var(--color-dark-surface);
   transition: background-color 0.2s;
 }
 

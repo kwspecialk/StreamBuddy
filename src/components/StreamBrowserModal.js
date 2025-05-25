@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, Play, Plus } from 'lucide-react';
+import { imageCache } from '../utils/imageCache'; // Added for image URLs
+import CachedImage from './CachedImage'; // Added for image rendering
 
 const StreamBrowserModal = ({ 
   isOpen, 
@@ -145,7 +147,7 @@ const StreamBrowserModal = ({
             <h2>Add Stream</h2>
             <p>Choose content to add to your viewing session</p>
           </div>
-          <button className="close-btn" onClick={onClose}>
+          <button className="modal-icon-close-btn" onClick={onClose}>
             <X size={24} />
           </button>
         </div>
@@ -212,10 +214,27 @@ const StreamBrowserModal = ({
                   >
                     <div className="card-thumbnail">
                       {isStreamItem ? (
-                        <>
-                          <div className="sport-icon">{getSportsThumbnail(item)}</div>
-                          <div className="live-badge">● LIVE</div>
-                        </>
+                        (() => {
+                          const posterUrl = item.poster ? imageCache.getMatchPosterUrl(item.poster) : null;
+                          const sportImageUrl = item.category ? imageCache.getSportsImageUrl(item.category) : null;
+                          const imageUrl = posterUrl || sportImageUrl;
+
+                          return (
+                            <>
+                              {imageUrl ? (
+                                <CachedImage 
+                                  src={imageUrl} 
+                                  alt={item.title || 'Sports Event'}
+                                  className="modal-card-thumbnail-image" // Specific class for modal card images
+                                  fallbackElement={<div className="sport-icon">{getSportsThumbnail(item)}</div>}
+                                />
+                              ) : (
+                                <div className="sport-icon">{getSportsThumbnail(item)}</div>
+                              )}
+                              <div className="live-badge">● LIVE</div>
+                            </>
+                          );
+                        })()
                       ) : (
                         <>
                           <img 

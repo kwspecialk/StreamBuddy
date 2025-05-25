@@ -3,7 +3,6 @@ import VideoFeed from './VideoFeed';
 import LayoutSelector from './LayoutSelector';
 import { LAYOUTS } from './layouts';
 import './App.css';
-import './components/QuickStart.css';
 import './components/LayoutSelector.css';
 import './components/StreamHomepage.css';
 import './components/StreamViewHeader.css';
@@ -15,7 +14,6 @@ import OnDemandBrowser from './components/OnDemandBrowser';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import EpisodeSelector from './components/EpisodeSelector.js';
 import OnDemandVideoFeed from './OnDemandVideoFeed';
-import QuickStart from './components/QuickStart';
 import StreamHomepage from './components/StreamHomepage';
 import DebugHomepage from './components/DebugHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
@@ -31,18 +29,11 @@ const App = () => {
     return hasStreams ? 'stream-view' : 'homepage';
   });
 
-  // Check if user has completed setup before
-  const [showQuickStart, setShowQuickStart] = useState(() => {
-    const hasCompletedSetup = localStorage.getItem('streambuddy_setup_completed');
-    const hasSavedUrls = localStorage.getItem('savedVideoUrls');
-    return !hasCompletedSetup && (!hasSavedUrls || JSON.parse(hasSavedUrls).length === 0);
-  });
-
   // Modal states
   const [showStreamBrowser, setShowStreamBrowser] = useState(false);
   const [showEditStreams, setShowEditStreams] = useState(false);
 
-  // Matches data for QuickStart, Homepage, and Stream Browser
+  // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
 
@@ -63,7 +54,7 @@ const App = () => {
   const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
   const [selectedShow, setSelectedShow] = useState(null);
 
-  // Fetch matches for QuickStart, Homepage, and Stream Browser
+  // Fetch matches for Homepage and Stream Browser
   const fetchMatches = async () => {
     if (matches.length > 0) return;
     
@@ -131,46 +122,10 @@ const App = () => {
 
   // Load matches when needed
   useEffect(() => {
-    if (currentView === 'homepage' || showQuickStart || showStreamBrowser) {
+    if (currentView === 'homepage' || showStreamBrowser) {
       fetchMatches();
     }
-  }, [currentView, showQuickStart, showStreamBrowser]);
-
-  const handleQuickStartComplete = async (setupData) => {
-    const { selectedContent, selectedLayout, skipWizard } = setupData;
-    
-    localStorage.setItem('streambuddy_setup_completed', 'true');
-    
-    if (!skipWizard && selectedContent.length > 0) {
-      setLayout(selectedLayout);
-      
-      for (const match of selectedContent) {
-        if (match.sources && match.sources.length > 0) {
-          try {
-            const source = match.sources[0];
-            const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
-            
-            if (response.ok) {
-              const data = await response.json();
-              if (data?.[0]?.embedUrl) {
-                addVideoUrl(data[0].embedUrl, match);
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching stream for', match.title, error);
-          }
-        }
-      }
-      
-      setCurrentView('stream-view');
-    }
-    
-    setShowQuickStart(false);
-    
-    if (skipWizard) {
-      setCurrentView('homepage');
-    }
-  };
+  }, [currentView, showStreamBrowser]);
 
   const handleStreamSelect = async (itemOrUrl, itemDataIfUrl = null) => {
     let urlToAdd = null;
@@ -366,7 +321,6 @@ const App = () => {
     setStreamRetries({});
     setMovieDetails(null);
     setCurrentView('homepage');
-    setShowQuickStart(false);
   };
 
   const getDisplayedVideos = () => {
@@ -437,19 +391,6 @@ const App = () => {
     }
   };
 
-  // Show QuickStart if needed
-  if (showQuickStart) {
-    return (
-      <div className="app">
-        <QuickStart 
-          onComplete={handleQuickStartComplete}
-          matches={matches}
-          isLoading={isLoadingMatches}
-        />
-        <Analytics />
-      </div>
-    );
-  }
 
   // Show Homepage
   if (currentView === 'homepage') {

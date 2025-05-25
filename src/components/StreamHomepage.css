@@ -32,12 +32,20 @@
   margin: 0;
 }
 
-.main-nav {
+
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Adjust gap as needed between nav and actions */
+  margin-left: auto; /* Add margin to header-right-group for correct spacing */
+}
+
+.main-nav-bar {
   display: flex;
   gap: 1.5rem;
 }
 
-.nav-btn {
+.nav-bar-btn {
   background: none;
   border: none;
   color: #9ca3af;
@@ -51,40 +59,48 @@
   outline: none;
 }
 
-.nav-btn:focus {
+.nav-bar-btn:focus {
   outline: none;
   box-shadow: none;
 }
 
-.nav-btn:hover {
+.nav-bar-btn:hover {
   color: var(--color-viridian);
 }
 
-.nav-btn.active {
+.nav-bar-btn.active {
   color: var(--color-viridian);
 }
 
-.nav-btn.active::after {
+.nav-bar-btn.active::after {
   content: '';
   position: absolute;
-  bottom: -16px;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--color-viridian);
-  border-radius: 1px;
+  bottom: -10px; /* Adjust for shadow positioning */
+  height: 4px; /* Area for shadow to appear */
+  background: transparent; /* No solid background color */
+  box-shadow: 0 3px 5px -1px var(--color-viridian-shadow, rgba(37, 129, 95, 0.6)); /* Brighter shadow effect */
+  /* border-radius: 1px; /* Optional for shadow shape */
+}
+
+.nav-bar-btn-player:hover {
+  color: #FFC107; /* Yellow text on hover */
+  /* Ensure no background color change from general hover if any */
+  background-color: transparent; 
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem; /* Aesthetic gap between action items */
 }
 
 .search-container {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: center; /* Corrected from 'right' */
+  /* margin-right: 0; /* Removed, using gap on parent */
 }
 
 .search-container svg {
@@ -94,22 +110,22 @@
   z-index: 1;
 }
 
-.search-container input {
+.header-actions .search-container input {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
   color: #ffffff;
   font-size: 0.9rem;
-  width: 300px;
+  width: 150px; /* Further reduced */
   transition: all 0.2s ease;
 }
 
-.search-container input::placeholder {
+.header-actions .search-container input::placeholder {
   color: #6b7280;
 }
 
-.search-container input:focus {
+.header-actions .search-container input:focus {
   outline: none;
   border-color: var(--color-viridian);
   box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
@@ -117,6 +133,7 @@
 }
 
 .user-btn {
+  /* margin-left: 1rem; /* Removed, using gap on parent */
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
@@ -130,9 +147,26 @@
   transition: all 0.2s ease;
 }
 
-.user-btn:hover {
+.user-btn:hover,
+.action-btn.fullscreen-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
+}
+
+.action-btn.fullscreen-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0; /* Ensure icon is centered */
+  /* margin-left: 0; /* Removed, using gap on parent */
 }
 
 /* Main Content */
@@ -409,12 +443,10 @@
 }
 
 .content-card {
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .content-card:hover {
@@ -685,7 +717,21 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.card-thumbnail .sport-icon {
+.featured-thumbnail .sport-background-image.featured-background {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center; /* Ensures the zoom is centered */
+}
+
+.content-card.match-card .card-thumbnail.match-thumbnail .sport-background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.featured-thumbnail .sport-icon {
   font-size: 2.5rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
@@ -758,7 +804,7 @@
 }
 
 .card-info {
-  padding: 1rem;
+  padding: .25rem;
 }
 
 .card-info h3 {
@@ -1467,7 +1513,7 @@
     padding: 1.5rem;
   }
   .search-container input {
-    width: 250px;
+    width: 150px;
   }
 }
 
@@ -1485,7 +1531,7 @@
     justify-content: space-between;
   }
   .search-container input {
-    width: 200px;
+    width: 150px;
   }
   .hero-section {
     padding: 3rem 0 4rem;
@@ -1575,4 +1621,61 @@
     font-size: 0.75rem;
     padding: 0.3rem 0.6rem;
   }
+}
+
+/* Return Home Link Styles */
+.return-home-link {
+  color: #aaa; /* Light grey text */
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  display: inline-flex; /* Use inline-flex for alignment */
+  align-items: center; /* Vertically align icon and text */
+  margin-bottom: 15px; /* Space between link and 'Search Results for...' title */
+}
+
+.return-home-link:hover {
+  color: #fff; /* White text on hover */
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+}
+
+/* Persistent Search Bar (when search results are active) */
+.persistent-search-container {
+  position: relative;
+  max-width: 700px; /* Slightly wider or same as hero-search */
+  margin: 2rem auto 2.5rem auto; /* Top, auto horizontal, Bottom */
+  display: flex;
+  align-items: center;
+  background: rgba(30, 30, 30, 0.8); /* Slightly different or same as hero-search */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
+  padding: 0.9rem 1.8rem; /* Slightly less padding than hero-search if desired */
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.persistent-search-container:focus-within {
+  border-color: var(--color-viridian);
+  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.2);
+  background: rgba(35, 35, 35, 0.9);
+}
+
+.persistent-search-container svg {
+  color: #9ca3af;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.persistent-search-input {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.1rem; /* Same as hero-search-input */
+  width: 100%;
+  padding: 0.25rem; /* Minimal padding as container has it */
+  outline: none;
+}
+
+.persistent-search-input::placeholder {
+  color: #78808c;
 }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, User, Play } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, User, Play, ArrowLeft, Maximize, Minimize } from 'lucide-react';
 import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
@@ -17,10 +17,47 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
   const [tvShowsLoading, setTVShowsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const searchInputRef = useRef(null); // Ref for the HERO search input
+  const persistentSearchInputRef = useRef(null); // Ref for the search input visible with results
   
   // Modal states
   const [selectedMovieDetails, setSelectedMovieDetails] = useState(null);
   const [showMovieModal, setShowMovieModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setActiveCategory('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLogoClick = () => {
+    setSearchTerm('');
+    setActiveCategory('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Ensure focus is removed from any search input if it had focus
+    if (persistentSearchInputRef.current) persistentSearchInputRef.current.blur();
+    if (searchInputRef.current) searchInputRef.current.blur();
+  };
+
+  const handleCategoryChange = (category) => {
+    console.log(`handleCategoryChange: Clicked category: ${category}, Current activeCategory: ${activeCategory}, Current searchTerm: '${searchTerm}'`);
+    if (searchTerm.trim() && category === activeCategory && category !== 'home') {
+      // Active search, clicked current filter tab (not 'home') again: un-filter by setting category to 'home' for general search.
+      // Search term remains, useEffect will trigger a general search.
+      console.log('handleCategoryChange: Un-filtering. Setting activeCategory to home.');
+      setActiveCategory('home');
+    } else {
+      // Standard category change, or clicking 'home', or no active search.
+      console.log(`handleCategoryChange: Standard change. Setting activeCategory to: ${category}`);
+      setActiveCategory(category);
+      if (category === 'home' || !searchTerm.trim()) {
+        // Clear search if changing to 'home' or if no search was active initially.
+        setSearchTerm('');
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Load TMDB data on component mount
   useEffect(() => {
@@ -30,12 +67,21 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
 
   // Handle search
   useEffect(() => {
+    console.log(`Search useEffect: searchTerm: '${searchTerm}', activeCategory: ${activeCategory}`);
     if (searchTerm.trim()) {
-      handleSearch(searchTerm);
+      handleSearch(searchTerm); // Perform the search based on current searchTerm and activeCategory
+      // If the persistent search input exists (meaning search results are shown), focus it.
+      if (persistentSearchInputRef.current) {
+        persistentSearchInputRef.current.focus();
+      }
     } else {
-      setSearchResults([]);
+      // Only clear search results if not transitioning between categories during an active search
+      // This check might be redundant if handleCategoryChange handles it, but good for safety.
+      if (activeCategory === 'home') { 
+        setSearchResults([]); // Clear results if search term is empty and we are on home
+      }
     }
-  }, [searchTerm]);
+  }, [searchTerm, activeCategory]); // Re-run when searchTerm OR activeCategory changes
 
   const loadTrendingMovies = async () => {
     setMoviesLoading(true);
@@ -67,13 +113,41 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
 
   const handleSearch = async (query) => {
     if (!query.trim()) return;
-    
+
     setSearchLoading(true);
+    let finalResults = [];
+
     try {
-      const results = await tmdbApi.searchMulti(query);
-      setSearchResults(results);
+      const queryLower = query.toLowerCase();
+
+      if (activeCategory === 'movies') {
+        const allTmdbResults = await tmdbApi.searchMulti(query);
+        finalResults = allTmdbResults.filter(item => item.type === 'movie');
+      } else if (activeCategory === 'tv-shows') {
+        const allTmdbResults = await tmdbApi.searchMulti(query);
+        finalResults = allTmdbResults.filter(item => item.type === 'tv');
+      } else if (activeCategory === 'live-sports' || activeCategory === 'all-sports') {
+        finalResults = (matches && Array.isArray(matches))
+          ? matches.filter(match => {
+              const title = getMatchTitle(match)?.toLowerCase() || '';
+              const categoryName = match.category?.toLowerCase() || '';
+              return title.includes(queryLower) || categoryName.includes(queryLower);
+            }).map(sport => ({ ...sport, type: 'sport' })) // Ensure sports items also have a 'type'
+          : [];
+      } else { // Home tab or general search (no specific category active or it's 'home')
+        const tmdbResults = await tmdbApi.searchMulti(query);
+        const sportsResults = (matches && Array.isArray(matches))
+          ? matches.filter(match => {
+              const title = getMatchTitle(match)?.toLowerCase() || '';
+              const categoryName = match.category?.toLowerCase() || '';
+              return title.includes(queryLower) || categoryName.includes(queryLower);
+            }).map(sport => ({ ...sport, type: 'sport' })) // Ensure sports items also have a 'type'
+          : [];
+        finalResults = [...tmdbResults, ...sportsResults];
+      }
+      setSearchResults(finalResults);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error('Search failed for category:', activeCategory, 'query:', query, error);
       setSearchResults([]);
     }
     setSearchLoading(false);
@@ -100,7 +174,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
   };
 
   const handleItemClick = (item, category) => {
-    if (category === 'live-sports' || category === 'all-sports') {
+    if (category === 'live-sports' || category === 'all-sports' || category === 'sport') {
       // Handle sports stream
       onStreamSelect(item);
       onEnterStreamView();
@@ -200,78 +274,251 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
   // console.log('StreamHomepage - isLoading:', isLoading);
   // console.log('StreamHomepage - selectedSport:', selectedSport);
   // console.log('StreamHomepage - getFilteredMatches():', getFilteredMatches());
-  
-  return (
-    <div className="stream-homepage">
-      {/* Header */}
-      <header className="homepage-header">
-        <div className="header-content">
-          <div className="logo">
-            <h1 onClick={() => setActiveCategory('home')} style={{ cursor: 'pointer' }}>StreamBuddy</h1>
-          </div>
 
-          <nav className="main-nav">
+  const renderTmdbCard = (item, type) => (
+    <div
+      key={`${type}-${item.id}`}
+      className="content-card"
+      onClick={() => handleItemClick(item, type)}
+    >
+      <div className="card-thumbnail">
+        {item.thumbnail && (
+          <div
+            className="card-blur-bg"
+            style={{ backgroundImage: `url(${item.thumbnail})` }}
+          />
+        )}
+        <CachedImage 
+          src={item.thumbnail}
+          alt={item.title}
+          className="movie-poster" // Assuming 'movie-poster' class works for both
+          fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>{type === 'movie' ? '🎦' : '📺'}</div>}
+        />
+        <div className="card-overlay">
+          {/* Add play button or other elements if desired for search results */}
+        </div>
+      </div>
+      <div className="card-info">
+        <h3>{item.title}</h3>
+        <p>{item.genre || (item.first_air_date ? new Date(item.first_air_date).getFullYear() : '')}{item.year ? ` • ${item.year}` : ''}</p>
+      </div>
+    </div>
+  );
+
+  const renderSportCard = (item, categoryKey) => (
+    <div
+      key={`sport-${item.id}`}
+      className="content-card match-card"
+      onClick={() => handleItemClick(item, categoryKey)} 
+    >
+      <div className="card-thumbnail match-thumbnail">
+        <img 
+          src={getSportFallbackImage(item.category)}
+          alt={formatSportName(item.category || 'Sports')}
+          className="sport-background-image"
+        />
+        <div className="sport-gradient-fallback" style={{ display: 'none' }}>
+          <div className="sport-icon-fallback">
+            {getSportIcon(item.category)}
+      </div>
+    </div>
+    {item.poster && (
+      <img 
+        src={getMatchPosterUrl(item.poster)}
+        alt={item.title || getMatchTitle(item)}
+        className="match-poster-overlay"
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
+    )}
+    {(item.teams?.home?.badge || item.teams?.away?.badge) && (
+      <div className="team-badges-overlay">
+        {item.teams.home?.badge ? (
+          <img 
+            src={getTeamBadgeUrl(item.teams.home.badge)} 
+            alt={item.teams.home.name}
+            className="team-badge-overlay home-badge"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        ) : item.teams.home?.name && (
+          <div className="team-placeholder-overlay home-placeholder">
+            <span className="team-initial">{item.teams.home.name.charAt(0)}</span>
+          </div>
+        )}
+        <div className="vs-divider-overlay">VS</div>
+        {item.teams.away?.badge ? (
+          <img 
+            src={getTeamBadgeUrl(item.teams.away.badge)} 
+            alt={item.teams.away.name}
+            className="team-badge-overlay away-badge"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        ) : item.teams.away?.name && (
+          <div className="team-placeholder-overlay away-placeholder">
+            <span className="team-initial">{item.teams.away.name.charAt(0)}</span>
+          </div>
+        )}
+      </div>
+    )}
+    {/* Consider if all sports in search are live, or if badge needs to be conditional */}
+    {/* <div className="live-badge pulse">● LIVE</div> */}
+    <div className="card-overlay">
+      <button className="play-button">
+        <Play size={20} fill="white" />
+      </button>
+    </div>
+  </div>
+  <div className="card-info">
+    <h3>{getMatchTitle(item)}</h3>
+    <p>{formatSportName(item.category || 'Sports')}</p>
+  </div>
+</div>
+);
+
+const renderSearchResultsSection = () => {
+if (searchLoading) {
+  return <div className="loading-indicator" style={{ textAlign: 'center', color: 'white', padding: '20px', fontSize: '1.2em' }}>Searching...</div>;
+}
+if (!searchResults.length && searchTerm.trim()) {
+  return <div className="no-results" style={{ textAlign: 'center', color: 'white', padding: '20px', fontSize: '1.2em' }}>No results found for "{searchTerm}".</div>;
+}
+if (!searchTerm.trim()) { // Should not happen if this section is rendered, but as a safeguard
+    return null;
+}
+
+return (
+  <section className="content-section search-results-section">
+    <div style={{ marginLeft: '20px', marginRight: '20px', marginTop:'20px', marginBottom: '10px' }}>
+      <span onClick={handleClearSearch} className="return-home-link" title="Return Home">
+        <ArrowLeft size={22} style={{ marginRight: '5px' }} /> Return Home
+      </span>
+    </div>
+    <h2 className="category-title" style={{ color: 'white', marginLeft: '20px', marginBottom: '20px', marginTop:'0px' }}>Search Results for "{searchTerm}"</h2>
+    <div className="content-grid">
+      {searchResults.map(item => {
+        if (item.type === 'movie' || item.type === 'tv') {
+          // For TMDB items, pass 'movie' or 'tv' as the second arg to handleItemClick
+          return renderTmdbCard(item, item.type === 'movie' ? 'movies' : 'tv-shows');
+        } else if (item.type === 'sport') {
+          // For sport items, pass 'sport' as the second arg to handleItemClick
+          return renderSportCard(item, 'sport'); 
+        }
+        return null;
+      })}
+    </div>
+  </section>
+);
+};
+
+const toggleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(err => {
+      console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+    });
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().then(() => setIsFullscreen(false));
+    }
+  }
+};
+
+return (
+  <div className="stream-homepage">
+    {/* Header */}
+    <header className="homepage-header">
+      <div className="header-content">
+        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+          <h1>StreamBuddy</h1>
+        </div>
+
+        <div className="header-right-group">
+          <nav className="main-nav-bar">
             <button
-              className={`nav-btn ${activeCategory === 'live-sports' ? 'active' : ''}`}
-              onClick={() => setActiveCategory('live-sports')}
+              className={`nav-bar-btn ${activeCategory === 'live-sports' ? 'active' : ''}`}
+              onClick={() => handleCategoryChange('live-sports')}
             >
               Sports
             </button>
             <button
-              className={`nav-btn ${activeCategory === 'movies' ? 'active' : ''}`}
-              onClick={() => setActiveCategory('movies')}
+              className={`nav-bar-btn ${activeCategory === 'movies' ? 'active' : ''}`}
+              onClick={() => handleCategoryChange('movies')}
             >
               Movies
             </button>
             <button
-              className={`nav-btn ${activeCategory === 'tv-shows' ? 'active' : ''}`}
-              onClick={() => setActiveCategory('tv-shows')}
+              className={`nav-bar-btn ${activeCategory === 'tv-shows' ? 'active' : ''}`}
+              onClick={() => handleCategoryChange('tv-shows')}
             >
               TV Shows
+            </button>
+            <button
+              className="nav-bar-btn nav-bar-btn-player"
+              onClick={onEnterStreamView}
+            >
+              Player
             </button>
           </nav>
 
           <div className="header-actions">
-            {activeCategory !== 'home' && (
-              <div className="search-container">
-                <Search size={20} />
-                <input
-                  type="text"
-                  placeholder="Search for games, movies, shows..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            )}
+            {/* Search bar is now always visible */}
+            <div className="search-container">
+              <Search size={20} />
+              <input
+                type="text"
+                placeholder="Search "
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button onClick={toggleFullscreen} className="action-btn fullscreen-btn" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+              {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+            </button>
             <button className="user-btn">
               <User size={24} />
             </button>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
 
-      {/* Main Content */}
-      <main className="homepage-content">
-        {/* Home Page */}
-        {activeCategory === 'home' && (
-          <>
-            {/* Hero Section with Search */}
-            <section className="hero-section">
-              <div className="hero-content">
-                <h1 className="hero-title">Watch Live Sports, Movies & TV Shows</h1>
-                <p className="hero-subtitle">Stream your favorite content all in one place</p>
-                
-                <div className="hero-search">
-                  <Search size={24} />
-                  <input
-                    type="text"
-                    placeholder="Search for live games, movies, TV shows..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="hero-search-input"
-                  />
+    {/* Main Content */}
+    <main className="homepage-content">
+      {searchTerm.trim() ? (
+        <>
+          <div className="persistent-search-container">
+            <Search size={24} />
+            <input
+              ref={persistentSearchInputRef}
+              type="text"
+              placeholder="Search for live games, movies, TV shows..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="persistent-search-input" // Similar to hero-search-input but can be distinct
+            />
+          </div>
+          {renderSearchResultsSection()}
+        </>
+      ) : (
+        <> {/* Wrapper for original content when not searching */}
+          {/* Home Page */}
+          {activeCategory === 'home' && (
+            <>
+              {/* Hero Section with Search */}
+              <section className="hero-section">
+                <div className="hero-content">
+                  <h1 className="hero-title">Stream Live Sports, Movies & Shows</h1>
+                  <p className="hero-subtitle">All your favorite content. One powerful platform</p>
+                  
+                  <div className="hero-search" ref={searchInputRef}>
+                    <Search size={24} />
+                    <input
+                      type="text"
+                      placeholder="Search for live games, movies, TV shows..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="hero-search-input"
+                    />
+                  </div>
                 </div>
-              </div>
             </section>
 
             {/* Live Events Section */}
@@ -955,6 +1202,8 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
             <h3>No results found for "{searchTerm}"</h3>
             <p>Try searching for something else or browse our categories above.</p>
           </div>
+        )}
+          </> /* End of wrapper for original content when not searching */
         )}
       </main>
       
