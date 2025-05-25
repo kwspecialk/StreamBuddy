@@ -180,6 +180,41 @@
   word-break: break-word;
 }
 
+.clickable-title {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+  margin: -2px -4px;
+}
+
+.clickable-title:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-emerald);
+}
+
+.stream-title-edit {
+  width: 100%;
+}
+
+.title-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-viridian);
+  border-radius: 4px;
+  color: var(--color-platinum);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 4px 8px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.title-input:focus {
+  border-color: var(--color-emerald);
+  box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.2);
+}
+
 .stream-source {
   color: #9ca3af;
   font-size: 12px;

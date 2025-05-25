@@ -17,6 +17,7 @@ import EpisodeSelector from './components/EpisodeSelector.js';
 import OnDemandVideoFeed from './OnDemandVideoFeed';
 import QuickStart from './components/QuickStart';
 import StreamHomepage from './components/StreamHomepage';
+import DebugHomepage from './components/DebugHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
 import { Plus } from 'lucide-react';
@@ -171,25 +172,63 @@ const App = () => {
     }
   };
 
-  const handleStreamSelect = async (match) => {
-    if (match.sources && match.sources.length > 0) {
+  const handleStreamSelect = async (itemOrUrl, itemDataIfUrl = null) => {
+    let urlToAdd = null;
+    let dataForStream = null;
+    let streamSuccessfullyProcessed = false;
+
+    if (typeof itemOrUrl === 'string') {
+      // Movie/TV show with pre-constructed URL
+      urlToAdd = itemOrUrl;
+      dataForStream = itemDataIfUrl;
+      if (urlToAdd) {
+        addVideoUrl(urlToAdd, dataForStream); // addVideoUrl handles duplicates
+        streamSuccessfullyProcessed = true;
+      } else {
+        console.warn('[App.js] handleStreamSelect: Received string itemOrUrl but it was empty.');
+      }
+    } else if (itemOrUrl && itemOrUrl.sources && itemOrUrl.sources.length > 0) {
+      // Sports match object
+      dataForStream = itemOrUrl; // itemOrUrl is the match object
       try {
-        const source = match.sources[0];
-        const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.[0]?.embedUrl) {
-            addVideoUrl(data[0].embedUrl, match);
+        // Basic source selection: use the first one. Could be more sophisticated.
+        const sourceToFetch = dataForStream.sources.find(s => s.source && s.id);
+        if (sourceToFetch) {
+          const response = await fetch(`https://streamed.su/api/stream/${sourceToFetch.source}/${sourceToFetch.id}`);
+          if (response.ok) {
+            const responseData = await response.json();
+            if (responseData?.[0]?.embedUrl) {
+              urlToAdd = responseData[0].embedUrl;
+              addVideoUrl(urlToAdd, dataForStream);
+              streamSuccessfullyProcessed = true;
+            } else {
+              console.error('[App.js] API response for sports stream did not contain embedUrl:', responseData);
+            }
+          } else {
+            console.error('[App.js] Failed to fetch sports stream:', response.status, await response.text().catch(() => ''));
           }
+        } else {
+          console.error('[App.js] Sports item has sources, but no valid source found (missing source.source or source.id):', dataForStream.sources);
         }
       } catch (error) {
-        console.error('Error fetching stream for', match.title, error);
+        console.error('[App.js] Error fetching stream for', dataForStream.title || 'sports item', error);
       }
+    } else {
+      console.warn('[App.js] handleStreamSelect: Invalid itemOrUrl or itemDataIfUrl provided.', itemOrUrl, itemDataIfUrl);
+    }
+
+    if (streamSuccessfullyProcessed) {
+      console.log('[App.js] handleStreamSelect: Stream processed successfully. About to call handleEnterStreamView. Current view:', currentView);
+      handleEnterStreamView();
+      return true;
+    } else {
+      console.warn('[App.js] handleStreamSelect: Failed to process stream. Not navigating. Item/URL:', itemOrUrl);
+      return false;
     }
   };
 
   const handleEnterStreamView = () => {
+    console.log('[App.js] handleEnterStreamView: Setting currentView to stream-view. Previous view:', currentView);
     setCurrentView('stream-view');
   };
 
@@ -421,6 +460,7 @@ const App = () => {
           onEnterStreamView={handleEnterStreamView}
           matches={matches}
           isLoading={isLoadingMatches}
+          onAddUrl={addVideoUrl}
         />
         <Analytics />
       </div>

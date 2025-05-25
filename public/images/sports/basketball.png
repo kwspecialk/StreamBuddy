@@ -1,0 +1,7 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#2d5a3d"/>
+  <circle cx="100" cy="100" r="60" fill="none" stroke="white" stroke-width="4"/>
+  <line x1="100" y1="40" x2="100" y2="160" stroke="white" stroke-width="2"/>
+  <line x1="40" y1="100" x2="160" y2="100" stroke="white" stroke-width="2"/>
+  <text x="100" y="180" font-family="Arial" font-size="16" fill="white" text-anchor="middle">🏀 BASKETBALL</text>
+</svg>

@@ -1,26 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-const MovieDetailsModal = ({ movieDetails, onClose, onAddUrl }) => {
+const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
+  const [streamError, setStreamError] = useState(null);
   const [seasons, setSeasons] = useState([]);
   const [episodes, setEpisodes] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const posterContainerRef = useRef(null);
 
   const TMDB_API_KEY = '76e3744ab1806aa6becb288ebb3d1dc4';
+
+  // Effect to set the background image for the ::before pseudo-element
+  useEffect(() => {
+    if (posterContainerRef.current && movieDetails?.posterPath) {
+      const backgroundPosterUrl = `https://image.tmdb.org/t/p/w780${movieDetails.posterPath}`;
+      posterContainerRef.current.style.setProperty('--poster-bg-url', `url(${backgroundPosterUrl})`);
+    } else if (posterContainerRef.current) {
+      // Clear the property if no posterPath to prevent showing old image
+      posterContainerRef.current.style.removeProperty('--poster-bg-url');
+    }
+  }, [movieDetails?.posterPath]);
 
   useEffect(() => {
     if (movieDetails.type === 'tv') {
       fetchSeasons();
     }
-  }, [movieDetails.tmdb]);
+  }, [movieDetails.type, movieDetails.tmdb]); // Added movieDetails.type for safety
 
   useEffect(() => {
     if (movieDetails.type === 'tv' && selectedSeason) {
       fetchEpisodes();
     }
-  }, [selectedSeason]);
+  }, [selectedSeason, movieDetails.tmdb]); // Added movieDetails.tmdb for safety if modal reuses for different TV show
 
   const fetchSeasons = async () => {
     try {
@@ -61,21 +74,38 @@ const MovieDetailsModal = ({ movieDetails, onClose, onAddUrl }) => {
     }
   };
 
-  const handleWatchNow = () => {
+  const handleWatchNow = async () => {
+    setStreamError(null); // Clear previous error
+
+    let streamUrlToPlay;
+    let streamDetailsToPass;
+
     if (movieDetails.type === 'movie') {
-      onAddUrl(`https://vidsrc.xyz/embed/movie/${movieDetails.tmdb}`, movieDetails);
-    } else {
+      streamUrlToPlay = `https://vidsrc.xyz/embed/movie/${movieDetails.tmdb}`;
+      streamDetailsToPass = movieDetails;
+    } else { // TV Show
       const season = selectedSeason || 1;
       const episode = selectedEpisode || 1;
-      onAddUrl(
-        `https://vidsrc.xyz/embed/tv/${movieDetails.tmdb}/${season}-${episode}`,
-        {
-          ...movieDetails,
-          title: `${movieDetails.title} S${season.toString().padStart(2, '0')}E${episode.toString().padStart(2, '0')}`
-        }
-      );
+      streamUrlToPlay = `https://vidsrc.xyz/embed/tv/${movieDetails.tmdb}/${season}-${episode}`;
+      streamDetailsToPass = {
+        ...movieDetails,
+        title: `${movieDetails.title} S${season.toString().padStart(2, '0')}E${episode.toString().padStart(2, '0')}`
+      };
     }
-    onClose();
+
+    if (onPlayStream) {
+      // onPlayStream is App.js's handleStreamSelect, which is async and returns a boolean
+      const success = await onPlayStream(streamUrlToPlay, streamDetailsToPass);
+      if (success) {
+        onClose(); // Close modal only if stream was successfully processed
+      } else {
+        setStreamError('Stream not available for this selection. Please try another title or check back later.');
+      }
+    } else {
+      // Fallback or error if onPlayStream is not provided (should not happen in normal flow)
+      setStreamError('Playback function not available.');
+      console.error('onPlayStream prop is not defined in MovieDetailsModal');
+    }
   };
 
   return (
@@ -103,7 +133,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onAddUrl }) => {
           )}
           
           <div className="movie-content">
-            <div className="movie-poster">
+            <div className="movie-poster" ref={posterContainerRef}>
               <img 
                 src={`https://image.tmdb.org/t/p/w300${movieDetails.posterPath}`}
                 alt={movieDetails.title}
@@ -186,6 +216,11 @@ const MovieDetailsModal = ({ movieDetails, onClose, onAddUrl }) => {
                   Close
                 </button>
               </div>
+              {streamError && (
+                <div className="stream-error-message" style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
+                  {streamError}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -142,6 +142,74 @@
   margin: 0 auto;
 }
 
+/* Hero Section */
+.hero-section {
+  padding: 4rem 0 6rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(37, 129, 95, 0.1), rgba(86, 183, 122, 0.05));
+  border-radius: 16px;
+  margin-bottom: 4rem;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #9ca3af;
+  margin-bottom: 3rem;
+  line-height: 1.5;
+}
+
+.hero-search {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  padding: 1rem 2rem;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.hero-search:focus-within {
+  border-color: var(--color-viridian);
+  box-shadow: 0 0 0 4px rgba(37, 129, 95, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.hero-search svg {
+  color: #9ca3af;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.hero-search-input {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.1rem;
+  width: 100%;
+  outline: none;
+}
+
+.hero-search-input::placeholder {
+  color: #9ca3af;
+}
+
 /* Featured Section */
 .featured-section {
   margin-bottom: 3rem;
@@ -156,9 +224,9 @@
 
 .featured-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 1rem;
-  height: 400px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .featured-card {
@@ -168,15 +236,22 @@
   cursor: pointer;
   transition: all 0.3s ease;
   background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  height: 280px;
+  box-shadow: 0 8px 32px rgba(37, 129, 95, 0.15);
 }
 
 .featured-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(37, 129, 95, 0.3), 0 0 30px rgba(37, 129, 95, 0.2);
 }
 
-.featured-card.large {
-  grid-row: span 2;
+.featured-card:first-child {
+  box-shadow: 0 8px 32px rgba(37, 129, 95, 0.25), 0 0 20px rgba(37, 129, 95, 0.15);
+}
+
+.featured-card:first-child:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 25px 50px rgba(37, 129, 95, 0.4), 0 0 40px rgba(37, 129, 95, 0.3);
 }
 
 .featured-thumbnail {
@@ -198,6 +273,34 @@
   font-size: 2.5rem;
 }
 
+/* Match title overlay for featured cards */
+.match-title-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 2rem 1.5rem 1.5rem;
+  z-index: 4;
+  color: white;
+}
+
+.match-title-overlay h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.3rem 0;
+  line-height: 1.3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.match-title-overlay p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Live indicator positioning */
 .live-indicator {
   position: absolute;
   top: 12px;
@@ -210,6 +313,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  z-index: 5;
 }
 
 .featured-info {
@@ -256,6 +360,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   opacity: 0;
+  z-index: 6;
 }
 
 .featured-card:hover .play-btn {
@@ -318,6 +423,244 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* New overlay system for sport backgrounds with team badges */
+.sport-background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.sport-background-image.featured-background {
+  object-fit: cover;
+}
+
+.sport-gradient-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  z-index: 1;
+}
+
+.sport-gradient-fallback.featured-gradient-fallback {
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+}
+
+/* Poster overlays */
+.match-poster-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  opacity: 0.8;
+}
+
+.match-poster-overlay.featured-poster-overlay {
+  opacity: 0.9;
+}
+
+/* Team badge overlays */
+.team-badges-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.team-badges-overlay.featured-badges-overlay {
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+}
+
+.team-badge-overlay {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 2px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.2s ease;
+}
+
+.team-badge-overlay.featured-team-badge {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.team-badge-overlay:hover {
+  transform: scale(1.1);
+}
+
+.team-placeholder-overlay {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.team-placeholder-overlay.featured-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+}
+
+.team-placeholder-overlay .team-initial {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.team-placeholder-overlay.featured-placeholder .team-initial {
+  font-size: 1.4rem;
+}
+
+.vs-divider-overlay {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.vs-divider-overlay.featured-vs {
+  font-size: 0.9rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+/* Card thumbnail - default dark background for movies/TV */
+.card-thumbnail {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  background: #222;
+  display: flex;
+  align-items: bottom;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 0;
+}
+
+/* Blurred background for movie/TV cards */
+.card-blur-bg-side {
+  position: absolute;
+  top: 0;
+  left: 100px;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px) brightness(0.6);
+  opacity: 0.7;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Remove old .card-blur-bg overlay if present */
+.card-blur-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(32px) brightness(0.6);
+  transform: scale(1.15);
+  z-index: 1;
+}
+
+/* Sports/match cards keep their existing background/gradient styles */
+.content-card.match-card .card-thumbnail {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: #333;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  padding-bottom: 10px;
+}
+
+/* Only sports cards get the green gradient */
+.content-card.match-card .card-thumbnail,
+.content-card.match-card .card-thumbnail.match-thumbnail {
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+}
+
+/* Ensure movie/TV cards have dark background */
+.content-section:not([class*="sports"]) .card-thumbnail {
+  background: #333 !important;
+}
+
+/* Legacy team badge system (keep for backward compatibility) */
+.team-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.team-badge {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  transition: all 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.team-badge:hover {
+  transform: scale(1.05);
+}
+
+.vs-divider {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
 .card-thumbnail {
   position: relative;
   width: 100%;
@@ -359,6 +702,22 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.live-badge.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(222, 140, 58, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(222, 140, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(222, 140, 58, 0);
+  }
 }
 
 .card-overlay {
@@ -410,6 +769,7 @@
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -455,6 +815,628 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Sport Filter Section */
+.sport-filter-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sport-filter-container h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.sport-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.sport-filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  outline: none;
+}
+
+.sport-filter-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.sport-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.sport-filter-btn.active {
+  background: var(--color-viridian);
+  border-color: var(--color-viridian);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+}
+
+.sport-filter-btn.active:hover {
+  background: var(--color-emerald);
+  border-color: var(--color-emerald);
+  transform: translateY(-1px);
+}
+
+/* Enhanced match cards */
+.match-card .card-thumbnail {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: #333; /* Fallback color only */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.match-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sport-icon-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Team placeholders for missing badges */
+.team-placeholder {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.team-initial {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.team-placeholder.featured-placeholder {
+  width: 80px;
+  height: 80px;
+}
+
+.team-initial.featured-initial {
+  font-size: 1.8rem;
+}
+
+.team-placeholder:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Sport fallback image styling */
+.sport-fallback-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sport-fallback-image {
+  max-width: 80px;
+  max-height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: all 0.2s ease;
+}
+
+.sport-fallback-image.featured-sport-image {
+  max-width: 120px;
+  max-height: 120px;
+}
+
+.sport-fallback-image:hover {
+  transform: scale(1.05);
+}
+
+/* Sport icon fallback improvements */
+.sport-icon-fallback {
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Movie poster styles - centered with blurred background */
+.movie-poster {
+  position: absolute;
+  z-index: 2;
+  width: 50px;
+  height: 10%;
+  object-fit: contain;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border-radius: 8px;
+  background: transparent;
+  display: block;
+  margin-left: 8px;
+  margin-right: 0;
+  transition: all 0.3s ease;
+}
+
+.movie-poster:hover {
+  transform: scale(1.05);
+}
+
+
+
+.content-card:not(.match-card):nth-child(2n) .card-thumbnail::before {
+  display: none !important;
+}
+
+/* Featured movie posters - absolute positioning for full coverage */
+.featured-movie-poster {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.featured-movie-poster:hover {
+  transform: scale(1.02);
+}
+
+.featured-card {
+  position: relative;
+  overflow: hidden; /* Ensures content like scaled images respect border-radius */
+  border-radius: 12px; /* Match other cards if desired */
+}
+
+/* .featured-thumbnail is already defined around line 1035, ensure it fills the card */
+/* We might need to adjust its height or aspect ratio if it's not already set */
+
+.featured-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+  color: white;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+.featured-info h3 {
+  margin-top: 0; /* Adjust as needed */
+  margin-bottom: 0.25rem; /* Adjust as needed */
+  font-size: 1.1rem; /* Adjust as needed */
+  font-weight: 700;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.featured-info p {
+  margin-bottom: 0; /* Adjust as needed */
+  font-size: 0.85rem; /* Adjust as needed */
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Ensure movie cards have proper aspect ratio */
+.content-card .card-thumbnail {
+  height: 240px; /* Taller for movie posters */
+}
+
+.content-card .card-thumbnail img {
+  object-fit: contain; /* Fit entire poster by height for movie/tv cards */
+  object-position: bottom; /* Align poster to the bottom */
+  /* Optional: Add a background color to see the letterboxing/pillarboxing */
+  /* background-color: rgba(0, 0, 0, 0.1); */
+}
+
+/* Featured card sizing for movies/TV */
+.featured-card .featured-thumbnail {
+  background: #333; /* Fallback color */
+}
+
+/* Loading states for movie cards */
+.featured-card.loading .featured-thumbnail {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.featured-card.loading .featured-info {
+  padding: 1.5rem;
+}
+
+.featured-info .loading-text {
+  height: 20px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.featured-info .loading-text.short {
+  width: 60%;
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments for movie posters */
+@media (max-width: 768px) {
+  .content-card .card-thumbnail {
+    height: 200px;
+  }
+  
+  .featured-card {
+    height: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-card .card-thumbnail {
+    height: 180px;
+  }
+  
+  .featured-card {
+    height: 200px;
+  }
+}
+
+/* Image Loading Optimizations */
+.movie-poster,
+.featured-movie-poster,
+.sport-background-image,
+.team-badge-overlay,
+.match-poster-overlay {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+  loading: lazy;
+  will-change: transform;
+}
+
+/* Smooth image transitions */
+.movie-poster,
+.featured-movie-poster {
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.movie-poster.loaded,
+.featured-movie-poster.loaded {
+  opacity: 1;
+}
+
+/* Preload critical images */
+.preload-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Optimized card loading */
+.content-card.loading .card-thumbnail,
+.featured-card.loading .featured-thumbnail {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Reduce layout shift */
+.card-thumbnail,
+.featured-thumbnail {
+  min-height: 240px;
+  background-color: #333;
+}
+
+.featured-thumbnail {
+  min-height: 280px;
+}
+
+/* Cache status indicator (dev only) */
+.cache-indicator {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 9999;
+  display: none;
+}
+
+.cache-indicator.show {
+  display: block;
+}
+
+/* Movie Details Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #1a1a1a;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.movie-details {
+  position: relative;
+  min-height: 400px;
+}
+
+.movie-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px 12px 0 0;
+}
+
+.movie-content {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.movie-poster {
+  flex-shrink: 0;
+}
+
+.movie-poster img {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.movie-info {
+  flex: 1;
+  color: white;
+  margin-top: 100px;
+}
+
+.movie-info h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.movie-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.movie-meta .year {
+  color: #9ca3af;
+  font-size: 1.1rem;
+}
+
+.movie-meta .badge {
+  background: var(--color-viridian);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.overview {
+  color: #d1d5db;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.episode-selector {
+  margin-bottom: 2rem;
+}
+
+.selectors-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.selectors-container > div {
+  display: flex;
+  gap: 1rem;
+}
+
+.selectors-container .flex-1 {
+  flex: 1;
+}
+
+.selectors-container label {
+  display: block;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.selectors-container select {
+  width: 100%;
+  padding: 0.75rem;
+  background: #374151;
+  color: white;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+.selectors-container select:hover {
+  border-color: #6b7280;
+}
+
+.selectors-container select:focus {
+  outline: none;
+  border-color: var(--color-viridian);
+  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.watch-now-btn {
+  background: var(--color-viridian);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.watch-now-btn:hover {
+  background: var(--color-emerald);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+}
+
+.close-btn {
+  background: #374151;
+  color: #d1d5db;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #4b5563;
+  color: white;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.py-4 {
+  padding: 1rem 0;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.text-gray-400 {
+  color: #9ca3af;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+  .movie-content {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+  
+  .movie-info {
+    margin-top: 0;
+  }
+  
+  .movie-poster img {
+    width: 150px;
+    height: 225px;
+    margin: 0 auto;
+  }
+  
+  .selectors-container > div {
+    flex-direction: column;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
   }
 }
 
@@ -505,14 +1487,27 @@
   .search-container input {
     width: 200px;
   }
+  .hero-section {
+    padding: 3rem 0 4rem;
+    margin-bottom: 3rem;
+  }
+  .hero-title {
+    font-size: 2.2rem;
+  }
+  .hero-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  .hero-search {
+    padding: 0.8rem 1.5rem;
+    margin: 0 1rem;
+  }
   .featured-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: 250px 150px 150px;
-    height: auto;
     gap: 1rem;
   }
-  .featured-card.large {
-    grid-row: span 1;
+  .featured-card {
+    height: 200px;
   }
   .content-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -520,6 +1515,18 @@
   }
   .homepage-content {
     padding: 1rem;
+  }
+  
+  /* Sport filter mobile styling */
+  .sport-filter-section {
+    padding: 1rem 0;
+  }
+  .sport-filter-buttons {
+    gap: 0.5rem;
+  }
+  .sport-filter-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
   }
 }
 
@@ -534,10 +1541,38 @@
     width: 150px;
     font-size: 0.8rem;
   }
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+  .hero-search {
+    padding: 0.7rem 1rem;
+    margin: 0 0.5rem;
+  }
+  .hero-search-input {
+    font-size: 1rem;
+  }
   .content-grid {
     grid-template-columns: 1fr;
   }
   .featured-grid {
-    grid-template-rows: 200px 120px 120px;
+    gap: 0.5rem;
+  }
+  .featured-card {
+    height: 160px;
+  }
+  
+  /* Ultra mobile sport filter */
+  .sport-filter-container h2 {
+    font-size: 1.1rem;
+  }
+  .sport-filter-buttons {
+    gap: 0.4rem;
+  }
+  .sport-filter-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
   }
 }
