@@ -667,7 +667,7 @@ return (
             className="back-to-home-btn"
             onClick={handleReturnToHomepage}
           >
-            ← StreamBuddy
+            ← <img src="/logo.png" alt="StreamBuddy Logo" style={{ height: '24px', verticalAlign: 'middle' }} />
           </button>
         </div>
         

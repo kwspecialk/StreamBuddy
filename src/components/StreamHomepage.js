@@ -438,7 +438,7 @@ return (
     <header className="homepage-header">
       <div className="header-content">
         <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-          <h1>StreamBuddy</h1>
+          <h1><img src="/logo.png" alt="StreamBuddy Logo" style={{ height: '32px', verticalAlign: 'middle' }} /></h1>
         </div>
 
         <div className="header-right-group">
