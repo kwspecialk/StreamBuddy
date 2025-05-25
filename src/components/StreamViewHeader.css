@@ -7,7 +7,7 @@
   height: 60px;
   background: rgba(15, 15, 15, 0.95);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -43,9 +43,9 @@
 }
 
 .edit-streams-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid #f59e0b;
-  color: #f59e0b;
+  background: rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */
+  border: 1px solid #f59e0b; /* Orange accent - left as is */
+  color: #f59e0b; /* Orange accent - left as is */
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -75,7 +75,7 @@
 .add-stream-btn-header {
   background: var(--color-viridian);
   border: 1px solid var(--color-viridian);
-  color: white;
+  color: var(--color-platinum);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -109,8 +109,8 @@
 
 /* Header-specific layout selector styling */
 .stream-view-header .layout-controls .layout-toggle.enhanced {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
   color: var(--color-platinum);
   padding: 8px 12px;
   border-radius: 6px;
@@ -119,8 +119,8 @@
 }
 
 .stream-view-header .layout-controls .layout-toggle.enhanced:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
+  border-color: rgba(217, 220, 222, 0.3); /* --color-platinum with alpha */
   transform: translateY(-1px);
 }
 
@@ -201,9 +201,9 @@
 }
 
 .fullscreen-btn {
-  background: rgba(255, 255, 255, 0.08); /* Subtle background */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Neutral border */
-  color: #e5e7eb; /* Light gray icon color */
+  background: rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */ /* Subtle background */
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */ /* Neutral border */
+  color: var(--color-platinum); /* Light gray icon color */
   padding: 8px; /* Square padding for icon */
   border-radius: 6px;
   cursor: pointer;
@@ -215,15 +215,15 @@
 }
 
 .fullscreen-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff; /* Brighter icon on hover */
+  background: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
+  border-color: rgba(217, 220, 222, 0.3); /* --color-platinum with alpha */
+  color: var(--color-platinum); /* Brighter icon on hover */
 }
 
 .help-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #e5e7eb;
+  background: rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
+  color: var(--color-platinum);
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
@@ -237,9 +237,9 @@
 .help-btn:hover {
   background: var(--color-viridian);
   border-color: var(--color-viridian);
-  color: #fff;
+  color: var(--color-platinum);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3); /* var(--color-viridian-rgb) with alpha */
 }
 
 /* Ensure consistent sizing for icons within header buttons if needed */

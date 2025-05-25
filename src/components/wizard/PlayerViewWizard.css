@@ -37,7 +37,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.65); /* Matches QuickstartWizard */
   pointer-events: none; /* Allow clicks to pass through */
   transition: background 0.3s ease-out;
 }
@@ -153,7 +153,7 @@
   border-radius: 16px;
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 0 0 1px rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
   overflow: hidden;
   backdrop-filter: blur(20px);
 }
@@ -183,8 +183,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(37, 129, 95, 0.1);
+  border-bottom: 1px solid rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
+  background: rgba(37, 129, 95, 0.1); /* Matches QuickstartWizard */
 }
 
 .wizard-step-info {
@@ -210,26 +210,45 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  background: rgba(217, 220, 222, 0.3); /* --color-platinum with alpha, matches QuickstartWizard */
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Matches QuickstartWizard */
 }
 
-.progress-dot.active {
+.progress-dot.active { /* This will be like 'current' in Quickstart */
   background: var(--color-emerald);
-  transform: scale(1.2);
+  transform: scale(1.3); /* Matches QuickstartWizard .current */
+  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.3); /* Matches QuickstartWizard .current */
 }
 
 .progress-dot.completed {
-  background: var(--color-emerald-dark);
-  opacity: 0.7;
+  background: #4ade80; /* Lighter green from QuickstartWizard */
+  transform: scale(1.2); /* Matches QuickstartWizard */
+  animation: completedPulse 1s ease-out; /* Matches QuickstartWizard */
+}
+
+/* Keyframes for completedPulse needs to be added if not already present from QuickstartWizard.css (assuming it's global or imported) */
+@keyframes completedPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  }
+  70% {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+  }
+  100% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
 }
 
 .wizard-close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 8px;
-  border-radius: 50%;
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
+  color: var(--color-platinum);
+  width: 36px; /* Matches QuickstartWizard */
+  height: 36px; /* Matches QuickstartWizard */
+  border-radius: 8px; /* Matches QuickstartWizard */
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -238,30 +257,30 @@
 }
 
 .wizard-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  transform: rotate(90deg);
+  background: rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
+  color: var(--color-platinum);
+  transform: scale(1.05); /* Matches QuickstartWizard */
 }
 
 /* Body */
 .wizard-body {
   padding: 24px;
-  color: #e0e0e0;
+  color: var(--color-platinum); /* Standardized */
 }
 
 .wizard-body h3 {
-  font-size: 1.6rem;
+  font-size: 1.4rem; /* Matches QuickstartWizard */
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 12px;
+  color: var(--color-platinum); /* Standardized */
+  margin: 0 0 12px 0; /* Matches QuickstartWizard */
   line-height: 1.3;
 }
 
 .wizard-body p {
-  font-size: 1rem;
+  font-size: 1rem; /* Matches QuickstartWizard */
   line-height: 1.6;
-  margin-bottom: 20px;
-  color: #b0b0b0;
+  margin: 0 0 20px 0; /* Matches QuickstartWizard */
+  color: #9ca3af; /* Standardized muted text */
 }
 
 /* Final Step (Pro Tips) Specific Styles */
@@ -281,7 +300,7 @@
 }
 
 .tip-item {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(217, 220, 222, 0.05); /* --color-platinum with alpha */
   padding: 16px;
   border-radius: 12px;
   display: flex;
@@ -291,7 +310,7 @@
 }
 
 .tip-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
 }
 
 .tip-icon {
@@ -300,21 +319,21 @@
   margin-top: 3px; /* Align icon better with text */
 }
 .disclaimer-icon {
-  color: #e4c125;
+  color: #e4c125; /* Specific accent, kept as is */
   flex-shrink: 0;
   margin-top: 3px; /* Align icon better with text */
 }
 .tip-item strong {
   display: block;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-platinum); /* Standardized */
   font-size: 1rem;
   margin-bottom: 4px;
 }
 
 .tip-item p {
   font-size: 0.9rem;
-  color: #b0b0b0;
+  color: #9ca3af; /* Standardized muted text */
   line-height: 1.5;
   margin-bottom: 0;
 }
@@ -327,7 +346,7 @@
   padding: 12px;
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #999;
+  color: #9ca3af; /* Standardized muted text */
 }
 
 .wizard-disclaimer svg {
@@ -344,110 +363,86 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  gap: 8px; /* Reduced gap between footer buttons */
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 20px; /* Matches QuickstartWizard */
+  background: rgba(0, 0, 0, 0.2); /* Matches QuickstartWizard */
+  gap: 12px; /* Matches QuickstartWizard wizard-nav-buttons */
+  border-top: 1px solid rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
 }
 
-.wizard-btn {
-  border: none;
-  background: none;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
+/* Removing .wizard-btn as QuickstartWizard uses .wizard-nav-btn directly with types */
 
 .wizard-nav-btn {
-  /* Base styles from .wizard-btn */
-  padding: 12px 20px;
-  font-size: 1rem;
+  border: none;
   font-weight: 600;
-  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
+  justify-content: center; /* Ensure text/icon centered */
   gap: 8px;
   white-space: nowrap;
+  min-height: 36px; /* Adapted from Quickstart .wizard-btn min-height: 44px, for footer context */
+  padding: 8px 12px; /* Matches QuickstartWizard .wizard-footer .wizard-nav-btn */
+  font-size: 0.9rem; /* Matches QuickstartWizard .wizard-footer .wizard-nav-btn */
+  border-radius: 8px; /* Matches QuickstartWizard .wizard-btn */
 }
 
-/* Specific overrides for nav buttons in footer for steps 1-5 tooltips */
-.wizard-footer .wizard-nav-btn {
-  padding: 8px 12px !important; /* Reduced padding */
-  font-size: 0.9rem !important; /* Reduced font size */
+/* Primary button style (for .next, .finish) */
+.wizard-nav-btn.next,
+.wizard-nav-btn.finish {
+  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  color: var(--color-platinum);
+  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
 }
 
-/* Base and Hover states for navigation buttons */
-.wizard-nav-btn.prev {
-  background-color: rgba(70, 70, 70, 0.8); /* Darker base for prev */
-  color: #fff;
-}
-
-.wizard-nav-btn.next {
-  background-color: #007bff; /* Primary action color for next */
-  color: #fff;
-}
-
-.wizard-nav-btn.skip-tour {
-  background-color: rgba(100, 100, 100, 0.7); /* Neutral base for skip */
-  color: #ddd;
-}
-
-.wizard-nav-btn.prev:hover {
-  background-color: rgba(90, 90, 90, 0.9); /* Slightly lighter hover for prev */
-  color: #fff;
-}
-
-.wizard-nav-btn.next:hover {
+.wizard-nav-btn.next:hover,
+.wizard-nav-btn.finish:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(37, 129, 95, 0.4);
 }
 
-.wizard-nav-btn.skip-tour:hover {
-  background-color: rgba(120, 120, 120, 0.8); /* Slightly lighter hover for skip */
-  color: #fff;
+/* Secondary button style (for .prev) */
+.wizard-nav-btn.prev {
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
+  color: var(--color-platinum);
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
 }
 
+.wizard-nav-btn.prev:hover {
+  background: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
+  transform: translateY(-1px);
+}
+
+/* Tertiary button style (for .skip-tour) */
 .wizard-nav-btn.skip-tour {
   background: transparent;
-  color: #a0a0a0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #aaaaaa; /* Matches QuickstartWizard .wizard-btn.tertiary */
+  border: 1px solid rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
 }
 
 .wizard-nav-btn.skip-tour:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.wizard-nav-btn.next {
-  background: var(--color-emerald);
-  color: #0a1a13; /* Dark text for contrast on bright green */
-}
-
-.wizard-nav-btn.next:hover {
-  background: var(--color-emerald-light);
-}
-
-.wizard-nav-btn.finish {
-  background: var(--color-blue-accent);
-  color: #fff;
-}
-
-.wizard-nav-btn.finish:hover {
-  background: var(--color-blue-accent-hover);
+  color: var(--color-platinum);
+  background: rgba(217, 220, 222, 0.05); /* --color-platinum with alpha */
 }
 
 .wizard-nav-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none; /* Prevent hover/active transforms */
+  box-shadow: none; /* Prevent hover/active shadows */
 }
 
-.wizard-nav-btn:active {
+.wizard-nav-btn:not(:disabled):active { /* Apply active state only if not disabled */
   transform: scale(0.98);
 }
+
+/* Remove old specific styles that are now covered by the above */
+/* .wizard-footer .wizard-nav-btn - already applied to .wizard-nav-btn directly */
+/* .wizard-nav-btn.prev specific background/color - now covered by secondary style */
+/* .wizard-nav-btn.next specific background/color - now covered by primary style */
+/* .wizard-nav-btn.skip-tour specific background/color/border - now covered by tertiary style */
+/* .wizard-nav-btn.finish specific background/color - now covered by primary style */
+/* Hover states for above - now covered */
 
 /* Arrow pointer for tooltip */
 .wizard-arrow {
@@ -459,7 +454,7 @@
 
 .wizard-arrow.top, .wizard-arrow.top-left, .wizard-arrow.top-right {
   border-width: 12px 12px 0 12px;
-  border-color: #2a2a2a transparent transparent transparent;
+  border-color: var(--color-dark-surface) transparent transparent transparent; /* Use variable, #2a2a2a */
   bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
@@ -469,7 +464,7 @@
 
 .wizard-arrow.bottom, .wizard-arrow.bottom-left, .wizard-arrow.bottom-right {
   border-width: 0 12px 12px 12px;
-  border-color: transparent transparent #1e1e1e transparent;
+  border-color: transparent transparent var(--color-dark-bg) transparent; /* Use variable, #1e1e1e */
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
@@ -479,7 +474,7 @@
 
 .wizard-arrow.left {
   border-width: 12px 0 12px 12px;
-  border-color: transparent transparent transparent #2a2a2a;
+  border-color: transparent transparent transparent var(--color-dark-surface); /* Use variable, #2a2a2a */
   right: -12px;
   top: 50%;
   transform: translateY(-50%);
@@ -487,7 +482,7 @@
 
 .wizard-arrow.right {
   border-width: 12px 12px 12px 0;
-  border-color: transparent #1e1e1e transparent transparent;
+  border-color: transparent var(--color-dark-bg) transparent transparent; /* Use variable, #1e1e1e */
   left: -12px;
   top: 50%;
   transform: translateY(-50%);

@@ -40,7 +40,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6); /* Lighter background */
+  background: rgba(0, 0, 0, 0.65); /* Changed opacity */
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -86,8 +86,8 @@
 .browser-modal-header {
   padding: 24px 30px 20px;
   background: rgba(15, 15, 15, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  border-bottom: 1px solid rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
+  color: var(--color-platinum);
   display: flex;
   justify-content: space-between;
   align-items: center; /* Vertically center header-left and close button */
@@ -107,21 +107,21 @@
 }
 
 .modal-icon-close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
   border-radius: 8px;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--color-platinum);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .modal-icon-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
   transform: translateY(-1px);
 }
 
@@ -155,12 +155,12 @@
 }
 
 .nav-btn.active {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1); /* Match homepage active tab */
+  color: var(--color-platinum);
+  background-color: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */ /* Match homepage active tab */
 }
 
 .nav-btn:hover:not(.active) {
-  color: white; /* Match homepage hover */
+  color: var(--color-platinum); /* Match homepage hover */
 }
 
 .stream-browser-modal .search-container {
@@ -173,13 +173,13 @@
 .stream-browser-modal .search-container svg {
   position: absolute;
   left: 12px;
-  color: #6b7280;
+  color: var(--color-grey);
   z-index: 1;
 }
 
 .stream-browser-modal .search-container input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(217, 220, 222, 0.05); /* --color-platinum with alpha */
+  border: 1px solid rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
   border-radius: 8px;
   padding: 10px 12px 10px 40px;
   color: var(--color-platinum);
@@ -189,14 +189,14 @@
 }
 
 .stream-browser-modal .search-container input::placeholder {
-  color: #6b7280;
+  color: var(--color-grey);
 }
 
 .stream-browser-modal .search-container input:focus {
   outline: none;
   border-color: var(--color-viridian);
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
-  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1); /* var(--color-viridian-rgb) with alpha */
+  background: rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */
 }
 
 /* Content */
@@ -213,8 +213,8 @@
 }
 
 .browser-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(217, 220, 222, 0.03); /* --color-platinum with alpha */
+  border: 1px solid rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
@@ -225,7 +225,7 @@
 .browser-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
 }
 
 .browser-card.selected {
@@ -267,7 +267,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(217, 220, 222, 0.7); /* --color-platinum with alpha */
 }
 
 .sport-icon {
@@ -280,7 +280,7 @@
   top: 8px;
   left: 8px;
   background: var(--color-butterscotch);
-  color: white;
+  color: var(--color-platinum);
   padding: 2px 6px;
   border-radius: 8px;
   font-size: 0.7rem;
@@ -328,10 +328,10 @@
 }
 
 .add-button {
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
+  border: 2px solid rgba(217, 220, 222, 0.8); /* --color-platinum with alpha */
   border-radius: 8px;
-  color: white;
+  color: var(--color-platinum);
   padding: 8px 12px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -343,7 +343,7 @@
 }
 
 .add-button:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(217, 220, 222, 0.25); /* --color-platinum with alpha */
   transform: scale(1.05);
 }
 
@@ -352,7 +352,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  color: white;
+  color: var(--color-platinum);
   animation: addedFadeIn 0.3s ease-out;
 }
 
@@ -379,7 +379,7 @@
   font-weight: bold;
   animation: checkmarkBounce 0.6s ease-out;
   box-shadow: 0 4px 12px rgba(86, 183, 122, 0.4);
-  color: white; /* Ensure text is white */
+  color: var(--color-platinum); /* Ensure text is white */
   z-index: 11; /* Above overlay */
 }
 
@@ -456,9 +456,9 @@
 .loading-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 100%
+    rgba(217, 220, 222, 0.03) 0%, /* --color-platinum with alpha */
+    rgba(217, 220, 222, 0.08) 50%, /* --color-platinum with alpha */
+    rgba(217, 220, 222, 0.03) 100% /* --color-platinum with alpha */
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -495,9 +495,9 @@
 }
 
 .add-custom-stream-btn {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
   color: var(--color-platinum);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
   padding: 8px 15px;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -510,8 +510,8 @@
 }
 
 .add-custom-stream-btn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
+  border-color: rgba(217, 220, 222, 0.3); /* --color-platinum with alpha */
   transform: translateY(-1px);
 }
 
@@ -521,7 +521,7 @@
 
 .footer-tip {
   font-size: 0.8rem;
-  color: #888;
+  color: var(--color-grey); /* Changed from #888 */
   text-align: right;
   flex-grow: 1;
   margin-left: 20px;
@@ -557,12 +557,12 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0 0 8px 0;
-  color: #fff;
+  color: var(--color-platinum); /* Changed from #fff */
 }
 
 .custom-stream-popup p {
   font-size: 0.9rem;
-  color: #aaa;
+  color: #9ca3af; /* Changed from #aaa to #9ca3af */
   margin-bottom: 20px;
 }
 
@@ -570,8 +570,8 @@
   width: 100%;
   padding: 12px 15px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
+  background-color: rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */
   color: var(--color-platinum);
   font-size: 1rem;
   margin-bottom: 25px;
@@ -579,13 +579,13 @@
 }
 
 .custom-stream-popup input[type="text"]::placeholder {
-  color: #666;
+  color: var(--color-grey); /* Changed from #666 */
 }
 
 .custom-stream-popup input[type="text"]:focus {
   outline: none;
   border-color: var(--color-viridian);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
 }
 
 .custom-stream-popup .popup-actions {
@@ -605,21 +605,21 @@
 }
 
 .custom-stream-popup .cancel-btn {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
   color: var(--color-platinum);
 }
 
 .custom-stream-popup .cancel-btn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(217, 220, 222, 0.15); /* --color-platinum with alpha */
 }
 
 .custom-stream-popup .save-btn {
   background-color: var(--color-viridian);
-  color: white;
+  color: var(--color-platinum); /* Changed from white */
 }
 
 .custom-stream-popup .save-btn:hover {
-  background-color: #2db478; /* Slightly lighter viridian */
+  background-color: var(--color-emerald); /* Changed from #2db478 */
 }
 
 .custom-stream-popup .popup-btn:active {
@@ -648,8 +648,8 @@
 /* Footer */
 .browser-modal-footer {
   padding: 16px 30px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(217, 220, 222, 0.08); /* --color-platinum with alpha */
+  background: rgba(217, 220, 222, 0.02); /* --color-platinum with alpha */
 }
 
 .footer-tip {
@@ -665,7 +665,7 @@
 }
 
 .browser-modal-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(217, 220, 222, 0.05); /* --color-platinum with alpha */
 }
 
 .browser-modal-content::-webkit-scrollbar-thumb {
@@ -815,7 +815,7 @@
   width: 40px;
   height: 40px;
   object-fit: contain;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
   border-radius: 6px;
   padding: 2px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
@@ -829,28 +829,28 @@
 .team-placeholder-overlay {
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(217, 220, 222, 0.2); /* --color-platinum with alpha */
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(217, 220, 222, 0.3); /* --color-platinum with alpha */
 }
 
 .team-placeholder-overlay .team-initial {
   font-size: 1rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(217, 220, 222, 0.9); /* --color-platinum with alpha */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .vs-divider-overlay {
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(217, 220, 222, 0.95); /* --color-platinum with alpha */
   font-weight: 700;
   font-size: 0.75rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(217, 220, 222, 0.1); /* --color-platinum with alpha */
   padding: 4px 6px;
   border-radius: 4px;
   backdrop-filter: blur(10px);
@@ -862,7 +862,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(217, 220, 222, 0.7); /* --color-platinum with alpha */
   font-size: 3rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
