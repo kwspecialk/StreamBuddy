@@ -13,11 +13,17 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
 
   const TMDB_API_KEY = '76e3744ab1806aa6becb288ebb3d1dc4';
 
-  // Effect to set the background image for the ::before pseudo-element
+  // Effect to set the background image for both poster and backdrop
   useEffect(() => {
     if (posterContainerRef.current && movieDetails?.posterPath) {
       const backgroundPosterUrl = `https://image.tmdb.org/t/p/w780${movieDetails.posterPath}`;
       posterContainerRef.current.style.setProperty('--poster-bg-url', `url(${backgroundPosterUrl})`);
+      
+      // Also set backdrop image
+      const backdropElement = document.querySelector('.movie-backdrop');
+      if (backdropElement) {
+        backdropElement.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url(https://image.tmdb.org/t/p/w1280${movieDetails.posterPath})`;
+      }
     } else if (posterContainerRef.current) {
       // Clear the property if no posterPath to prevent showing old image
       posterContainerRef.current.style.removeProperty('--poster-bg-url');
@@ -128,17 +134,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
       >
         <div className="movie-details">
           {movieDetails.posterPath && (
-            <div className="movie-backdrop" style={{
-              backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url(https://image.tmdb.org/t/p/w1280${movieDetails.posterPath})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '300px',
-              zIndex: 0
-            }}/>
+            <div className="movie-backdrop" />
           )}
           
           <div className="movie-content">
@@ -166,10 +162,10 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                     ) : error ? (
                       <div className="text-red-500 text-center py-4">{error}</div>
                     ) : (
-                      <div className="selectors-container">
-                        <div className="flex space-x-4">
-                          <div className="flex-1">
-                            <label className="block text-gray-400 mb-2">Season</label>
+                      <div className="selectors-wrapper">
+                        <div className="selectors-container">
+                          <div className="selector-group season">
+                            <label>Season</label>
                             <select
                               value={selectedSeason}
                               onChange={(e) => setSelectedSeason(Number(e.target.value))}
@@ -182,8 +178,8 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                               ))}
                             </select>
                           </div>
-                          <div className="flex-1">
-                            <label className="block text-gray-400 mb-2">Episode</label>
+                          <div className="selector-group episode">
+                            <label>Episode</label>
                             <select
                               value={selectedEpisode || ''}
                               onChange={(e) => setSelectedEpisode(Number(e.target.value))}
@@ -202,7 +198,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                           </div>
                         </div>
                         {selectedEpisode && episodes.find(ep => ep.episode_number === selectedEpisode)?.overview && (
-                          <div className="mt-4 text-gray-400 text-sm">
+                          <div className="episode-description">
                             {episodes.find(ep => ep.episode_number === selectedEpisode).overview}
                           </div>
                         )}

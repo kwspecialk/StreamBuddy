@@ -31,6 +31,16 @@
   transition: background 0.3s ease-out;
 }
 
+/* Lighter backdrop when wizard is at top to let users interact with content */
+.wizard-backdrop.top-position {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Even lighter backdrop for top-left filter step */
+.wizard-backdrop.top-left-position {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 /* Faded backdrop for intermediate phase */
 .wizard-backdrop.faded {
   background: rgba(0, 0, 0, 0.25);
@@ -386,6 +396,13 @@
   border-left: none;
 }
 
+.wizard-tooltip.top-left .wizard-arrow {
+  bottom: -24px;
+  left: 32px;
+  border-top-color: #2a2a2a;
+  border-bottom: none;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .wizard-tooltip {
@@ -492,6 +509,26 @@
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
   max-width: 500px;
+}
+
+/* Special handling for top-positioned tooltips (after search) */
+.wizard-tooltip.top {
+  position: fixed !important;
+  top: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  max-width: 500px;
+  z-index: 10003; /* Higher than other tooltips to stay above content */
+}
+
+/* Special handling for top-left positioned tooltips (filter step) */
+.wizard-tooltip.top-left {
+  position: fixed !important;
+  top: 20px !important;
+  left: 20px !important;
+  transform: none !important;
+  max-width: 400px;
+  z-index: 10003;
 }
 
 /* Enhanced styling for the welcome step */

@@ -3,6 +3,15 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
   color: #ffffff;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.stream-homepage::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* Header */
@@ -196,6 +205,14 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.homepage-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* Hero Section */
@@ -1301,10 +1318,10 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 300px;
+  height: 800px;
   background-size: cover;
   background-position: center;
-  border-radius: 12px 12px 0 0;
+  border-radius: var(--border-radius-md)
 }
 
 .movie-content {
@@ -1355,32 +1372,27 @@
 .movie-meta .badge {
   background: var(--color-s);
   color: white;
-  padding: 4px 12px;
+  padding: 2px 6px;
   border-radius: 16px;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 .overview {
   color: #d1d5db;
   line-height: 1.6;
-  margin-bottom: 2rem;
+  margin-bottom: .5rem;
+  margin-top: 3rem;
   font-size: 1rem;
-}
-
-.episode-selector {
-  margin-bottom: 2rem;
 }
 
 .selectors-container {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex-direction: row;
 }
 
 .selectors-container > div {
   display: flex;
-  gap: 1rem;
 }
 
 .selectors-container .flex-1 {
@@ -1396,11 +1408,11 @@
 
 .selectors-container select {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.5rem;
   background: #374151;
   color: white;
   border: 1px solid #4b5563;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.9rem;
   transition: border-color 0.2s ease;
 }
@@ -1411,7 +1423,7 @@
 
 .selectors-container select:focus {
   outline: none;
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
   box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
 }
 
@@ -1427,7 +1439,7 @@
   color: white;
   border: none;
   padding: 0.75rem 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -1446,7 +1458,7 @@
   color: #d1d5db;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;

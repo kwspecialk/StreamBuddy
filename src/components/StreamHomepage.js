@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, User, Play, ArrowLeft, Maximize, Minimize, HelpCircle } from 'lucide-react';
+import { Search, User, Play, ArrowLeft, Maximize, Minimize, HelpCircle, Radio, ClapperboardIcon, TvIcon } from 'lucide-react';
 import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
@@ -543,7 +543,9 @@ return (
             {matches && matches.length > 0 && (
               <section className="content-section">
                 <div className="section-header">
-                  <h2>🔴 Live Now</h2>
+                  <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Radio size={24} /> Live Now
+                  </h2>
                   <button 
                     className="see-all-btn"
                     onClick={() => setActiveCategory('live-sports')}
@@ -656,7 +658,9 @@ return (
             {/* Featured Movies */}
             <section className="content-section">
               <div className="section-header">
-                <h2>🎬 Featured Movies</h2>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ClapperboardIcon size={24} /> Featured Movies
+                </h2>
                 <button 
                   className="see-all-btn"
                   onClick={() => setActiveCategory('movies')}
@@ -711,7 +715,9 @@ return (
             {/* Featured TV Shows */}
             <section className="content-section">
               <div className="section-header">
-                <h2>📺 Popular TV Shows</h2>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TvIcon size={24} /> Featured Shows
+                  </h2>
                 <button 
                   className="see-all-btn"
                   onClick={() => setActiveCategory('tv-shows')}

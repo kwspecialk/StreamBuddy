@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ArrowRight, ArrowLeft, Play, Settings, Maximize, Search, Plus, Eye, Shield, MousePointer, Zap } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Play } from 'lucide-react';
 import './QuickstartWizard.css';
 
 const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpen }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isVisible, setIsVisible] = useState(false);
   const [showTooltip, setShowTooltip] = useState(null);
+  const [userHasSearched, setUserHasSearched] = useState(false);
+  const [showFilterStep, setShowFilterStep] = useState(false);
   const overlayRef = useRef(null);
-  const tooltipRef = useRef(null); // Added definition
+  const tooltipRef = useRef(null);
   const [stepCompleted, setStepCompleted] = useState({});
   const prevCurrentViewRef = useRef(currentView);
-  const [searchInputActive, setSearchInputActive] = useState(false);
-  const [searchInputTimer, setSearchInputTimer] = useState(null);
-  const [intermediatePhase, setIntermediatePhase] = useState(0); // 0: initial, 1: filter highlight, 2: select content
 
-  const totalSteps = 2;
+  const totalSteps = 6;
 
   // Auto-advance for Step 2 (Search & Add Content) if user navigates to stream view
   // This might now just close this wizard, and App.js will handle showing PlayerViewWizard.
@@ -31,92 +30,68 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
 
   // Monitor search input activity
   useEffect(() => {
-    // Add event listeners to search inputs when on step 2
     if (isOpen && currentStep === 2) {
-      const searchInputs = document.querySelectorAll('.search-container input, .hero-search-container input');
+      const searchInputs = document.querySelectorAll('.search-container input, .hero-search input, .persistent-search-input');
       
-      const handleSearchFocus = () => {
-        setSearchInputActive(true);
-        setIntermediatePhase(0); // Reset to initial phase
-        
-        // Clear any existing timer
-        if (searchInputTimer) {
-          clearTimeout(searchInputTimer);
-        }
-      };
-      
-      const handleSearchInput = () => {
-        setSearchInputActive(true);
-        setIntermediatePhase(0); // Reset to initial phase
-        
-        // Clear any existing timer
-        if (searchInputTimer) {
-          clearTimeout(searchInputTimer);
-        }
-        
-        // Set a new timer to show first intermediate phase after 750ms of inactivity
-        const timer = setTimeout(() => {
-          setIntermediatePhase(1); // Show filter highlight phase
-          
-          // After 3 seconds, advance to the content selection phase
+      const handleSearchInput = (e) => {
+        // If user types anything, mark as searched
+        if (e.target.value.trim().length > 0) {
+          setUserHasSearched(true);
+          // After 2 seconds, show the filter step
           setTimeout(() => {
-            setIntermediatePhase(2); // Show select content phase
-          }, 3000);
-        }, 750);
-        
-        setSearchInputTimer(timer);
+            setShowFilterStep(true);
+            // After 3 seconds, hide filter step and return to content selection
+            setTimeout(() => {
+              setShowFilterStep(false);
+            }, 4000);
+          }, 2000);
+        } else {
+          setUserHasSearched(false);
+          setShowFilterStep(false);
+        }
       };
       
       searchInputs.forEach(input => {
-        input.addEventListener('focus', handleSearchFocus);
         input.addEventListener('input', handleSearchInput);
+        // Check current value on mount
+        if (input.value.trim().length > 0) {
+          setUserHasSearched(true);
+        }
       });
       
       return () => {
-        // Clean up event listeners
         searchInputs.forEach(input => {
-          input.removeEventListener('focus', handleSearchFocus);
           input.removeEventListener('input', handleSearchInput);
         });
-        
-        if (searchInputTimer) {
-          clearTimeout(searchInputTimer);
-        }
       };
     }
-  }, [isOpen, currentStep, searchInputTimer]);
+  }, [isOpen, currentStep]);
 
-  // Steps configuration
+  // Steps configuration - only steps 1-2 (steps 3-6 handled elsewhere)
   const steps = [
     {
       id: 1,
       title: "Welcome to StreamBuddy!",
-      content: "Let's get you started with a quick tour of the main features.",
+      content: "Let's get you started with a quick 2-minute tour of the most important features.",
       highlight: null,
       position: "center"
     },
     {
       id: 2,
-      title: intermediatePhase === 0 
-        ? "Search & Add Content" 
-        : (intermediatePhase === 1 ? "Filter Content" : "Select Content"),
-      content: intermediatePhase === 0
-        ? "Start by searching for sports events, movies, or TV shows. Use the search bar to find what you want to watch."
-        : (intermediatePhase === 1
-          ? "You can filter by Sports, Movies, or TV Shows using these category tabs."
-          : (isMovieDetailsModalOpen 
-            ? "Click 'Watch Now' to add this to your player. This will take you to the player view!"
-            : "Select any content to start watching. Click on a card to view details or play directly.")),
-      highlight: intermediatePhase === 0
-        ? (currentView === 'homepage' ? '.search-container, .hero-search' : '.add-stream-btn-header') // .add-stream-btn-header might not be relevant if wizard closes before non-homepage view
-        : (intermediatePhase === 1
-          ? '.main-nav-bar .nav-bar-btn' // Highlight all category tabs
-          : null), // No highlight for Phase 2 (Select Content)
-      position: intermediatePhase === 0
-        ? (currentView === 'homepage' ? "bottom" : "bottom-left")
-        : (intermediatePhase === 1 
-          ? "bottom-right" 
-          : (isMovieDetailsModalOpen ? "bottom" : "bottom"))
+      title: showFilterStep ? "Filter your search" : (userHasSearched ? "Great! Now select content" : "Search & Add Content"),
+      content: showFilterStep 
+        ? "Click on Sports, Movies, or TV Shows to filter your search results and find exactly what you're looking for."
+        : (userHasSearched 
+          ? "Click on any content card to view details and add it to your player."
+          : "Start by searching for sports events, movies, or TV shows. Use the search bar or browse categories to find what you want to watch."),
+      highlight: showFilterStep
+        ? '.nav__item' // Highlight category navigation tabs
+        : (userHasSearched 
+          ? null // Don't highlight anything once user has searched (unless showing filter step)
+          : (currentView === 'homepage' ? '.hero-search' : '.add-stream-btn-header')),
+      position: showFilterStep
+        ? "top-left" // Top left for filter step
+        : (userHasSearched ? "top" : (currentView === 'homepage' ? "bottom" : "bottom-left"))
     }
   ];
 
@@ -144,12 +119,10 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
       // Detect view transitions
       if (prevCurrentViewRef.current !== currentView) {
         console.log('View changed from', prevCurrentViewRef.current, 'to', currentView);
-        // Reset intermediate phase when view changes
-        setIntermediatePhase(0);
         
-        // Auto-advance to step 3 when transitioning from homepage to stream-view
+        // Auto-advance to completion when transitioning from homepage to stream-view
         if (prevCurrentViewRef.current === 'homepage' && currentView === 'stream-view' && currentStep === 2) {
-          console.log('Auto-advancing to step 3 after content selection');
+          console.log('User navigated to stream view after step 2, advancing to step 3');
           setStepCompleted(prev => ({ ...prev, 2: true }));
           setTimeout(() => setCurrentStep(3), 500);
         }
@@ -168,11 +141,12 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
   }, [isOpen, currentView, currentStep]);
 
   const handleNext = () => {
-    if (currentStep < totalSteps) { // totalSteps is now 2
+    if (currentStep < 2) {
       // Mark current step as completed when manually advancing
       setStepCompleted(prev => ({ ...prev, [currentStep]: true }));
       setCurrentStep(currentStep + 1);
     } else {
+      // Step 2 completed - close this wizard (other wizard will handle steps 3-6)
       handleFinish();
     }
   };
@@ -185,6 +159,11 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
         delete updated[currentStep - 1];
         return updated;
       });
+      // Reset search state when going back to step 1
+      if (currentStep === 2) {
+        setUserHasSearched(false);
+        setShowFilterStep(false);
+      }
       setCurrentStep(currentStep - 1);
     }
   };
@@ -192,11 +171,17 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
   const handleFinish = () => {
     // Mark wizard as completed
     localStorage.setItem('streambuddy_quickstart_completed', 'true');
+    // Reset search state
+    setUserHasSearched(false);
+    setShowFilterStep(false);
     onClose();
   };
 
   const handleSkip = () => {
     localStorage.setItem('streambuddy_quickstart_completed', 'true');
+    // Reset search state
+    setUserHasSearched(false);
+    setShowFilterStep(false);
     onClose();
   };
 
@@ -281,10 +266,10 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
 
 
   return (
-    <div className={`quickstart-wizard-overlay ${intermediatePhase > 0 ? 'intermediate-phase' : ''} ${intermediatePhase === 2 ? 'content-phase' : ''}`} ref={overlayRef}>
+    <div className={`quickstart-wizard-overlay`} ref={overlayRef}>
       {/* Backdrop with highlight cutout */}
       <div 
-        className={`wizard-backdrop ${intermediatePhase > 0 ? 'faded' : ''}`}
+        className={`wizard-backdrop ${showFilterStep ? 'top-left-position' : (userHasSearched ? 'top-position' : '')}`}
         onClick={(e) => {
           // Only close if clicking directly on the backdrop (not on children)
           if (e.target === e.currentTarget) {
@@ -314,9 +299,9 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
         <div className="wizard-content">
           <div className="wizard-header">
             <div className="wizard-step-info">
-              <span className="wizard-step-number">Step {currentStep} of {6}</span>
+              <span className="wizard-step-number">Step {currentStep} of {totalSteps}</span>
               <div className="wizard-progress-dots">
-                {Array.from({ length: 6 }, (_, i) => (
+                {Array.from({ length: totalSteps }, (_, i) => (
                   <div 
                     key={i} 
                     className={`progress-dot ${i + 1 === currentStep ? 'current' : ''} ${stepCompleted[i + 1] ? 'completed' : ''} ${i + 1 < currentStep ? 'active' : ''}`}
@@ -324,7 +309,11 @@ const QuickstartWizard = ({ isOpen, onClose, currentView, isMovieDetailsModalOpe
                 ))}
               </div>
             </div>
-            <button className="wizard-close-btn" onClick={onClose}>
+            <button className="wizard-close-btn" onClick={() => {
+              setUserHasSearched(false);
+              setShowFilterStep(false);
+              onClose();
+            }}>
               <X size={18} />
             </button>
           </div>

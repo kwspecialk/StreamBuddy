@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, ArrowRight, ArrowLeft, Play, Settings, Maximize, Search, Plus, Eye, Shield, MousePointer, Zap, LightbulbIcon, CircleGauge } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Play, Settings, Maximize, Search, Plus, Eye, Shield, MousePointer, Zap, LightbulbIcon, CircleGauge, PlayIcon } from 'lucide-react';
 import './PlayerViewWizard.css';
 
 // Define steps outside the component so it's not recreated on every render
@@ -445,7 +445,7 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
                 Skip Tour
               </button>
               <button onClick={handleNext} className={`wizard-btn primary ${currentStep === totalSteps ? 'finish' : ''}`}>
-                {currentStep === totalSteps ? 'Finish' : 'Next'} <ArrowRight size={18} />
+                {currentStep === totalSteps ? 'Watch Now' : 'Next'} <ArrowRight size={18} />
               </button>
             </div>
           </div>
