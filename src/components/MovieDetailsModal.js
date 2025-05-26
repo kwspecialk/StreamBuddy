@@ -149,101 +149,103 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
               />
             </div>
             
-            <div className="movie-info">
-              <h1>{movieDetails.title}</h1>
-              <div className="movie-meta">
-                <span className="year">{movieDetails.year}</span>
-                <span className="badge">{movieDetails.type === 'movie' ? 'Movie' : 'TV Series'}</span>
-              </div>
-              
-              <p className="overview">{movieDetails.overview}</p>
+            <div className="movie-details-container">
+              <div className="movie-info">
+                <h1>{movieDetails.title}</h1>
+                <div className="movie-meta">
+                  <span className="year">{movieDetails.year}</span>
+                  <span className="badge">{movieDetails.type === 'movie' ? 'Movie' : 'TV Series'}</span>
+                </div>
+                
+                <p className="overview">{movieDetails.overview}</p>
 
-              {movieDetails.type === 'tv' && (
-                <div className="episode-selector">
-                  {loading ? (
-                    <div className="text-center py-4">Loading...</div>
-                  ) : error ? (
-                    <div className="text-red-500 text-center py-4">{error}</div>
-                  ) : (
-                    <div className="selectors-container">
-                      <div className="flex space-x-4">
-                        <div className="flex-1">
-                          <label className="block text-gray-400 mb-2">Season</label>
-                          <select
-                            value={selectedSeason}
-                            onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                            className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 hover:border-gray-600 transition-colors"
-                          >
-                            {seasons.map(season => (
-                              <option key={season.season_number} value={season.season_number}>
-                                Season {season.season_number}
-                              </option>
-                            ))}
-                          </select>
+                {movieDetails.type === 'tv' && (
+                  <div className="episode-selector">
+                    {loading ? (
+                      <div className="text-center py-4">Loading...</div>
+                    ) : error ? (
+                      <div className="text-red-500 text-center py-4">{error}</div>
+                    ) : (
+                      <div className="selectors-container">
+                        <div className="flex space-x-4">
+                          <div className="flex-1">
+                            <label className="block text-gray-400 mb-2">Season</label>
+                            <select
+                              value={selectedSeason}
+                              onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                              className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 hover:border-gray-600 transition-colors"
+                            >
+                              {seasons.map(season => (
+                                <option key={season.season_number} value={season.season_number}>
+                                  Season {season.season_number}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-gray-400 mb-2">Episode</label>
+                            <select
+                              value={selectedEpisode || ''}
+                              onChange={(e) => setSelectedEpisode(Number(e.target.value))}
+                              className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 hover:border-gray-600 transition-colors"
+                            >
+                              {episodes.map(episode => (
+                                <option 
+                                  key={episode.episode_number} 
+                                  value={episode.episode_number}
+                                  title={episode.name}
+                                >
+                                  {episode.episode_number}. {episode.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <label className="block text-gray-400 mb-2">Episode</label>
-                          <select
-                            value={selectedEpisode || ''}
-                            onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-                            className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 hover:border-gray-600 transition-colors"
-                          >
-                            {episodes.map(episode => (
-                              <option 
-                                key={episode.episode_number} 
-                                value={episode.episode_number}
-                                title={episode.name}
-                              >
-                                {episode.episode_number}. {episode.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        {selectedEpisode && episodes.find(ep => ep.episode_number === selectedEpisode)?.overview && (
+                          <div className="mt-4 text-gray-400 text-sm">
+                            {episodes.find(ep => ep.episode_number === selectedEpisode).overview}
+                          </div>
+                        )}
                       </div>
-                      {selectedEpisode && episodes.find(ep => ep.episode_number === selectedEpisode)?.overview && (
-                        <div className="mt-4 text-gray-400 text-sm">
-                          {episodes.find(ep => ep.episode_number === selectedEpisode).overview}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              <div className="action-buttons mt-4">
-                <button
-                  className="watch-now-btn"
-                  onClick={handleWatchNow}
-                  disabled={showAddedAnimation}
-                >
-                  Watch Now
-                  {movieDetails.type === 'tv' && !selectedEpisode && " (S1:E1)"}
-                </button>
-                <button
-                  className="close-btn"
-                  onClick={onClose}
-                >
-                  Close
-                </button>
-              </div>
-              
-              {/* Added Animation Overlay */}
-              {showAddedAnimation && (
-                <div className="movie-added-overlay">
-                  <div className="movie-added-indicator">
-                    <div className="movie-checkmark">✓</div>
-                    <span>Added to Stream!</span>
+                    )}
                   </div>
-                </div>
-              )}
-              
-              {streamError && (
-                <div className="stream-error-message" style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
-                  {streamError}
-                </div>
-              )}
+                )}
+                
+                {streamError && (
+                  <div className="stream-error-message" style={{ color: 'red', marginTop: '10px' }}>
+                    {streamError}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+          
+          <div className="modal-footer">
+            <button
+              className="btn btn--md btn--secondary"
+              onClick={onClose}
+            >
+              Close
+            </button>
+            <button
+              className="btn btn--md btn--primary"
+              onClick={handleWatchNow}
+              disabled={showAddedAnimation}
+            >
+              Watch Now
+              {movieDetails.type === 'tv' && !selectedEpisode && " (S1:E1)"}
+            </button>
+          </div>
+          
+          {/* Added Animation Overlay */}
+          {showAddedAnimation && (
+            <div className="movie-added-overlay">
+              <div className="movie-added-indicator">
+                <div className="movie-checkmark">✓</div>
+                <span>Added to Stream!</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -62,7 +62,7 @@
 .stream-number {
   width: 40px;
   height: 40px;
-  background: var(--color-viridian);
+  background: var(--color-p);
   border-radius: 50%;
   margin-left: 8px;
 }
@@ -94,7 +94,7 @@
 
 /* Green border when drag target */
 .stream-item-new.drag-over {
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
   background: rgba(37, 129, 95, 0.1);
 }
 ```

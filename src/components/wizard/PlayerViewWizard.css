@@ -194,7 +194,7 @@
 }
 
 .wizard-step-number {
-  color: var(--color-emerald);
+  color: var(--color-s);
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -215,12 +215,12 @@
 }
 
 .progress-dot.active {
-  background: var(--color-emerald);
+  background: var(--color-s);
   transform: scale(1.2);
 }
 
 .progress-dot.completed {
-  background: var(--color-emerald-dark);
+  background: var(--color-s-dark);
   opacity: 0.7;
 }
 
@@ -295,7 +295,7 @@
 }
 
 .tip-icon {
-  color: var(--color-emerald);
+  color: var(--color-s);
   flex-shrink: 0;
   margin-top: 3px; /* Align icon better with text */
 }
@@ -423,12 +423,12 @@
 }
 
 .wizard-nav-btn.next {
-  background: var(--color-emerald);
+  background: var(--color-s);
   color: #0a1a13; /* Dark text for contrast on bright green */
 }
 
 .wizard-nav-btn.next:hover {
-  background: var(--color-emerald-light);
+  background: var(--color-s-light);
 }
 
 .wizard-nav-btn.finish {

@@ -172,7 +172,7 @@
 .action-btn.help-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  border-radius: var(--radius-md);
   width: 40px;
   height: 40px;
   display: flex;
@@ -1278,7 +1278,6 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
 }
 
 .modal-content {
@@ -1331,20 +1330,20 @@
 .movie-info {
   flex: 1;
   color: white;
-  margin-top: 100px;
+  margin-top: 10px;
 }
 
 .movie-info h1 {
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: .05rem;
   line-height: 1.2;
 }
 
 .movie-meta {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: .05rem;
   align-items: center;
 }
 
@@ -1354,7 +1353,7 @@
 }
 
 .movie-meta .badge {
-  background: var(--color-viridian);
+  background: var(--color-s);
   color: white;
   padding: 4px 12px;
   border-radius: 16px;
@@ -1419,7 +1418,8 @@
 .action-buttons {
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: .5rem;
+  margin-bottom: 2rem;
 }
 
 .watch-now-btn {

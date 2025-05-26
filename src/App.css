@@ -52,7 +52,7 @@
 }
 
 .movie-checkmark {
-  background: var(--color-emerald);
+  background: var(--color-s);
   border-radius: 50%;
   width: 60px;
   height: 60px;
@@ -109,7 +109,7 @@
 }
 
 .watch-now-btn:disabled:hover {
-  background-color: var(--color-viridian);
+  background-color: var(--color-p);
   transform: none;
   box-shadow: none;
 }
@@ -119,19 +119,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-:root {
-  --color-viridian: #25815F;
-  --color-emerald: #56B77A;
-  --color-platinum: #D9DCDE;
-  --color-butterscotch: #DE8C3A;
-  --color-grey: #666;
-  
-  /* Dark mode variations */
-  --color-dark-bg: #1a1a1a;
-  --color-dark-surface: #242424;
-  --color-dark-border: #333333;
 }
 
 .app {
@@ -198,7 +185,7 @@
   height: 36px;  /* Match search input height */
 }
 .sidebar-toggle:hover {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
 }
 .sidebar:not(.collapsed) + .sidebar-toggle {
   left: 360px;
@@ -293,6 +280,9 @@
   position: relative;
   width: 90%;
   max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   background-color: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
@@ -300,25 +290,68 @@
 }
 
 .movie-details {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--color-dark-surface);
   position: relative;
-  min-height: 500px;
+  min-height: 400px;
+  max-height: 90vh;
 }
 
 .movie-content {
+  display: flex;
+  padding: 20px 40px;
   position: relative;
   z-index: 1;
-  display: flex;
   gap: 30px;
-  padding: 30px;
-  padding-top: 180px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+}
+
+.movie-details-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.modal-footer {
+  padding: 20px 40px;
+  background: linear-gradient(to bottom, 
+    rgba(26, 26, 26, 0.9) 0%, 
+    rgba(26, 26, 26, 0.95) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-footer .btn {
+  margin: 0;
+  min-width: 120px;
+  text-align: center;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: contents;
 }
 
 .movie-poster {
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  /* Optional: fallback background color */
-  /* background-color: #1a1a1a; */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .movie-poster::before {
@@ -353,14 +386,17 @@
 .movie-info h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin: 0 0 10px 0;
   color: var(--color-platinum);
+  line-height: 1.2;
+  position: relative;
+  z-index: 2;
 }
 
 .movie-meta {
   display: flex;
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   align-items: center;
 }
 
@@ -391,7 +427,7 @@
 
 .watch-now-btn {
   padding: 12px 24px;
-  background-color: #25815F;
+  background-color: var(--color-p);
   color: var(--color-platinum);
   border: none;
   border-radius: 6px;
@@ -479,7 +515,7 @@
 }
 
 .episode-button:hover {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
 }
 
 .season-select {
@@ -494,14 +530,15 @@
 
 .episode-selector {
   background-color: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
+  padding: .5rem;
   border-radius: 8px;
-  margin: 1rem 0;
+  margin-bottom: .05rem ;
+  margin-top: .5rem ;
 }
 .episode-selector select:focus {
   outline: none;
-  border-color: var(--color-emerald);
-  box-shadow: 0 0 0 1px var(--color-emerald);
+  border-color: var(--color-s);
+  box-shadow: 0 0 0 1px var(--color-s);
 }
 
 .selectors-container select {
@@ -509,7 +546,7 @@
   color: var(--color-platinum);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  padding: 8px;
+  padding: .5rem;
   width: 100%;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -517,6 +554,10 @@
   background-position: right 8px center;
   background-size: 1em;
   padding-right: 2.5em;
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .selectors-container select:focus {
@@ -532,12 +573,12 @@
 .movie-info {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: .75rem;
 }
 
 /* Make sure the content scrolls properly if it gets too tall */
 .movie-content {
-  max-height: 80vh;
+  max-height: 70vh;
   overflow-y: auto;
 }
 
@@ -551,7 +592,7 @@
 
 .match-search:focus {
   outline: none;
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
 }
 
 /* Updated match header styling */
@@ -619,8 +660,8 @@
 
 .url-input-group input:focus {
   outline: none;
-  border-color: var(--color-emerald);  /* Optional: change border color on focus */
-  box-shadow: 0 0 0 1px var(--color-viridian);  /* Optional: add subtle glow effect */
+  border-color: var(--color-s);  /* Optional: change border color on focus */
+  box-shadow: 0 0 0 1px var(--color-p);  /* Optional: add subtle glow effect */
 }
 .url-input-group button:first-child {
   background-color: var(--color-dark-surface);
@@ -645,7 +686,7 @@
 
 .button-group button,
 .custom-file-upload {
-  background-color: var(--color-viridian);
+  background-color: var(--color-p);
   color: var(--color-platinum);
   border: none;
   padding: 8px 12px;
@@ -660,7 +701,7 @@
 
 .button-group button:hover,
 .custom-file-upload:hover {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
 }
 
 /* Volume controls */
@@ -752,12 +793,12 @@
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: var(--color-viridian);
+  background: var(--color-p);
   border-radius: 3px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: var(--color-emerald);
+  background: var(--color-s);
 }
 .url-item.dragging {
   opacity: 0.5;
@@ -813,7 +854,7 @@
 }
 
 .layout-toggle:hover {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
 }
 
 .layout-menu {
@@ -868,7 +909,7 @@
 }
 
 .move-button:hover:not(:disabled) {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
 }
 
 .move-button:disabled {
@@ -877,7 +918,7 @@
 }
 
 .cycle-button {
-  background-color: var(--color-viridian);
+  background-color: var(--color-p);
   color: var(--color-platinum);
   border: none;
   padding: 4px 8px;
@@ -891,7 +932,7 @@
 }
 
 .cycle-button:hover {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
   transform: scale(1.05);
   transition: transform 0.2s ease;
 }
@@ -1219,14 +1260,14 @@
 }
 
 .browser-links a {
-  color: var(--color-viridian);
+  color: var(--color-p);
   text-decoration: none;
   font-size: 14px;
   transition: color 0.2s ease;
 }
 
 .browser-links a:hover {
-  color: var(--color-emerald);
+  color: var(--color-s);
   text-decoration: underline;
 }
 
@@ -1457,7 +1498,7 @@
 }
 
 .url-input-add {
-  background-color: var(--color-viridian);
+  background-color: var(--color-p);
   color: var(--color-platinum);
 }
 

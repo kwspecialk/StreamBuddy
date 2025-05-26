@@ -435,60 +435,62 @@ const toggleFullscreen = () => {
 return (
   <div className="stream-homepage">
     {/* Header */}
-    <header className="homepage-header">
-      <div className="header-content">
-        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+    <header className="header header--sticky">
+      <div className="header__content">
+        <div className="header__logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <h1><img src="/logo.png" alt="StreamBuddy Logo" style={{ height: '32px', verticalAlign: 'middle' }} /></h1>
         </div>
 
-        <div className="header-right-group">
-          <nav className="main-nav-bar">
+        <div className="header__nav">
+          <div className="header-right">
+            <nav className="nav nav--horizontal">
             <button
-              className={`nav-bar-btn ${activeCategory === 'live-sports' ? 'active' : ''}`}
+              className={`nav__item ${activeCategory === 'live-sports' ? 'nav__item--active' : ''}`}
               onClick={() => handleCategoryChange('live-sports')}
             >
               Sports
             </button>
             <button
-              className={`nav-bar-btn ${activeCategory === 'movies' ? 'active' : ''}`}
+              className={`nav__item ${activeCategory === 'movies' ? 'nav__item--active' : ''}`}
               onClick={() => handleCategoryChange('movies')}
             >
               Movies
             </button>
             <button
-              className={`nav-bar-btn ${activeCategory === 'tv-shows' ? 'active' : ''}`}
+              className={`nav__item ${activeCategory === 'tv-shows' ? 'nav__item--active' : ''}`}
               onClick={() => handleCategoryChange('tv-shows')}
             >
               TV Shows
             </button>
             <button
-              className="nav-bar-btn nav-bar-btn-player"
+              className="nav__item nav__item--highlight"
               onClick={onEnterStreamView}
             >
               Player
             </button>
           </nav>
-
-          <div className="header-actions">
+          </div>
+          <div className="header__actions">
             {/* Search bar is now always visible */}
-            <div className="search-container">
-              <Search size={20} />
+            <div className="search search--header">
+              <Search size={20} className="search__icon" />
               <input
                 type="text"
+                className="search__input"
                 placeholder="Search "
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={toggleFullscreen} className="action-btn fullscreen-btn" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+            <button onClick={toggleFullscreen} className="btn btn--icon" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
               {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
             </button>
             {onShowQuickstartWizard && (
-              <button onClick={onShowQuickstartWizard} className="action-btn help-btn" title="Show Quick Tour">
+              <button onClick={onShowQuickstartWizard} className="btn btn--icon btn--help" title="Show Quick Tour">
                 <HelpCircle size={20} />
               </button>
             )}
-            <button className="user-btn">
+            <button className="btn btn--icon btn--user">
               <User size={24} />
             </button>
           </div>
@@ -527,11 +529,11 @@ return (
                   <div className="hero-search" ref={searchInputRef}>
                     <Search size={24} />
                     <input
+                      className="hero-search-input"
                       type="text"
                       placeholder="Search for live games, movies, TV shows..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="hero-search-input"
                     />
                   </div>
                 </div>

@@ -25,7 +25,7 @@
 .back-to-home-btn {
   background: none;
   border: none;
-  color: var(--color-viridian);
+  color: var(--color-p);
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -39,7 +39,7 @@
 
 .back-to-home-btn:hover {
   background: rgba(37, 129, 95, 0.1);
-  color: var(--color-emerald);
+  color: var(--color-s);
 }
 
 .edit-streams-btn {
@@ -73,8 +73,8 @@
 }
 
 .add-stream-btn-header {
-  background: var(--color-viridian);
-  border: 1px solid var(--color-viridian);
+  background: var(--color-p);
+  border: 1px solid var(--color-p);
   color: white;
   font-size: 1rem;
   font-weight: 600;
@@ -89,8 +89,8 @@
 }
 
 .add-stream-btn-header:hover {
-  background: var(--color-emerald);
-  border-color: var(--color-emerald);
+  background: var(--color-s);
+  border-color: var(--color-s);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(37, 129, 95, 0.4);
 }
@@ -235,8 +235,8 @@
 }
 
 .help-btn:hover {
-  background: var(--color-viridian);
-  border-color: var(--color-viridian);
+  background: var(--color-p);
+  border-color: var(--color-p);
   color: #fff;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);

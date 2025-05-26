@@ -22,13 +22,13 @@
 
 .clickable-title:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--color-emerald);
+  color: var(--color-s);
 }
 
 .title-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--color-viridian);
+  border: 1px solid var(--color-p);
   border-radius: 4px;
   color: var(--color-platinum);
   font-size: 15px;
@@ -39,7 +39,7 @@
 }
 
 .title-input:focus {
-  border-color: var(--color-emerald);
+  border-color: var(--color-s);
   box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.2);
 }/* New layout with fixed numbers and draggable streams */
 .streams-container {
@@ -115,7 +115,7 @@
 }
 
 .stream-item-number-inline {
-  background-color: var(--color-emerald);
+  background-color: var(--color-p);
   color: white;
   font-weight: 600;
   font-size: 14px; /* Slightly smaller for better fit in lozenge */
@@ -170,16 +170,16 @@
 }
 
 .action-btn-new.refresh-btn {
-  color: var(--color-viridian);
+  color: var(--color-p);
 }
 
 .action-btn-new.refresh-btn:hover {
   background: rgba(37, 129, 95, 0.2);
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
 }
 
 .action-btn-new.refresh-btn.refreshing {
-  color: var(--color-emerald);
+  color: var(--color-s);
   cursor: wait;
 }
 
@@ -383,7 +383,7 @@
 }
 
 .stream-item.drag-over {
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
   background: rgba(37, 129, 95, 0.1);
   transform: translateY(-2px);
 }
@@ -415,7 +415,7 @@
 }
 
 .window-indicator {
-  background: var(--color-viridian);
+  background: var(--color-p);
   border-radius: 8px;
   width: 32px;
   height: 32px;
@@ -455,7 +455,7 @@
 
 .clickable-title:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--color-emerald);
+  color: var(--color-s);
 }
 
 .stream-title-edit {
@@ -465,7 +465,7 @@
 .title-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--color-viridian);
+  border: 1px solid var(--color-p);
   border-radius: 4px;
   color: var(--color-platinum);
   font-size: 15px;
@@ -476,7 +476,7 @@
 }
 
 .title-input:focus {
-  border-color: var(--color-emerald);
+  border-color: var(--color-s);
   box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.2);
 }
 
@@ -510,16 +510,16 @@
 }
 
 .refresh-btn {
-  color: var(--color-viridian);
+  color: var(--color-p);
 }
 
 .refresh-btn:hover {
   background: rgba(37, 129, 95, 0.2);
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
 }
 
 .refresh-btn.refreshing {
-  color: var(--color-emerald);
+  color: var(--color-s);
   cursor: wait;
 }
 
@@ -720,7 +720,7 @@
 
 .layout-dropdown-option.selected {
   background: rgba(37, 129, 95, 0.2);
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
 }
 
 .layout-dropdown-option .layout-option-preview {
@@ -765,7 +765,7 @@
 
 .current-layout-preview .layout-preview-box-mini {
   position: absolute;
-  background: var(--color-viridian);
+  background: var(--color-p);
   border-radius: 2px;
   display: flex;
   align-items: center;
@@ -786,7 +786,7 @@
 }
 
 .add-stream-btn {
-  background: var(--color-viridian);
+  background: var(--color-p);
   border: none;
   border-radius: 8px;
   color: white;
@@ -801,7 +801,7 @@
 }
 
 .add-stream-btn:hover {
-  background: var(--color-emerald);
+  background: var(--color-s);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
 }
@@ -879,12 +879,12 @@
 }
 
 .edit-modal-content::-webkit-scrollbar-thumb {
-  background: var(--color-viridian);
+  background: var(--color-p);
   border-radius: 3px;
 }
 
 .edit-modal-content::-webkit-scrollbar-thumb:hover {
-  background: var(--color-emerald);
+  background: var(--color-s);
 }
 
 /* Responsive Design */

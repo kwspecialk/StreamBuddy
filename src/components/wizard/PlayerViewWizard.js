@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, ArrowRight, ArrowLeft, Play, Settings, Maximize, Search, Plus, Eye, Shield, MousePointer, Zap, LightbulbIcon } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Play, Settings, Maximize, Search, Plus, Eye, Shield, MousePointer, Zap, LightbulbIcon, CircleGauge } from 'lucide-react';
 import './PlayerViewWizard.css';
 
 // Define steps outside the component so it's not recreated on every render
@@ -8,14 +8,14 @@ const steps = [
     id: 1,
     title: "Add Streams",
     content: "Click 'Add Streams' to browse and add live sports, movies, or TV shows to your player.",
-    highlight: '.add-stream-btn-header',
+    highlight: '.btn--primary',
     position: "bottom-left"
   },
   {
     id: 2,
     title: "Manage Your Streams",
     content: "Use 'Manage Streams' to reorder, delete, refresh, or switch episodes for your active streams.",
-    highlight: '.edit-streams-btn',
+    highlight: '.btn--secondary',
     position: "bottom-left"
   },
   {
@@ -368,6 +368,13 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
           <div>
             <strong>Double Click:</strong>
             <p>Sometimes you will need to click multiple times to engage with the player.</p>
+          </div>
+        </li>
+        <li className="tip-item">
+          <CircleGauge size={20} className="tip-icon" />
+          <div>
+            <strong>Performance:</strong>
+            <p>Too many streams at once can cause excessive buffering.</p>
           </div>
         </li>
       </ul>

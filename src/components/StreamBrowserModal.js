@@ -291,46 +291,46 @@ const StreamBrowserModal = ({
   };
 
   return (
-    <div className="stream-browser-backdrop" onClick={onClose}>
-      <div className="stream-browser-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal modal--lg" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="browser-modal-header">
+        <div className="modal__header modal__header--accent">
           <div className="header-left">
-            <h2>Add Stream</h2>
-            <p>Choose content to add to your viewing session</p>
+            <h2 className="modal__title">Add Stream</h2>
           </div>
-          <button className="modal-icon-close-btn" onClick={onClose}>
+          <button className="btn btn--close" onClick={onClose}>
             <X size={24} />
           </button>
         </div>
 
         {/* Navigation */}
-        <div className="browser-modal-nav">
-          <div className="nav-buttons">
+        <div className="nav nav--tabs">
+          <div className="nav__items">
             <button 
-              className={`nav-btn ${activeCategory === 'live-sports' ? 'active' : ''}`}
+              className={`nav__item ${activeCategory === 'live-sports' ? 'nav__item--active' : ''}`}
               onClick={() => setActiveCategory('live-sports')}
             >
               Live Sports
             </button>
             <button 
-              className={`nav-btn ${activeCategory === 'movies' ? 'active' : ''}`}
+              className={`nav__item ${activeCategory === 'movies' ? 'nav__item--active' : ''}`}
               onClick={() => setActiveCategory('movies')}
             >
               Movies
             </button>
             <button 
-              className={`nav-btn ${activeCategory === 'tv-shows' ? 'active' : ''}`}
+              className={`nav__item ${activeCategory === 'tv-shows' ? 'nav__item--active' : ''}`}
               onClick={() => setActiveCategory('tv-shows')}
             >
               TV Shows
             </button>
           </div>
           
-          <div className="search-container">
-            <Search size={18} />
+          <div className="search search--inline">
+            <Search size={18} className="search__icon" />
             <input 
               type="text" 
+              className="search__input"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -339,12 +339,12 @@ const StreamBrowserModal = ({
         </div>
 
         {/* Content */}
-        <div className="browser-modal-content">
+        <div className="modal__content">
           {/* Show search loading if searching */}
           {searchLoading ? (
-            <div className="loading-grid">
+            <div className="browser-content-grid">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="browser-card loading">
+                <div key={i} className="content-card loading">
                   <div className="card-thumbnail loading-shimmer"></div>
                   <div className="card-info">
                     <div className="loading-text loading-shimmer"></div>
@@ -355,9 +355,9 @@ const StreamBrowserModal = ({
             </div>
           ) : /* Show initial loading for non-search content */
           isLoading && currentItems.length === 0 && !searchTerm ? (
-            <div className="loading-grid">
+            <div className="browser-content-grid">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="browser-card loading">
+                <div key={i} className="content-card loading">
                   <div className="card-thumbnail loading-shimmer"></div>
                   <div className="card-info">
                     <div className="loading-text loading-shimmer"></div>
@@ -367,9 +367,9 @@ const StreamBrowserModal = ({
               ))}
             </div>
           ) : (moviesLoading && activeCategory === 'movies' && !searchTerm) || (tvShowsLoading && activeCategory === 'tv-shows' && !searchTerm) ? (
-            <div className="loading-grid">
+            <div className="browser-content-grid">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="browser-card loading">
+                <div key={i} className="content-card loading">
                   <div className="card-thumbnail loading-shimmer"></div>
                   <div className="card-info">
                     <div className="loading-text loading-shimmer"></div>
@@ -387,7 +387,7 @@ const StreamBrowserModal = ({
                 return (
                   <div 
                     key={item.id} 
-                    className={`browser-card ${isSelected ? 'selected' : ''}`}
+                    className={`content-card ${isSelected ? 'selected' : ''} ${isStreamItem ? 'match-card' : ''}`}
                     onClick={() => handleItemClick(item, activeCategory)}
                   >
                     <div className={`card-thumbnail ${isStreamItem ? 'match-thumbnail' : ''}`}>
@@ -508,7 +508,7 @@ const StreamBrowserModal = ({
               })}
             </div>
           ) : (
-            <div className="empty-state">
+            <div className="modal__empty">
               <h3>{searchTerm ? `No results found for "${searchTerm}"` : 'No content available'}</h3>
               <p>{searchTerm ? 'Try adjusting your search or browse different categories.' : 'Please try again later.'}</p>
             </div>
@@ -516,12 +516,14 @@ const StreamBrowserModal = ({
         </div>
 
         {/* Footer for Add Stream button and Tip */}
-        <div className="browser-modal-footer">
-          <button className="add-custom-stream-btn" onClick={openCustomStreamPopup}>
-            <Plus size={18} /> Custom
-          </button>
+        <div className="modal__footer">
+          <div className="modal__actions">
+            <button className="btn btn--secondary" onClick={openCustomStreamPopup}>
+              <Plus size={18} /> Custom
+            </button>
+          </div>
           {currentItems.length > 0 && (
-            <div className="browser-modal-tip footer-tip">
+            <div className="footer-tip text-center flex-1">
               <span role="img" aria-label="tip">💡</span> Tip: Use search to find specific content. Click sports to add instantly. Click movies/shows to see details.
             </div>
           )}
@@ -529,20 +531,30 @@ const StreamBrowserModal = ({
 
         {/* Custom Stream URL Popup */}
         {isCustomStreamPopupOpen && (
-          <div className="custom-stream-popup-overlay" onClick={closeCustomStreamPopup}>
-            <div className="custom-stream-popup" onClick={(e) => e.stopPropagation()}>
-              <h3>Custom Stream</h3>
-              <p>Enter the direct URL to a stream (e.g., .m3u8, .mpd).</p>
-              <input
-                type="text"
-                placeholder="https://..."
-                value={customStreamUrl}
-                onChange={(e) => setCustomStreamUrl(e.target.value)}
-                autoFocus
-              />
-              <div className="popup-actions">
-                <button className="popup-btn cancel-btn" onClick={closeCustomStreamPopup}>Cancel</button>
-                <button className="popup-btn save-btn" onClick={handleSaveCustomStream}>Save Stream</button>
+          <div className="modal-backdrop" onClick={closeCustomStreamPopup}>
+            <div className="modal modal--sm" onClick={(e) => e.stopPropagation()}>
+              <div className="modal__header">
+                <h3 className="modal__title">Custom Stream</h3>
+                <button className="btn btn--close" onClick={closeCustomStreamPopup}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal__content">
+                <p>Enter the direct URL to a stream (e.g., .m3u8, .mpd).</p>
+                <input
+                  type="text"
+                  className="form__input"
+                  placeholder="https://..."
+                  value={customStreamUrl}
+                  onChange={(e) => setCustomStreamUrl(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="modal__footer">
+                <div className="modal__actions">
+                  <button className="btn btn--secondary" onClick={closeCustomStreamPopup}>Cancel</button>
+                  <button className="btn btn--primary" onClick={handleSaveCustomStream}>Save Stream</button>
+                </div>
               </div>
             </div>
           </div>

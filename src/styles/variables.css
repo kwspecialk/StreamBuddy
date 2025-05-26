@@ -1,0 +1,135 @@
+/* ==========================================================================
+   CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   ========================================================================== */
+
+:root {
+  /* Primary Colors */
+  --color-p: #00957d;
+  --color-s: #00d2b0;
+  --color-p-shadow: #245951;
+  --color-s-light: #60d8c4;
+  
+  /* Accent Colors */
+  --color-butterscotch: #D4A144;
+  --color-platinum: #D9DCDE;
+  --color-grey: #666;
+  
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  
+  /* Dark Theme Colors */
+  --color-dark-bg: #0f0f0f;
+  --color-dark-bg-secondary: #1a1a1a;
+  --color-dark-surface: #242424;
+  --color-dark-surface-hover: #2a2a2a;
+  --color-dark-border: #333333;
+  --color-dark-border-light: rgba(255, 255, 255, 0.1);
+  --color-dark-border-medium: rgba(255, 255, 255, 0.2);
+  
+  /* Text Colors */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e5e5e5;
+  --color-text-muted: #9ca3af;
+  --color-text-disabled: #6b7280;
+  
+  /* Background Gradients */
+  --gradient-accent: linear-gradient(135deg, var(--color-p), var(--color-s));
+  --gradient-primary: linear-gradient(135deg, var(--color-p-shadow), var(--color-p));
+  --gradient-dark: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  --gradient-surface: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 0.75rem;    /* 12px */
+  --space-lg: 1rem;       /* 16px */
+  --space-xl: 1.5rem;     /* 24px */
+  --space-2xl: 2rem;      /* 32px */
+  --space-3xl: 2.5rem;    /* 40px */
+  --space-4xl: 3rem;      /* 48px */
+  --space-5xl: 4rem;      /* 64px */
+  
+  /* Border Radius Scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Modal & Overlay Shadows */
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --shadow-dropdown: 0 10px 25px rgba(0, 0, 0, 0.3);
+  
+  /* Z-Index Scale */
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 2000;
+  --z-modal: 2100;
+  --z-popover: 2200;
+  --z-tooltip: 2300;
+  --z-toast: 2400;
+  --z-overlay: 10000;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  --transition-colors: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  --transition-transform: transform 0.2s ease;
+  --transition-all: all 0.2s ease;
+  
+  /* Backdrop Blur */
+  --backdrop-blur: blur(20px);
+  --backdrop-blur-light: blur(10px);
+  
+  /* Opacity Levels */
+  --opacity-disabled: 0.5;
+  --opacity-muted: 0.7;
+  --opacity-subtle: 0.8;
+  --opacity-overlay: 0.9;
+}
+
+/* Responsive Breakpoints */
+:root {
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}

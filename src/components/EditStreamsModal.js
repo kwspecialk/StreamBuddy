@@ -460,25 +460,25 @@ const EditStreamsModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="edit-streams-backdrop" onClick={onClose}>
-      <div className="edit-streams-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal modal--md" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="edit-modal-header">
+        <div className="modal__header modal__header--accent">
           <div className="header-left">
             <div>
-              <h2>Manage Streams</h2>
-              <p>Add, remove, or reorder streams ({videoUrls.length} active)</p>
+              <h2 className="modal__title">Manage Streams</h2>
+              <p className="modal__subtitle">Add, remove, or reorder streams ({videoUrls.length} active)</p>
             </div>
           </div>
-          <button className="modal-icon-close-btn" onClick={onClose}>
+          <button className="btn btn--close" onClick={onClose}>
             <X size={24} />
           </button>
         </div>
 
         {/* Stream List */}
-        <div className="edit-modal-content">
+        <div className="modal__content">
           {videoUrls.length === 0 ? (
-            <div className="empty-streams-state">
+            <div className="modal__empty">
               <div className="empty-icon">📺</div>
               <h3>No streams active</h3>
               <p>Add some streams to get started</p>
@@ -573,10 +573,10 @@ const EditStreamsModal = ({
         </div>
 
         {/* Footer */}
-        <div className="edit-modal-footer">
-          <div className="footer-left">
+        <div className="modal__footer">
+          <div className="modal__actions flex gap-md">
             <button 
-              className="add-stream-btn"
+              className="btn btn--primary"
               onClick={() => {
                 onClose();
                 onOpenStreamBrowser();
@@ -635,17 +635,17 @@ const EditStreamsModal = ({
             </div>
           </div>
           
-          <div className="footer-center">
+          <div className="flex-1 text-center">
             <div className="footer-tip">
-              💡 Drag streams to reorder • {videoUrls.length} of {currentLayout === 'grid-infinite' ? '∞' : '12'} streams
+              💡 Drag streams to reorder
             </div>
           </div>
           
-          <div className="footer-right">
+          <div className="modal__actions">
             {/* Clear All button with press and hold animation */}
             {videoUrls.length > 0 && (
               <button 
-                className={`clear-all-btn ${isClearAllHolding ? 'holding' : ''}`}
+                className={`btn btn--danger ${isClearAllHolding ? 'holding' : ''}`}
                 onMouseDown={handleClearAllStart}
                 onMouseUp={handleClearAllEnd}
                 onMouseLeave={handleClearAllEnd}

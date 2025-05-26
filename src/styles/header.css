@@ -1,0 +1,106 @@
+/* ==========================================================================
+   HEADER COMPONENTS
+   ========================================================================== */
+
+/* Base Header */
+.header {
+  position: relative;
+  background: rgba(15, 15, 15, 0.95);
+  border-bottom: 1px solid var(--color-dark-border);
+  z-index: 100;
+}
+
+.header--sticky {
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(20px);
+}
+
+.header--transparent {
+  background: transparent;
+  border-bottom: none;
+}
+
+.header--blur {
+  backdrop-filter: blur(20px);
+}
+
+/* Header Content */
+.header__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--space-2xl);
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: var(--space-2xl);
+}
+
+/* Header Logo */
+.header__logo {
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.header__logo:hover {
+  transform: translateY(-1px);
+}
+
+.header__logo h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-p);
+  margin: 0;
+}
+
+/* Header Navigation */
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  margin-left: auto;
+}
+
+/* Header Actions */
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* Responsive Header */
+@media (max-width: 1200px) {
+  .header__content {
+    padding: var(--space-lg) var(--space-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .header__content {
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+  }
+  
+  .header__nav {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+  
+  .header__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .header__content {
+    padding: var(--space-md);
+  }
+  
+  .header__logo h1 {
+    font-size: var(--font-size-lg);
+  }
+}

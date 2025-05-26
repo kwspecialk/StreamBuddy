@@ -671,9 +671,9 @@ return (
           </button>
         </div>
         
-        <div className="header-right">
+        <div className="header-actions">
           <button 
-            className="add-stream-btn-header"
+            className="btn btn--md btn--primary"
             onClick={handleOpenStreamBrowser}
             title="Add Stream"
           >
@@ -682,7 +682,7 @@ return (
           </button>
           
           <button 
-            className="edit-streams-btn"
+            className="btn btn--md btn--secondary"
             onClick={handleOpenEditStreams}
           >
             <span className="edit-btn-text-full">Manage Streams</span>

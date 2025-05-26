@@ -85,7 +85,7 @@ const tooltipStyle = getTooltipPosition(highlightElement, currentStepData.positi
 ## 🎨 Design Principles Applied
 
 ### **Matching Your Brand**
-- Uses your exact color variables (`--color-viridian`, `--color-emerald`)
+- Uses your exact color variables (`--color-p`, `--color-s`)
 - Mirrors your button styles and animations
 - Consistent typography and spacing
 - Matches modal and overlay patterns

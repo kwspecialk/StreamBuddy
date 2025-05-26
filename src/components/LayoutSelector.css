@@ -23,7 +23,7 @@
 }
 
 .layout-toggle.enhanced:hover {
-  background: var(--color-emerald);
+  background: var(--color-s);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
 }
@@ -46,7 +46,7 @@
 
 .layout-preview-box-mini {
   position: absolute;
-  background: var(--color-viridian);
+  background: var(--color-p);
   border: 0.5px solid rgba(255, 255, 255, 0.3);
   border-radius: 1px;
   opacity: 0.9;
@@ -157,7 +157,7 @@
 
 .layout-option.selected {
   background: rgba(37, 129, 95, 0.15);
-  border-color: var(--color-viridian);
+  border-color: var(--color-p);
 }
 
 .layout-option-preview {
@@ -213,7 +213,7 @@
 }
 
 .layout-menu-grid::-webkit-scrollbar-thumb:hover {
-  background: var(--color-viridian);
+  background: var(--color-p);
 }
 
 /* Responsive adjustments for layout selector */
@@ -263,7 +263,7 @@
 }
 
 .layout-toggle:not(.enhanced):hover {
-  background-color: var(--color-emerald);
+  background-color: var(--color-s);
 }
 
 .layout-menu:not(.enhanced) {

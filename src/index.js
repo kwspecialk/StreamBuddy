@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+// import './index.css'; // Old CSS - commented out for new design system
+import './styles/main.css'; // New StreamBuddy Design System
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
