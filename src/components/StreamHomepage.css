@@ -1760,7 +1760,6 @@
     gap: 1rem;
   }
   .header-actions {
-    width: 100%;
     justify-content: space-between;
   }
   .search-container input {
@@ -1796,7 +1795,7 @@
     height: 28px !important;
     font-size: 0.75rem !important;
     padding: 0.3rem 0.4rem 0.3rem 1.4rem !important;
-    border-radius: 14px !important;
+    border-radius: var(--radius-md) !important;
   }
   
   .search--mobile .search__icon {
@@ -1882,7 +1881,7 @@
   }
   
   .search__input {
-    width: 120px !important;
+    width: 120px;
     font-size: 0.8rem !important;
   }
   

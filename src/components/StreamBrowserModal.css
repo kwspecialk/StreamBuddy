@@ -731,58 +731,94 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .stream-browser-modal {
-    margin: 10px;
-    max-height: 95vh;
+    margin: 5px;
+    max-height: 95vh; /* Increased from 90vh to fit better */
+    border-radius: 12px;
   }
   
   .browser-modal-header {
-    padding: 20px 20px 16px;
+    padding: 16px 20px 14px;
   }
   
   .header-left h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
   
   .browser-modal-nav {
-    padding: 16px 20px;
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
+    padding: 12px 20px;
+    flex-direction: row; /* Keep navigation horizontal */
+    gap: 12px;
+    align-items: center;
   }
   
   .nav-buttons {
-    justify-content: center;
+    flex: 1;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  
+  .nav-btn {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    border-radius: 16px;
+    white-space: nowrap;
   }
   
   .search-container {
-    min-width: auto;
+    min-width: 180px;
+    flex-shrink: 0;
+  }
+  
+  .search-container input {
+    padding: 8px 10px 8px 32px;
+    font-size: 0.85rem;
   }
   
   .browser-modal-content {
-    padding: 16px 20px;
+    padding: 12px 20px;
   }
   
   .browser-content-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  
+  .card-thumbnail {
+    height: 80px; /* Shorter cards */
+  }
+  
+  .card-thumbnail.match-thumbnail {
+    height: 120px; /* Shorter sports cards */
   }
   
   .browser-modal-footer {
-    padding: 12px 20px;
+    padding: 10px 20px;
+    min-height: auto;
+  }
+  
+  /* Hide footer tip on mobile */
+  .footer-tip {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
+  .stream-browser-modal {
+    margin: 2px;
+    max-height: 98vh;
+  }
+  
   .browser-modal-header {
-    padding: 16px;
+    padding: 12px 16px 10px;
   }
   
   .header-left h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
   
   .browser-modal-nav {
-    padding: 12px 16px;
+    padding: 8px 16px;
+    gap: 8px;
   }
   
   .nav-buttons {
@@ -790,24 +826,42 @@
   }
   
   .nav-btn {
-    padding: 8px 12px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .search-container {
+    min-width: 140px;
+  }
+  
+  .search-container input {
+    padding: 6px 8px 6px 28px;
     font-size: 0.8rem;
   }
   
   .browser-modal-content {
-    padding: 12px 16px;
+    padding: 8px 16px;
   }
   
   .browser-content-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
   }
   
   .card-thumbnail {
-    height: 100px;
+    height: 70px; /* Even shorter cards */
+  }
+  
+  .card-thumbnail.match-thumbnail {
+    height: 100px; /* Shorter sports cards */
+  }
+  
+  .browser-modal-footer {
+    padding: 8px 16px;
   }
   
   .sport-icon {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 }
 

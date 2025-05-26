@@ -326,7 +326,7 @@
   
   .modal {
     margin: var(--space-sm);
-    max-height: 95vh;
+    max-height: 90vh;
   }
   
   .modal__header {

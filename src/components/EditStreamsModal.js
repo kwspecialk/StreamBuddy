@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight } from 'lucide-react';
+import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog, Lightbulb } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
@@ -479,7 +479,7 @@ const EditStreamsModal = ({
         <div className="modal__content">
           {videoUrls.length === 0 ? (
             <div className="modal__empty">
-              <div className="empty-icon">📺</div>
+              <div className="empty-icon"><MonitorCog size={24} /></div>
               <h3>No streams active</h3>
               <p>Add some streams to get started</p>
             </div>
@@ -637,7 +637,7 @@ const EditStreamsModal = ({
           
           <div className="flex-1 text-center">
             <div className="footer-tip">
-              💡 Drag streams to reorder
+              Drag streams to reorder
             </div>
           </div>
           

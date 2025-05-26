@@ -162,27 +162,55 @@
   }
   
   .header-actions {
-    gap: 12px; /* Better spacing between buttons */
+    gap: 8px; /* Tighter spacing between buttons */
     flex-wrap: nowrap;
     overflow: visible;
     margin-left: auto; /* Push buttons to the right */
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
   }
   
+  /* Make + button and manage button same size - bigger icons */
   .btn--md {
-    font-size: 0.85rem !important;
-    padding: 8px 12px !important;
-    min-width: auto;
+    font-size: 0.8rem !important;
+    padding: 4px 6px !important; /* Reduced padding */
+    min-width: var(--space-2xl); /* Back to original size */
+    height: var(--space-2xl); /* Back to original size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    flex-shrink: 0; /* Prevent individual buttons from shrinking */
   }
   
   .btn--primary {
     flex-shrink: 0;
+    background: var(--color-p);
+    border: 1px solid var(--color-p);
+    color: white;
+  }
+  
+  /* Make + icon bigger */
+  .btn--primary svg {
+    width: 24px !important;
+    height: 24px !important;
   }
   
   .btn--secondary {
     flex-shrink: 0;
-    min-width: 80px; /* Give manage button proper width */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--color-platinum);
+    font-size: xx-small;
   }
   
+  /* Hide text on mobile for manage button, show bigger gear icon */
+  .btn--secondary .edit-btn-text-full,
+  .btn--secondary .edit-btn-text-short {
+    display: none;
+  }
+
   .fullscreen-btn {
     display: none !important; /* Hide fullscreen button on mobile */
   }
@@ -228,11 +256,19 @@
   
   .btn--md {
     font-size: 0.75rem !important;
-    padding: 5px 8px !important;
+    padding: 6px 6px !important;
   }
-  
+  .btn--md--settings {
+    font-size: 0.75rem !important;
+    padding: 8px 8px !important;
+  }
+  .btn--secondary--settings {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+    border: none;
+  }
   .btn--md span {
-    display: none; /* Hide text on very small screens */
+    display: none; /* Hide text on very small screens, except for settings button */
   }
   
   /* Don't add extra icons since buttons already have them */

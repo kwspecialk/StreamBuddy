@@ -19,7 +19,7 @@ import StreamHomepage from './components/StreamHomepage';
 import DebugHomepage from './components/DebugHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
-import { Plus, Maximize, Minimize, HelpCircle } from 'lucide-react';
+import { Plus, Maximize, Minimize, HelpCircle, Settings } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
 import QuickstartWizard from './components/wizard/QuickstartWizard';
 import PlayerViewWizard from './components/wizard/PlayerViewWizard';
@@ -699,11 +699,11 @@ return (
           </button>
           
           <button 
-            className="btn btn--md btn--secondary"
+            className="btn btn--md--settings btn--secondary--settings"
             onClick={handleOpenEditStreams}
           >
-            <span className="edit-btn-text-full">Manage Streams</span>
-            <span className="edit-btn-text-short">Manage</span>
+            <Settings size={20} />
+            <span>Manage</span>
           </button>
           
           <button 
