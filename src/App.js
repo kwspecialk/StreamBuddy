@@ -196,14 +196,31 @@ const App = () => {
   useEffect(() => {
     const qswCompleted = localStorage.getItem('streambuddy_quickstart_completed') === 'true';
     const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
+    
+    // Check if user is on mobile
+    const isMobile = window.innerWidth <= 768;
 
     console.log('[App.js Wizards useEffect] Checking states:', {
       currentView, 
       qswCompleted,
       pvwCompleted,
+      isMobile,
       showQuickstartWizard_state: showQuickstartWizard,
       showPlayerViewWizard_state: showPlayerViewWizard
     });
+
+    // Disable wizards on mobile devices
+    if (isMobile) {
+      if (showQuickstartWizard) {
+        console.log('[App.js] Hiding QuickstartWizard on mobile');
+        setShowQuickstartWizard(false);
+      }
+      if (showPlayerViewWizard) {
+        console.log('[App.js] Hiding PlayerViewWizard on mobile');
+        setShowPlayerViewWizard(false);
+      }
+      return;
+    }
 
     // Handle QuickstartWizard (homepage only)
     if (currentView === 'homepage') {

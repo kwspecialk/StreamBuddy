@@ -470,9 +470,22 @@ return (
             </button>
           </nav>
           </div>
+          
+          {/* Mobile: Search in navigation row */}
+          <div className="search search--header search--mobile">
+            <Search size={16} className="search__icon" />
+            <input
+              type="text"
+              className="search__input"
+              placeholder="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
           <div className="header__actions">
-            {/* Search bar is now always visible */}
-            <div className="search search--header">
+            {/* Search bar - DESKTOP ONLY */}
+            <div className="search search--header header__actions--desktop">
               <Search size={20} className="search__icon" />
               <input
                 type="text"
@@ -482,15 +495,15 @@ return (
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={toggleFullscreen} className="btn btn--icon" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+            <button onClick={toggleFullscreen} className="btn btn--icon header__actions--desktop" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
               {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
             </button>
             {onShowQuickstartWizard && (
-              <button onClick={onShowQuickstartWizard} className="btn btn--icon btn--help" title="Show Quick Tour">
+              <button onClick={onShowQuickstartWizard} className="btn btn--icon btn--help header__actions--desktop" title="Show Quick Tour">
                 <HelpCircle size={20} />
               </button>
             )}
-            <button className="btn btn--icon btn--user">
+            <button className="btn btn--icon btn--user header__actions--desktop">
               <User size={24} />
             </button>
           </div>
@@ -883,13 +896,14 @@ return (
                           </div>
                         )}
                       <div className="live-indicator">● LIVE</div>
-                      
-                      {/* Match title overlay */}
-                      <div className="match-title-overlay">
-                        <h3>{getMatchTitle(match)}</h3>
-                        <p>{formatSportName(match.category || 'Sports')}</p>
-                      </div>
                     </div>
+                    
+                    {/* Match title overlay - moved outside of featured-thumbnail */}
+                    <div className="match-title-overlay">
+                      <h3>{getMatchTitle(match)}</h3>
+                      <p>{formatSportName(match.category || 'Sports')}</p>
+                    </div>
+                    
                     <button className="play-btn">
                       <Play size={24} fill="white" />
                     </button>

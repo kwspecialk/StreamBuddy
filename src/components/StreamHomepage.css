@@ -1,4 +1,203 @@
-/* Stream Homepage Styles */
+/* Featured cards styling improvements for mobile */
+@media (max-width: 768px) {
+  /* Force visibility for all text elements in featured cards on mobile */
+  .featured-card * {
+    visibility: visible !important;
+  }
+  
+  .featured-card .match-title-overlay,
+  .featured-card .match-title-overlay * {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Override any existing match-title-overlay styles */
+  .featured-section .featured-card .match-title-overlay {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9)) !important;
+    padding: 3rem 1.5rem 1.5rem !important;
+    z-index: 4 !important;
+    color: white !important;
+    min-height: 80px !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    clip: none !important;
+    clip-path: none !important;
+  }
+  
+  /* Force text visibility with highest specificity */
+  .featured-section .featured-card .match-title-overlay h3 {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    color: white !important;
+    font-size: 1rem !important;
+    margin: 0.25rem 0 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+    transform: none !important;
+    clip: none !important;
+    clip-path: none !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+  .featured-section .featured-card .match-title-overlay p {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    color: white !important;
+    font-size: .75rem !important;
+    margin: 0.25rem 0 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+    transform: none !important;
+    clip: none !important;
+    clip-path: none !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+  /* Ensure featured cards don't hide overflow that contains text */
+  .featured-card {
+    height: 200px !important;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .featured-thumbnail {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  
+  /* Center team badges in visible card area - moved higher for more text room */
+  .team-badges-overlay.featured-badges-overlay {
+    position: absolute;
+    top: 30% !important; /* Moved higher than 40% to give more room for text */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    z-index: 3;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Featured team badges sizing */
+  .team-badge-overlay.featured-team-badge {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 8px !important;
+    padding: 4px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .team-placeholder-overlay.featured-placeholder {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  .team-placeholder-overlay.featured-placeholder .team-initial {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+  }
+  
+  .vs-divider-overlay.featured-vs {
+    font-size: 0.8rem !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+  
+  /* Always show match title overlay - positioned relative to featured-card, not featured-thumbnail */
+  .featured-section .match-title-overlay,
+  .featured-card .match-title-overlay {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9)) !important;
+    padding: 3rem 1.5rem 1.5rem !important;
+    z-index: 4 !important;
+    color: white !important;
+    min-height: 80px !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure featured cards have proper positioning context */
+  .featured-card {
+    position: relative !important;
+  }
+  
+  /* Ensure featured-thumbnail fills the card but doesn't contain the overlay */
+  .featured-card .featured-thumbnail {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1 !important;
+  }
+  
+  .featured-section .match-title-overlay h3,
+  .featured-card .match-title-overlay h3 {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    margin: 0 0 0.5rem 0 !important;
+    line-height: 1.3 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  .featured-section .match-title-overlay p,
+  .featured-card .match-title-overlay p {
+    margin: 0 !important;
+    opacity: 0.9 !important;
+    font-size: 0.9rem !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Adjust live indicator position - smaller for featured mobile cards */
+  .featured-card .live-indicator {
+    position: absolute !important;
+    top: 12px !important;
+    left: 12px !important;
+    background: var(--color-butterscotch) !important;
+    color: white !important;
+    padding: 4px 6px !important; /* Smaller padding */
+    border-radius: 8px !important; /* Smaller border radius */
+    font-size: 0.65rem !important; /* Smaller font size */
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important; /* Reduced letter spacing */
+    z-index: 5 !important;
+  }
+}/* Stream Homepage Styles */
 .stream-homepage {
   min-height: 100vh;
   background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
@@ -246,7 +445,7 @@
 
 .hero-search {
   position: relative;
-  max-width: 600px;
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -1567,6 +1766,56 @@
   .search-container input {
     width: 150px;
   }
+  
+  /* Mobile navigation improvements - centered tabs */
+  .header__nav .nav {
+    display: flex !important;
+    justify-content: center !important;
+    gap: var(--space-sm) !important;
+  }
+  
+  .nav__item {
+    font-size: 0.8rem !important;
+    padding: 0.25rem 0.5rem !important;
+    white-space: nowrap;
+  }
+  
+  .nav__item--highlight {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.4rem !important;
+  }
+  
+  /* Very compact mobile search */
+  .search--mobile {
+    width: auto !important;
+    margin-left: 8px !important;
+  }
+  
+  .search--mobile .search__input {
+    width: 70px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.4rem 0.3rem 1.4rem !important;
+    border-radius: 14px !important;
+  }
+  
+  .search--mobile .search__icon {
+    left: 4px !important;
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  .btn--icon {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+  }
+  
+  /* Hide help button on mobile */
+  .btn--help {
+    display: none !important;
+  }
+  
   .hero-section {
     padding: 3rem 0 4rem;
     margin-bottom: 3rem;
@@ -1621,6 +1870,37 @@
     width: 150px;
     font-size: 0.8rem;
   }
+  
+  .nav__item {
+    font-size: 0.8rem !important;
+    padding: 0.3rem 0.6rem !important;
+  }
+  
+  .nav__item--highlight {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+  
+  .search__input {
+    width: 120px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .btn--icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .btn--icon svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* Ensure help button stays hidden */
+  .btn--help {
+    display: none !important;
+  }
+  
   .hero-title {
     font-size: 1.8rem;
   }

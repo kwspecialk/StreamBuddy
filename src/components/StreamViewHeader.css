@@ -143,40 +143,99 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .stream-view-header {
-    padding: 0 15px;
+    padding: 0 12px;
+    height: 56px; /* Slightly shorter on mobile */
   }
   
   .header-left {
-    gap: 12px;
+    gap: 10px;
+    flex-shrink: 0;
   }
   
   .back-to-home-btn {
     font-size: 1rem;
+    padding: 6px 8px;
+  }
+  
+  .back-to-home-btn img {
+    height: 20px !important;
+  }
+  
+  .header-actions {
+    gap: 12px; /* Better spacing between buttons */
+    flex-wrap: nowrap;
+    overflow: visible;
+    margin-left: auto; /* Push buttons to the right */
+  }
+  
+  .btn--md {
+    font-size: 0.85rem !important;
+    padding: 8px 12px !important;
+    min-width: auto;
+  }
+  
+  .btn--primary {
+    flex-shrink: 0;
+  }
+  
+  .btn--secondary {
+    flex-shrink: 0;
+    min-width: 80px; /* Give manage button proper width */
+  }
+  
+  .fullscreen-btn {
+    display: none !important; /* Hide fullscreen button on mobile */
+  }
+  
+  .help-btn {
+    display: none !important; /* Hide help button on mobile */
   }
   
   .edit-streams-btn {
-    font-size: 0.75rem;
-    padding: 6px 10px;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    min-width: 80px;
   }
   
   .add-stream-btn-header {
-    font-size: 0.8rem;
-    padding: 6px 10px;
-  }
-  
-  .header-right {
-    gap: 12px;
+    font-size: 0.85rem;
+    padding: 8px 12px;
   }
 }
 
 @media (max-width: 480px) {
   .stream-view-header {
-    padding: 0 12px;
+    padding: 0 8px;
+    height: 52px;
   }
   
   .header-left {
     gap: 8px;
   }
+  
+  .back-to-home-btn {
+    font-size: 0.9rem;
+    padding: 4px 6px;
+  }
+  
+  .back-to-home-btn img {
+    height: 18px !important;
+  }
+  
+  .header-actions {
+    gap: 6px;
+  }
+  
+  .btn--md {
+    font-size: 0.75rem !important;
+    padding: 5px 8px !important;
+  }
+  
+  .btn--md span {
+    display: none; /* Hide text on very small screens */
+  }
+  
+  /* Don't add extra icons since buttons already have them */
   
   .edit-streams-btn {
     font-size: 0.7rem;
