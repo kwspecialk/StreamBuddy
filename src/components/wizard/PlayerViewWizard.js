@@ -15,7 +15,7 @@ const steps = [
     id: 2,
     title: "Manage Your Streams",
     content: "Use 'Manage Streams' to reorder, delete, refresh, or switch episodes for your active streams.",
-    highlight: '.btn--secondary',
+    highlight: '.btn--md--settings',
     position: "bottom-left"
   },
   {

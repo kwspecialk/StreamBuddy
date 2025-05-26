@@ -111,8 +111,7 @@
   }
   
   .nav__items {
-    justify-content: center;
-    gap: var(--space-lg);
+    gap: var(--space-sm);
   }
 }
 

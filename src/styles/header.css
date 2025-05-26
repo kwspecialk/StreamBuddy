@@ -2,6 +2,23 @@
    HEADER COMPONENTS
    ========================================================================== */
 
+/* Button system improvements for mobile */
+.btn--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.nav__item {
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.search__input {
+  transition: all 0.2s ease;
+}
+
 /* Base Header */
 .header {
   position: relative;
@@ -69,6 +86,21 @@
   gap: var(--space-xs);
 }
 
+/* Mobile header actions - hidden by default */
+.header__actions--mobile {
+  display: none;
+}
+
+/* Mobile search - hidden by default */
+.search--mobile {
+  display: none;
+}
+
+/* Desktop search elements - shown by default */
+.header__actions--desktop {
+  display: flex;
+}
+
 /* Responsive Header */
 @media (max-width: 1200px) {
   .header__content {
@@ -76,31 +108,144 @@
   }
 }
 
+@media (min-width: 769px) {
+  /* Ensure mobile search is hidden on desktop */
+  .search--mobile {
+    display: none !important;
+  }
+  
+  /* Ensure desktop elements are visible */
+  .header__actions--desktop {
+    display: flex !important;
+  }
+}
+
 @media (max-width: 768px) {
   .header__content {
     flex-direction: column;
-    gap: var(--space-lg);
-    padding: var(--space-lg);
+    gap: var(--space-sm); /* Even smaller gap */
+    padding: var(--space-md) var(--space-lg);
+    align-items: center;
   }
   
-  .header__nav {
+  /* Hide desktop header actions on mobile */
+  .header__actions--desktop {
+    display: none !important;
+  }
+  
+  /* Hide mobile header actions (no profile button) */
+  .header__actions--mobile {
+    display: none !important;
+  }
+  
+  /* Show mobile search */
+  .search--mobile {
+    display: flex !important;
+  }
+  
+  /* Centered logo only */
+  .header__logo {
+    text-align: center;
     width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .header__logo h1 {
+    margin: 0;
+  }
+  
+  .header__logo img {
+    height: 28px !important;
+    max-width: none;
+  }
+  
+  /* Navigation row with search - centered tabs */
+  .header__nav {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
     margin-left: 0;
+    gap: var(--space-xs);
   }
   
-  .header__actions {
-    width: 100%;
-    justify-content: space-between;
+  /* Center the navigation container */
+  .header-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* Centered navigation tabs */
+  .nav {
+    display: flex !important;
+    justify-content: center !important;
+    gap: var(--space-sm) !important;
+  }
+  
+  .nav__item {
+    font-size: 0.8rem !important;
+    padding: 0.25rem 0.5rem !important;
+    white-space: nowrap;
+  }
+  
+  .nav__item--highlight {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.4rem !important;
+  }
+  
+  /* Very compact mobile search bar - fixed position on right */
+  .search--mobile {
+    display: none; /* Hidden by default */
+    position: relative;
+    width: auto;
+    flex-shrink: 0;
+    margin-left: 8px; /* Small gap from navigation */
+  }
+  
+  .search--mobile .search__input {
+    width: 70px !important; /* Even smaller to fit better */
+    height: 28px !important;
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.4rem 0.3rem 1.4rem !important;
+    border-radius: 14px !important;
+  }
+  
+  .search--mobile .search__icon {
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+  }
+  
+  /* Hide help button on mobile homepage */
+  .btn--help {
+    display: none !important;
   }
 }
 
 @media (max-width: 480px) {
   .header__content {
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
+  }
+  
+  .header__logo {
+    min-width: 100px;
+  }
+  
+  .header__logo img {
+    height: 24px !important;
   }
   
   .header__logo h1 {
     font-size: var(--font-size-lg);
+  }
+  
+  .header__actions {
+    gap: 4px;
   }
 }

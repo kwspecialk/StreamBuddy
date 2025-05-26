@@ -519,12 +519,12 @@ const StreamBrowserModal = ({
         <div className="modal__footer">
           <div className="modal__actions">
             <button className="btn btn--secondary" onClick={openCustomStreamPopup}>
-              <Plus size={18} /> Custom
+              <Plus size={16} /> Custom
             </button>
           </div>
           {currentItems.length > 0 && (
             <div className="footer-tip text-center flex-1">
-              <span role="img" aria-label="tip">💡</span> Tip: Use search to find specific content. Click sports to add instantly. Click movies/shows to see details.
+              <span role="img" aria-label="tip"></span> Tip: Use search to find specific content. Click sports to add instantly. Click movies/shows to see details.
             </div>
           )}
         </div>

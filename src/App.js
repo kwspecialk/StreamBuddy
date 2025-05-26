@@ -19,7 +19,7 @@ import StreamHomepage from './components/StreamHomepage';
 import DebugHomepage from './components/DebugHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
-import { Plus, Maximize, Minimize, HelpCircle } from 'lucide-react';
+import { Plus, Maximize, Minimize, HelpCircle, Settings } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
 import QuickstartWizard from './components/wizard/QuickstartWizard';
 import PlayerViewWizard from './components/wizard/PlayerViewWizard';
@@ -196,14 +196,31 @@ const App = () => {
   useEffect(() => {
     const qswCompleted = localStorage.getItem('streambuddy_quickstart_completed') === 'true';
     const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
+    
+    // Check if user is on mobile
+    const isMobile = window.innerWidth <= 768;
 
     console.log('[App.js Wizards useEffect] Checking states:', {
       currentView, 
       qswCompleted,
       pvwCompleted,
+      isMobile,
       showQuickstartWizard_state: showQuickstartWizard,
       showPlayerViewWizard_state: showPlayerViewWizard
     });
+
+    // Disable wizards on mobile devices
+    if (isMobile) {
+      if (showQuickstartWizard) {
+        console.log('[App.js] Hiding QuickstartWizard on mobile');
+        setShowQuickstartWizard(false);
+      }
+      if (showPlayerViewWizard) {
+        console.log('[App.js] Hiding PlayerViewWizard on mobile');
+        setShowPlayerViewWizard(false);
+      }
+      return;
+    }
 
     // Handle QuickstartWizard (homepage only)
     if (currentView === 'homepage') {
@@ -682,11 +699,11 @@ return (
           </button>
           
           <button 
-            className="btn btn--md btn--secondary"
+            className="btn btn--md--settings btn--secondary--settings"
             onClick={handleOpenEditStreams}
           >
-            <span className="edit-btn-text-full">Manage Streams</span>
-            <span className="edit-btn-text-short">Manage</span>
+            <Settings size={20} />
+            <span>Manage</span>
           </button>
           
           <button 

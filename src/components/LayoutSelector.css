@@ -224,12 +224,51 @@
   }
   
   .layout-toggle.enhanced {
-    min-width: 120px;
-    padding: 10px 12px;
+    min-width: 80px;
+    padding: 8px 10px;
+    font-size: 12px;
   }
   
   .layout-menu.enhanced {
-    width: 280px;
+    width: 200px; /* Smaller width for mobile */
+    right: 0; /* Align to right edge */
+    max-height: 300px; /* Limit height */
+  }
+  
+  /* Hide header on mobile */
+  .layout-menu-header {
+    display: none;
+  }
+  
+  /* More compact layout options */
+  .layout-menu-grid {
+    padding: 8px;
+    gap: 4px;
+    max-height: 280px;
+  }
+  
+  .layout-option {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .layout-option-preview {
+    width: 32px;
+    height: 20px;
+  }
+  
+  /* Hide descriptions on mobile */
+  .layout-option-desc {
+    display: none;
+  }
+  
+  .layout-option-name {
+    font-size: 13px;
+  }
+  
+  /* Hide numbers in previews on mobile */
+  .layout-preview-number {
+    display: none;
   }
 }
 
@@ -240,14 +279,35 @@
   }
   
   .layout-toggle.enhanced {
-    min-width: 100px;
-    padding: 8px 10px;
-    font-size: 12px;
+    min-width: 70px;
+    padding: 6px 8px;
+    font-size: 11px;
   }
   
   .layout-menu.enhanced {
-    width: 250px;
-    right: -50px; /* Center better on small screens */
+    width: 180px; /* Even smaller for very small screens */
+    right: 0;
+    max-height: 250px;
+  }
+  
+  .layout-menu-grid {
+    padding: 6px;
+    gap: 2px;
+    max-height: 230px;
+  }
+  
+  .layout-option {
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  .layout-option-preview {
+    width: 28px;
+    height: 18px;
+  }
+  
+  .layout-option-name {
+    font-size: 12px;
   }
 }
 

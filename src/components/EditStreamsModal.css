@@ -328,6 +328,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  padding: var(--space-sm);
 }
 
 .header-left h2 {
