@@ -258,7 +258,7 @@ const App = () => {
     
     try {
       setIsLoadingMatches(true);
-      const response = await fetch('https://streamed.su/api/matches/live');
+      const response = await fetch('https://streamed.pk/api/matches/live');
       if (!response.ok) return;
       
       const data = await response.json();
@@ -347,7 +347,7 @@ const App = () => {
         // Basic source selection: use the first one. Could be more sophisticated.
         const sourceToFetch = dataForStream.sources.find(s => s.source && s.id);
         if (sourceToFetch) {
-          const response = await fetch(`https://streamed.su/api/stream/${sourceToFetch.source}/${sourceToFetch.id}`);
+          const response = await fetch(`https://streamed.pk/api/stream/${sourceToFetch.source}/${sourceToFetch.id}`);
           if (response.ok) {
             const responseData = await response.json();
             if (responseData?.[0]?.embedUrl) {
@@ -515,7 +515,7 @@ const App = () => {
         
         try {
           const source = urlData.match.sources[nextIndex];
-          const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+          const response = await fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
           const data = await response.json();
 
           if (data?.[0]?.embedUrl) {

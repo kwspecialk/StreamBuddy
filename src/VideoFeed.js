@@ -91,7 +91,7 @@ const VideoFeed = ({
     const source = urlData.match.sources[nextIndex];
 
     try {
-      const data = await fetchStreamData(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+      const data = await fetchStreamData(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
       
       if (data?.[0]?.embedUrl) {
         onUpdateUrls(prev => {

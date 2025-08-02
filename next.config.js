@@ -8,12 +8,12 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://streamed.su https://embedme.top https://rr.vipstreams.in;",
+              "default-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrc.xyz https://*.vidsrc.xyz;",
               "frame-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://embedme.top https://*.embedme.top;",
               "img-src 'self' * data: blob:;",
               "media-src 'self' * blob:;",
-              "connect-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://streamed.su https://embedme.top https://rr.vipstreams.in;",
+              "connect-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
               "style-src 'self' 'unsafe-inline' https://vidsrc.xyz https://*.vidsrc.xyz;",
               "frame-ancestors 'self';",
               "worker-src 'self' blob: *;"
@@ -60,7 +60,7 @@ const nextConfig = {
       // Live sports streams
       {
         source: '/api/stream/:source/:id*',
-        destination: 'https://streamed.su/api/stream/:source/:id*'
+        destination: 'https://streamed.pk/api/stream/:source/:id*'
       },
       {
         source: '/api/stream/:path*',
