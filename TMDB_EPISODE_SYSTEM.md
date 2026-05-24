@@ -88,11 +88,11 @@ Show with 24 episodes: S1E24 → S2E1
 
 // Normal advancement
 "📺 Advanced to next episode: S1E5 → S1E6"
-"New URL: https://vidsrc.xyz/embed/tv/1399/1-6"
+"New URL: https://vidsrcme.su/embed/tv/1399/1-6"
 
 // Season jump
 "🎉 Jumped to next season! S1E10 → S2E1"  
-"New URL: https://vidsrc.xyz/embed/tv/1399/2-1"
+"New URL: https://vidsrcme.su/embed/tv/1399/2-1"
 
 // End of series
 "No more episodes available after S8E6"
@@ -113,16 +113,16 @@ Show with 24 episodes: S1E24 → S2E1
 ### **Test URLs to Try:**
 ```bash
 # Game of Thrones S1E9 (should advance to S1E10)
-https://vidsrc.xyz/embed/tv/1399/1-9
+https://vidsrcme.su/embed/tv/1399/1-9
 
 # Game of Thrones S1E10 (should jump to S2E1)  
-https://vidsrc.xyz/embed/tv/1399/1-10
+https://vidsrcme.su/embed/tv/1399/1-10
 
 # Breaking Bad S1E6 (should advance to S1E7)
-https://vidsrc.xyz/embed/tv/1396/1-6
+https://vidsrcme.su/embed/tv/1396/1-6
 
 # Breaking Bad S1E7 (should jump to S2E1)
-https://vidsrc.xyz/embed/tv/1396/1-7
+https://vidsrcme.su/embed/tv/1396/1-7
 ```
 
 ---

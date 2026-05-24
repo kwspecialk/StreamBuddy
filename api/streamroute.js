@@ -15,12 +15,12 @@ export default async function handler(req, res) {
 
     console.log('Fetching stream:', { source, id });
 
-    const response = await fetch(`https://streamed.su/api/stream/${source}/${id}`, {
+    const response = await fetch(`https://streamed.pk/api/stream/${source}/${id}`, {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': 'https://streamed.su/',
-        'Origin': 'https://streamed.su'
+        'Referer': 'https://streamed.pk/',
+        'Origin': 'https://streamed.pk'
       }
     });
 

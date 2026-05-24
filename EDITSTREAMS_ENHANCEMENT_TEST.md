@@ -32,7 +32,7 @@
 
 **Testing Next Episode**:
 1. **Normal Episode Advance**:
-   - Add a TV show stream (e.g., `https://vidsrc.xyz/embed/tv/1399/1-1` for Game of Thrones S1E1)
+   - Add a TV show stream (e.g., `https://vidsrcme.su/embed/tv/1399/1-1` for Game of Thrones S1E1)
    - Open Manage Streams modal
    - Click the right arrow button (→) next to TV show streams
    - ✅ Should advance to S1E2, then S1E3, etc.
@@ -73,7 +73,7 @@
 
 ### **Next Episode Button**:
 - 🟡 **Orange/butterscotch colored** right arrow (ChevronRight icon)
-- Only appears on **TV show streams** (URLs containing `vidsrc.xyz/embed/tv/` or `2embed.cc/embed/tv/`)
+- Only appears on **TV show streams** (URLs containing `vidsrcme.su/embed/tv/` or `2embed.cc/embed/tv/`)
 - Shows **spinning animation** when loading
 - **Disabled state** during operation
 

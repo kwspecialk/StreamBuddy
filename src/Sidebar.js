@@ -212,7 +212,7 @@ const Sidebar = ({
       
       try {
         // Construct and log the API URL before fetching
-        const apiUrl = `https://streamed.su/api/stream/${match.sources[0].source}/${match.sources[0].id}`;
+        const apiUrl = `https://streamed.pk/api/stream/${match.sources[0].source}/${match.sources[0].id}`;
         console.log('Fetching from URL:', apiUrl);
   
         const response = await fetch(apiUrl);
@@ -334,7 +334,7 @@ const Sidebar = ({
 
     try {
       const source = urlData.match.sources[nextIndex];
-      const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+      const response = await fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
       const data = await response.json();
 
       if (data?.[0]?.embedUrl) {
@@ -369,7 +369,7 @@ const Sidebar = ({
     try {
       setIsLoading(true);
       console.log('Fetching matches...', new Date().toLocaleTimeString());
-      const response = await fetch('https://streamed.su/api/matches/live');
+      const response = await fetch('https://streamed.pk/api/matches/live');
       
       if (!response.ok) {
         console.error('Match fetch failed:', response.status);

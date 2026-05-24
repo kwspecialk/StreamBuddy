@@ -58,13 +58,13 @@ Test with these example URLs (replace with real show IDs):
 
 ```
 # Start with early episode
-https://vidsrc.xyz/embed/tv/1399/1-3  (Game of Thrones S1E3)
+https://vidsrcme.su/embed/tv/1399/1-3  (Game of Thrones S1E3)
 
 # Test season boundary
-https://vidsrc.xyz/embed/tv/1399/1-10 (Game of Thrones S1E10 - should jump to S2E1)
+https://vidsrcme.su/embed/tv/1399/1-10 (Game of Thrones S1E10 - should jump to S2E1)
 
 # Test high episode numbers
-https://vidsrc.xyz/embed/tv/some-show/1-22 (Should jump to S2E1)
+https://vidsrcme.su/embed/tv/some-show/1-22 (Should jump to S2E1)
 ```
 
 ---
@@ -93,13 +93,13 @@ The enhanced next episode function now provides detailed console logs:
 // Normal episode advancement
 "Advancing to next episode: S1E6"
 "Advanced from S1E5 to S1E6"
-"New URL: https://vidsrc.xyz/embed/tv/1399/1-6"
+"New URL: https://vidsrcme.su/embed/tv/1399/1-6"
 
 // Season jump detection
 "Episode 22 is likely end of season (22+ episodes)"
 "Jumping to next season: S2E1"
 "Advanced from S1E22 to S2E1"
-"New URL: https://vidsrc.xyz/embed/tv/1399/2-1"
+"New URL: https://vidsrcme.su/embed/tv/1399/2-1"
 ```
 
 ### **To Test Season Jumping**:
@@ -131,7 +131,7 @@ The enhanced next episode function now provides detailed console logs:
 ## **Edge Cases to Test**
 
 ### **URL Parsing**:
-- ✅ Test with `vidsrc.xyz` URLs
+- ✅ Test with `vidsrcme.su` URLs
 - ✅ Test with `2embed.cc` URLs
 - ✅ Test with malformed URLs (should not crash)
 

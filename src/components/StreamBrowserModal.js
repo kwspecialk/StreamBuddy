@@ -203,7 +203,7 @@ const StreamBrowserModal = ({
       if (item.sources && item.sources.length > 0) {
         try {
           const source = item.sources[0];
-          const response = await fetch(`https://streamed.su/api/stream/${source.source}/${source.id}`);
+          const response = await fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
           
           if (response.ok) {
             const data = await response.json();

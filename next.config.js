@@ -8,13 +8,13 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://streamed.su https://embedme.top https://rr.vipstreams.in;",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrc.xyz https://*.vidsrc.xyz;",
-              "frame-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://embedme.top https://*.embedme.top;",
+              "default-src 'self' https://vidsrcme.su https://*.vidsrcme.su https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrcme.su https://*.vidsrcme.su;",
+              "frame-src 'self' https://vidsrcme.su https://*.vidsrcme.su https://embedme.top https://*.embedme.top;",
               "img-src 'self' * data: blob:;",
               "media-src 'self' * blob:;",
-              "connect-src 'self' https://vidsrc.xyz https://*.vidsrc.xyz https://streamed.su https://embedme.top https://rr.vipstreams.in;",
-              "style-src 'self' 'unsafe-inline' https://vidsrc.xyz https://*.vidsrc.xyz;",
+              "connect-src 'self' https://vidsrcme.su https://*.vidsrcme.su https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
+              "style-src 'self' 'unsafe-inline' https://vidsrcme.su https://*.vidsrcme.su;",
               "frame-ancestors 'self';",
               "worker-src 'self' blob: *;"
             ].join(' ')
@@ -60,7 +60,7 @@ const nextConfig = {
       // Live sports streams
       {
         source: '/api/stream/:source/:id*',
-        destination: 'https://streamed.su/api/stream/:source/:id*'
+        destination: 'https://streamed.pk/api/stream/:source/:id*'
       },
       {
         source: '/api/stream/:path*',
@@ -82,7 +82,7 @@ const nextConfig = {
       // VidSrc routes
       {
         source: '/api/vidsrc/:path*',
-        destination: 'https://vidsrc.xyz/:path*'
+        destination: 'https://vidsrcme.su/:path*'
       },
       // Security bypass
       {

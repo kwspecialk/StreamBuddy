@@ -21,13 +21,13 @@ export default async function handler(req, res) {
     
     console.log('Fetching stream:', streamId);
 
-    const response = await fetch(`https://streamed.su/api/stream/${streamId}`, {
+    const response = await fetch(`https://streamed.pk/api/stream/${streamId}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Referer': 'https://streamed.su',
-        'Origin': 'https://streamed.su'
+        'Referer': 'https://streamed.pk',
+        'Origin': 'https://streamed.pk'
       }
     });
 
