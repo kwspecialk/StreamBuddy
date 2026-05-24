@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 export default async function handler(req, res) {
   try {
     // Get the latest content for movies/shows
-    const response = await fetch('https://vidsrc.xyz/movies/new', {
+    const response = await fetch('https://vidsrcme.su/movies/new', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'application/json',

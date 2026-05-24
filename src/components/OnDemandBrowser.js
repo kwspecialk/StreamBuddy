@@ -62,7 +62,7 @@ const OnDemandBrowser = ({ onAddUrl, onShowMovieDetails }) => {
     if (item.type === 'movie') {
       // Add a random parameter to help bypass caching/sandbox checks
       const timestamp = new Date().getTime();
-      const embedUrl = `https://vidsrc.xyz/embed/movie/${item.tmdb}?_=${timestamp}`;
+      const embedUrl = `https://vidsrcme.su/embed/movie/${item.tmdb}?_=${timestamp}`;
       onAddUrl(embedUrl, item);
     } else {
       onShowMovieDetails(item);
