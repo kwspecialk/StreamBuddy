@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import VideoFeed from './VideoFeed';
 import LayoutSelector from './LayoutSelector';
 import { LAYOUTS } from './layouts';
@@ -9,19 +9,14 @@ import './components/StreamViewHeader.css';
 import './components/AddStreamButton.css';
 import './components/StreamBrowserModal.css';
 import './components/EditStreamsModal.css';
-import './components/wizard/QuickstartWizard.css';
 import ErrorBoundary from './components/ErrorBoundary';
-import OnDemandBrowser from './components/OnDemandBrowser';
 import MovieDetailsModal from './components/MovieDetailsModal';
-import EpisodeSelector from './components/EpisodeSelector.js';
 import OnDemandVideoFeed from './OnDemandVideoFeed';
 import StreamHomepage from './components/StreamHomepage';
-import DebugHomepage from './components/DebugHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
 import { Plus, Maximize, Minimize, HelpCircle, Settings } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
-import QuickstartWizard from './components/wizard/QuickstartWizard';
 import PlayerViewWizard from './components/wizard/PlayerViewWizard';
 import './components/wizard/PlayerViewWizard.css';
 
@@ -55,16 +50,9 @@ const App = () => {
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
   const [sourceIndices, setSourceIndices] = useState({});
-  const [streamRetries, setStreamRetries] = useState({});
-  const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
-  const [selectedShow, setSelectedShow] = useState(null);
+  const [, setStreamRetries] = useState({});
   const [isActuallyFullscreen, setIsActuallyFullscreen] = useState(false);
   const [isHeaderVisibleInFullscreen, setIsHeaderVisibleInFullscreen] = useState(false);
-  const [showQuickstartWizard, setShowQuickstartWizard] = useState(() => {
-    const quickstartCompleted = localStorage.getItem('streambuddy_quickstart_completed');
-    console.log('[App.js Init] quickstartCompleted from localStorage:', quickstartCompleted, 'Setting showQuickstartWizard to:', quickstartCompleted !== 'true');
-    return quickstartCompleted !== 'true';
-  });
 
   const [showPlayerViewWizard, setShowPlayerViewWizard] = useState(() => {
     const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
@@ -167,24 +155,10 @@ const App = () => {
   }, [isActuallyFullscreen, currentView]); // isHeaderVisibleInFullscreen removed from deps
 
   // Wizard Handlers & Logic
-  const handleCloseQuickstartWizard = () => {
-    console.log('[App.js handleCloseQuickstartWizard] Closing QuickstartWizard');
-    setShowQuickstartWizard(false);
-    localStorage.setItem('streambuddy_quickstart_wizard_completed', 'true');
-  };
-
   const handleOpenPlayerViewWizardManual = () => {
     console.log('[App.js] Manually opening PlayerViewWizard via help button.');
-    // Ensure PVW doesn't show if QSW is active and not completed
-    const qswCompleted = localStorage.getItem('streambuddy_quickstart_wizard_completed') === 'true';
-    if (showQuickstartWizard && !qswCompleted) {
-      console.log('[App.js] Quickstart wizard is active and not completed, not opening PVW manually.');
-      return; // Don't open PVW if QSW should be active
-    }
     setPlayerViewWizardResetToken(prevToken => prevToken + 1);
     setShowPlayerViewWizard(true);
-    // Consider if PVW should reset to its first step when opened manually.
-    // This might require passing a prop or a ref to PlayerViewWizard to call a reset function.
   };
 
   const handleClosePlayerViewWizard = () => {
@@ -194,7 +168,6 @@ const App = () => {
   };
 
   useEffect(() => {
-    const qswCompleted = localStorage.getItem('streambuddy_quickstart_completed') === 'true';
     const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
     
     // Check if user is on mobile
@@ -202,19 +175,13 @@ const App = () => {
 
     console.log('[App.js Wizards useEffect] Checking states:', {
       currentView, 
-      qswCompleted,
       pvwCompleted,
       isMobile,
-      showQuickstartWizard_state: showQuickstartWizard,
       showPlayerViewWizard_state: showPlayerViewWizard
     });
 
     // Disable wizards on mobile devices
     if (isMobile) {
-      if (showQuickstartWizard) {
-        console.log('[App.js] Hiding QuickstartWizard on mobile');
-        setShowQuickstartWizard(false);
-      }
       if (showPlayerViewWizard) {
         console.log('[App.js] Hiding PlayerViewWizard on mobile');
         setShowPlayerViewWizard(false);
@@ -222,38 +189,24 @@ const App = () => {
       return;
     }
 
-    // Handle QuickstartWizard (homepage only)
-    if (currentView === 'homepage') {
-      // Hide PlayerViewWizard if somehow shown on homepage
-      if (showPlayerViewWizard) {
-        console.log('[App.js] Hiding PlayerViewWizard on homepage');
-        setShowPlayerViewWizard(false);
-      }
-      
-      // Show QuickstartWizard if not completed
-      if (!qswCompleted && !showQuickstartWizard) {
-        console.log('[App.js] Showing QuickstartWizard (first time on homepage)');
-        setShowQuickstartWizard(true);
-      }
-    } 
     // Handle PlayerViewWizard (stream-view only)
-    else if (currentView === 'stream-view') {
-      // Hide QuickstartWizard if shown in stream-view
-      if (showQuickstartWizard) {
-        console.log('[App.js] Hiding QuickstartWizard in stream-view');
-        setShowQuickstartWizard(false);
-      }
-      
+    if (currentView === 'stream-view') {
       // Show PlayerViewWizard if not completed
       if (!pvwCompleted && !showPlayerViewWizard) {
         console.log('[App.js] Showing PlayerViewWizard (first time in stream-view)');
         setShowPlayerViewWizard(true);
       }
+    } else {
+      // Hide PlayerViewWizard on other views
+      if (showPlayerViewWizard) {
+        console.log('[App.js] Hiding PlayerViewWizard');
+        setShowPlayerViewWizard(false);
+      }
     }
-  }, [currentView, showQuickstartWizard, showPlayerViewWizard]);
+  }, [currentView, showPlayerViewWizard]);
 
   // Fetch matches for Homepage and Stream Browser
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     if (matches.length > 0) return;
     
     try {
@@ -289,7 +242,7 @@ const App = () => {
     } finally {
       setIsLoadingMatches(false);
     }
-  };
+  }, [matches]);
 
   // Helper function to auto-switch layout based on stream count
   const autoSwitchLayout = (streamCount) => {
@@ -323,7 +276,7 @@ const App = () => {
     if (currentView === 'homepage' || showStreamBrowser) {
       fetchMatches();
     }
-  }, [currentView, showStreamBrowser]);
+  }, [currentView, showStreamBrowser, fetchMatches]);
 
   const handleStreamSelect = async (itemOrUrl, itemDataIfUrl = null) => {
     let urlToAdd = null;
@@ -540,24 +493,6 @@ const App = () => {
     }
   };
 
-  const clearSavedState = () => {
-    localStorage.removeItem('savedVideoUrls');
-    localStorage.removeItem('savedLayout');
-    localStorage.removeItem('streambuddy_setup_completed');
-    localStorage.removeItem('streambuddy_quickstart_completed');
-    setVideoUrls([]);
-    setLayout('single');
-    setActiveVideoId(null);
-    setSourceIndices({});
-    setStreamRetries({});
-    setMovieDetails(null);
-    setCurrentView('homepage');
-  };
-
-  const handleShowQuickstartWizard = () => {
-    setShowQuickstartWizard(true);
-  };
-
   const getDisplayedVideos = () => {
     if (layout === 'grid-infinite') {
       return videoUrls;
@@ -626,19 +561,6 @@ const App = () => {
     }
 };
 
-// Render common components that should persist across views
-const renderQuickstartWizard = () => {
-  console.log('[App.js render] QuickstartWizard isOpen prop:', showQuickstartWizard);
-  return (
-  <QuickstartWizard
-    isOpen={showQuickstartWizard}
-    onClose={handleCloseQuickstartWizard} // Uses the new handler
-    currentView={currentView}
-    isMovieDetailsModalOpen={!!movieDetails} // Only pass necessary props
-  />
-); // End of renderQuickstartWizard function
-}
-
 // Show Homepage
 if (currentView === 'homepage') {
   return (
@@ -649,9 +571,7 @@ if (currentView === 'homepage') {
         matches={matches}
         isLoading={isLoadingMatches}
         onAddUrl={addVideoUrl}
-        onShowQuickstartWizard={handleShowQuickstartWizard}
       />
-      {renderQuickstartWizard()}
       <Analytics />
     </div>
   );
@@ -792,7 +712,7 @@ return (
           };
         })()}
       >
-        {getDisplayedVideos().map((url, index) => {
+        {displayedVideos.map((url, index) => {
           const isOnDemand = url.includes('vidsrcme.su') || url.includes('2embed.cc');
           
           return (
@@ -825,9 +745,6 @@ return (
           onPlayStream={handleStreamSelect}
         />
       )}
-      
-      {/* Quickstart Wizard */}
-      {renderQuickstartWizard()}
       
       <Analytics />
     </div>

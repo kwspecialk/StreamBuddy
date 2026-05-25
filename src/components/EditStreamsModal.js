@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog, Lightbulb } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
@@ -261,7 +261,7 @@ const EditStreamsModal = ({
     return baseUrl;
   };
 
-  const getStreamTitle = (url, index) => {
+  const getStreamTitle = useCallback((url, index) => {
     const baseKeyUrl = getBaseUrlForKey(url);
     const tvInfo = parseTVShowUrl(url);
 
@@ -317,7 +317,7 @@ const EditStreamsModal = ({
     const defaultTitle = `Stream ${index + 1}`;
     setTimeout(() => setStreamTitles(prev => ({ ...prev, [baseKeyUrl]: defaultTitle })), 0);
     return defaultTitle;
-  };
+  }, [streamTitles, sourceIndices, formatApiUrl]);
   
   // Initialize titles for existing streams on first load
   useEffect(() => {
@@ -328,7 +328,7 @@ const EditStreamsModal = ({
         }
       });
     }
-  }, [isOpen, videoUrls.length]); // Run when modal opens or stream count changes
+  }, [isOpen, videoUrls, streamTitles, getStreamTitle]); // Run when modal opens or streams change
 
   const getSourceInfo = (url) => {
     const urlData = sourceIndices[url];

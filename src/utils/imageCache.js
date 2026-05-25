@@ -1,5 +1,4 @@
 // Simplified image cache utility without CORS-violating preloading
-const SPORTS_IMAGE_BASE = '/images/sports';
 const STREAMED_IMAGE_BASE = 'https://streamed.pk/api/images';
 
 // Sports image mappings

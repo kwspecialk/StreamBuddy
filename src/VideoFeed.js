@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { throttler } from './utils/requestThrottler';
 
-
 const VideoFeed = ({ 
   url, 
   isActive, 
@@ -12,107 +11,8 @@ const VideoFeed = ({
 }) => {
   const iframeRef = useRef(null);
   const containerRef = useRef(null);
-  const [visibleStreams, setVisibleStreams] = useState(new Set());
   const [isError, setIsError] = useState(false);
-  const maxConcurrentStreams = 4;
   
-  const playbackConfig = {
-    hlsPlayback: {
-      enableWorker: true,
-      autoStartLoad: true,
-      startPosition: -1,
-      debug: false,
-      maxBufferLength: 30,
-      maxMaxBufferLength: 600,
-      maxBufferSize: 60 * 1000 * 1000,
-    }
-  };
-
-  // Move isElementInViewport outside component or memoize with no dependencies
-  const isElementInViewport = useCallback((el) => {
-    const rect = el.getBoundingClientRect();
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <= window.innerHeight &&
-      rect.right <= window.innerWidth
-    );
-  }, []); 
-
-  // Store displayedVideos length in ref to avoid dependency cycles
-  const displayedVideosLengthRef = useRef(displayedVideos.length);
-  useEffect(() => {
-    displayedVideosLengthRef.current = displayedVideos.length;
-  }, [displayedVideos.length]);
-
-  // Memoize stream management function with minimal dependencies
-  const manageStreamResources = useCallback(() => {
-    const activeStreams = new Set();
-    const length = displayedVideosLengthRef.current;
-
-    for (let index = 0; index < length; index++) {
-      if (activeStreams.size >= maxConcurrentStreams) break;
-      
-      const element = document.querySelector(`.video-container:nth-child(${index + 1})`);
-      if (element && isElementInViewport(element)) {
-        activeStreams.add(index);
-      }
-    }
-
-    setVisibleStreams(prev => {
-      const hasChanges = [...prev].some(id => !activeStreams.has(id)) || 
-                        [...activeStreams].some(id => !prev.has(id));
-      return hasChanges ? activeStreams : prev;
-    });
-  }, [isElementInViewport]);
-
-  const fetchStreamData = useCallback(async (streamUrl) => {
-    try {
-      const response = await throttler.throttledFetch(streamUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.warn('Stream fetch error:', error);
-      return null;
-    }
-  }, []);
-
-  const cycleSource = useCallback(async (url, urlIndex) => {
-    const urlData = sourceIndices[url];
-    if (!urlData?.match?.sources) {
-      console.warn('No source data available for URL:', url);
-      return;
-    }
-
-    const nextIndex = (urlData.sourceIndex + 1) % urlData.match.sources.length;
-    const source = urlData.match.sources[nextIndex];
-
-    try {
-      const data = await fetchStreamData(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
-      
-      if (data?.[0]?.embedUrl) {
-        onUpdateUrls(prev => {
-          const newUrls = [...prev];
-          newUrls[urlIndex] = data[0].embedUrl;
-          return newUrls;
-        });
-
-        onUpdateSourceIndices(prev => ({
-          ...prev,
-          [data[0].embedUrl]: {
-            match: urlData.match,
-            sourceIndex: nextIndex
-          }
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching alternate stream:', error);
-    }
-  }, [sourceIndices, fetchStreamData, onUpdateUrls, onUpdateSourceIndices]);
-
   // Add error handling for sandbox detection
   useEffect(() => {
     const handleSandboxError = (event) => {
@@ -137,8 +37,9 @@ const VideoFeed = ({
         console.warn('Iframe loading error:', error);
         setIsError(true);
         setTimeout(() => {
-          if (iframeRef.current) {
-            iframeRef.current.src = sourceUrl;
+          const currentIframe = iframeRef.current;
+          if (currentIframe) {
+            currentIframe.src = sourceUrl;
             setIsError(false);
           }
         }, 2000);
@@ -148,20 +49,6 @@ const VideoFeed = ({
       setIsError(true);
     }
   }, []);
-
-  // Stream management effect
-  useEffect(() => {
-    const throttledManage = throttler.throttle(manageStreamResources, 200);
-    throttledManage();
-
-    window.addEventListener('scroll', throttledManage);
-    window.addEventListener('resize', throttledManage);
-
-    return () => {
-      window.removeEventListener('scroll', throttledManage);
-      window.removeEventListener('resize', throttledManage);
-    };
-  }, [manageStreamResources]);
 
   // Visibility observer effect
   useEffect(() => {
@@ -195,12 +82,12 @@ const VideoFeed = ({
 
   // Initial load effect
   useEffect(() => {
-    if (url && iframeRef.current) {
-      loadIframe(iframeRef.current, url);
+    const iframe = iframeRef.current;
+    if (url && iframe) {
+      loadIframe(iframe, url);
     }
     
     return () => {
-      const iframe = iframeRef.current;
       if (iframe) {
         iframe.src = '';
       }

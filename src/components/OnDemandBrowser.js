@@ -58,17 +58,6 @@ const OnDemandBrowser = ({ onAddUrl, onShowMovieDetails }) => {
     debouncedSearch(value);
   };
 
-  const handleWatchNow = (item) => {
-    if (item.type === 'movie') {
-      // Add a random parameter to help bypass caching/sandbox checks
-      const timestamp = new Date().getTime();
-      const embedUrl = `https://vidsrcme.su/embed/movie/${item.tmdb}?_=${timestamp}`;
-      onAddUrl(embedUrl, item);
-    } else {
-      onShowMovieDetails(item);
-    }
-  };
-
   const handleItemClick = (item) => {
     if (onShowMovieDetails) {  // Add a safety check
       onShowMovieDetails(item);

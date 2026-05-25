@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Search, Play, Plus } from 'lucide-react';
 import { imageCache } from '../utils/imageCache';
 import CachedImage from './CachedImage';
@@ -30,32 +30,8 @@ const StreamBrowserModal = ({
   const [isCustomStreamPopupOpen, setIsCustomStreamPopupOpen] = useState(false);
   const [customStreamUrl, setCustomStreamUrl] = useState('');
 
-  // Reset when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedStreams([]);
-      setSearchTerm('');
-      setActiveCategory('live-sports');
-      setSearchResults([]); // Clear search results
-      setSearchLoading(false);
-      // Load TMDB data when modal opens
-      loadTrendingMovies();
-      loadTrendingTVShows();
-    }
-  }, [isOpen]);
-
-  // Enhanced search effect (duplicated from StreamHomepage)
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      handleSearch(searchTerm);
-    } else {
-      setSearchResults([]);
-      setSearchLoading(false);
-    }
-  }, [searchTerm, activeCategory]); // Re-run when searchTerm OR activeCategory changes
-
   // Load TMDB data functions
-  const loadTrendingMovies = async () => {
+  const loadTrendingMovies = useCallback(async () => {
     if (trendingMovies.length > 0) return; // Don't reload if already loaded
     
     setMoviesLoading(true);
@@ -69,9 +45,9 @@ const StreamBrowserModal = ({
       setTrendingMovies([]);
     }
     setMoviesLoading(false);
-  };
+  }, [trendingMovies]);
 
-  const loadTrendingTVShows = async () => {
+  const loadTrendingTVShows = useCallback(async () => {
     if (trendingTVShows.length > 0) return; // Don't reload if already loaded
     
     setTVShowsLoading(true);
@@ -85,10 +61,31 @@ const StreamBrowserModal = ({
       setTrendingTVShows([]);
     }
     setTVShowsLoading(false);
-  };
+  }, [trendingTVShows]);
+
+  // Reset when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedStreams([]);
+      setSearchTerm('');
+      setActiveCategory('live-sports');
+      setSearchResults([]); // Clear search results
+      setSearchLoading(false);
+      // Load TMDB data when modal opens
+      loadTrendingMovies();
+      loadTrendingTVShows();
+    }
+  }, [isOpen, loadTrendingMovies, loadTrendingTVShows]);
+
+  const getMatchTitle = useCallback((match) => {
+    if (match.teams?.home?.name && match.teams?.away?.name) {
+      return `${match.teams.home.name} vs ${match.teams.away.name}`;
+    }
+    return match.title;
+  }, []);
 
   // Enhanced search function (duplicated from StreamHomepage)
-  const handleSearch = async (query) => {
+  const handleSearch = useCallback(async (query) => {
     if (!query.trim()) return;
 
     setSearchLoading(true);
@@ -128,7 +125,17 @@ const StreamBrowserModal = ({
       setSearchResults([]);
     }
     setSearchLoading(false);
-  };
+  }, [activeCategory, matches, getMatchTitle]);
+
+  // Enhanced search effect (duplicated from StreamHomepage)
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      handleSearch(searchTerm);
+    } else {
+      setSearchResults([]);
+      setSearchLoading(false);
+    }
+  }, [searchTerm, activeCategory, handleSearch]); // Re-run when searchTerm, activeCategory, or handleSearch changes
 
   if (!isOpen) return null;
 
@@ -178,17 +185,6 @@ const StreamBrowserModal = ({
     if (formatted === 'Football' && !sport.includes('american')) return 'Soccer';
     
     return formatted;
-  };
-
-  const getSportsThumbnail = (match) => {
-    return getSportIcon(match.category || match.title);
-  };
-
-  const getMatchTitle = (match) => {
-    if (match.teams?.home?.name && match.teams?.away?.name) {
-      return `${match.teams.home.name} vs ${match.teams.away.name}`;
-    }
-    return match.title;
   };
 
   const handleItemClick = async (item, category) => {

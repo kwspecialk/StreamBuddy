@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, User, Play, ArrowLeft, Maximize, Minimize, HelpCircle, Radio, ClapperboardIcon, TvIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Search, User, Play, ArrowLeft, Maximize, Minimize, Radio, ClapperboardIcon, TvIcon } from 'lucide-react';
 import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
 import CachedImage from './CachedImage';
 
-const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl, onShowQuickstartWizard }) => {
+const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('home'); // Start with home
   const [selectedSport, setSelectedSport] = useState('all'); // For sports filtering
@@ -65,53 +65,14 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     loadTrendingTVShows();
   }, []);
 
-  // Handle search
-  useEffect(() => {
-    console.log(`Search useEffect: searchTerm: '${searchTerm}', activeCategory: ${activeCategory}`);
-    if (searchTerm.trim()) {
-      handleSearch(searchTerm); // Perform the search based on current searchTerm and activeCategory
-      // If the persistent search input exists (meaning search results are shown), focus it.
-      if (persistentSearchInputRef.current) {
-        persistentSearchInputRef.current.focus();
-      }
-    } else {
-      // Only clear search results if not transitioning between categories during an active search
-      // This check might be redundant if handleCategoryChange handles it, but good for safety.
-      if (activeCategory === 'home') { 
-        setSearchResults([]); // Clear results if search term is empty and we are on home
-      }
+  const getMatchTitle = useCallback((match) => {
+    if (match.teams?.home?.name && match.teams?.away?.name) {
+      return `${match.teams.home.name} vs ${match.teams.away.name}`;
     }
-  }, [searchTerm, activeCategory]); // Re-run when searchTerm OR activeCategory changes
+    return match.title;
+  }, []);
 
-  const loadTrendingMovies = async () => {
-    setMoviesLoading(true);
-    try {
-      console.log('Loading trending movies...');
-      const movies = await tmdbApi.getTrendingMovies('day');
-      console.log('Movies loaded:', movies?.length || 0);
-      setTrendingMovies(movies || []);
-    } catch (error) {
-      console.error('Failed to load trending movies:', error);
-      setTrendingMovies([]);
-    }
-    setMoviesLoading(false);
-  };
-
-  const loadTrendingTVShows = async () => {
-    setTVShowsLoading(true);
-    try {
-      console.log('Loading trending TV shows...');
-      const shows = await tmdbApi.getTrendingTVShows('day');
-      console.log('TV shows loaded:', shows?.length || 0);
-      setTrendingTVShows(shows || []);
-    } catch (error) {
-      console.error('Failed to load trending TV shows:', error);
-      setTrendingTVShows([]);
-    }
-    setTVShowsLoading(false);
-  };
-
-  const handleSearch = async (query) => {
+  const handleSearch = useCallback(async (query) => {
     if (!query.trim()) return;
 
     setSearchLoading(true);
@@ -151,6 +112,52 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
       setSearchResults([]);
     }
     setSearchLoading(false);
+  }, [activeCategory, matches, getMatchTitle]);
+
+  // Handle search
+  useEffect(() => {
+    console.log(`Search useEffect: searchTerm: '${searchTerm}', activeCategory: ${activeCategory}`);
+    if (searchTerm.trim()) {
+      handleSearch(searchTerm); // Perform the search based on current searchTerm and activeCategory
+      // If the persistent search input exists (meaning search results are shown), focus it.
+      if (persistentSearchInputRef.current) {
+        persistentSearchInputRef.current.focus();
+      }
+    } else {
+      // Only clear search results if not transitioning between categories during an active search
+      // This check might be redundant if handleCategoryChange handles it, but good for safety.
+      if (activeCategory === 'home') { 
+        setSearchResults([]); // Clear results if search term is empty and we are on home
+      }
+    }
+  }, [searchTerm, activeCategory, handleSearch]); // Re-run when searchTerm, activeCategory, or handleSearch changes
+
+  const loadTrendingMovies = async () => {
+    setMoviesLoading(true);
+    try {
+      console.log('Loading trending movies...');
+      const movies = await tmdbApi.getTrendingMovies('day');
+      console.log('Movies loaded:', movies?.length || 0);
+      setTrendingMovies(movies || []);
+    } catch (error) {
+      console.error('Failed to load trending movies:', error);
+      setTrendingMovies([]);
+    }
+    setMoviesLoading(false);
+  };
+
+  const loadTrendingTVShows = async () => {
+    setTVShowsLoading(true);
+    try {
+      console.log('Loading trending TV shows...');
+      const shows = await tmdbApi.getTrendingTVShows('day');
+      console.log('TV shows loaded:', shows?.length || 0);
+      setTrendingTVShows(shows || []);
+    } catch (error) {
+      console.error('Failed to load trending TV shows:', error);
+      setTrendingTVShows([]);
+    }
+    setTVShowsLoading(false);
   };
 
   // Dynamic categories using real TMDB data
@@ -189,18 +196,6 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
   const handleCloseModal = () => {
     setShowMovieModal(false);
     setSelectedMovieDetails(null);
-  };
-
-  // Legacy function - keeping for backward compatibility  
-  const getSportsThumbnail = (match) => {
-    return getSportIcon(match.category || match.title);
-  };
-
-  const getMatchTitle = (match) => {
-    if (match.teams?.home?.name && match.teams?.away?.name) {
-      return `${match.teams.home.name} vs ${match.teams.away.name}`;
-    }
-    return match.title;
   };
 
   const getTeamBadgeUrl = (badgeId) => {
@@ -253,12 +248,6 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
       return matches;
     }
     return matches.filter(match => match.category === selectedSport);
-  };
-
-  // Get IDs of featured matches to exclude them from main sections
-  const getFeaturedMatchIds = () => {
-    const filtered = getFilteredMatches();
-    return filtered.slice(0, 3).map(match => match.id);
   };
 
   // Get filtered matches excluding featured ones for main sections
@@ -498,11 +487,6 @@ return (
             <button onClick={toggleFullscreen} className="btn btn--icon header__actions--desktop" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
               {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
             </button>
-            {onShowQuickstartWizard && (
-              <button onClick={onShowQuickstartWizard} className="btn btn--icon btn--help header__actions--desktop" title="Show Quick Tour">
-                <HelpCircle size={20} />
-              </button>
-            )}
             <button className="btn btn--icon btn--user header__actions--desktop">
               <User size={24} />
             </button>

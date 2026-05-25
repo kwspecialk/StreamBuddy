@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, ArrowRight, ArrowLeft, Play, Settings, Maximize, Search, Plus, Eye, Shield, MousePointer, Zap, LightbulbIcon, CircleGauge, PlayIcon } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, Eye, Shield, MousePointer, LightbulbIcon, CircleGauge } from 'lucide-react';
 import './PlayerViewWizard.css';
 
 // Define steps outside the component so it's not recreated on every render
@@ -45,8 +45,6 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
   const [stepCompleted, setStepCompleted] = useState({});
   const prevShowStreamBrowserRef = useRef(showStreamBrowser);
   const prevShowEditStreamsRef = useRef(showEditStreams);
-  const [searchInputActive, setSearchInputActive] = useState(false);
-  const [searchInputTimer, setSearchInputTimer] = useState(null);
 
   useEffect(() => {
     // Check if forceReset has a meaningful value (e.g., changed from initial 0 or a specific signal)
@@ -63,7 +61,7 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
         setIsVisible(true);
       }
     }
-  }, [forceReset]); // Only depend on forceReset
+  }, [forceReset, isVisible, isOpen]); // Added isVisible, isOpen dependency
 
   useEffect(() => {
     if (isOpen) {
@@ -127,7 +125,7 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
         setIsVisible(false);
       }, 300); // Match animation duration (PlayerViewWizard.css .wizard-overlay transition)
     }
-  }, [isOpen, currentStep, totalSteps, onClose, isVisible, setTooltipStyle]);
+  }, [isOpen, currentStep, onClose, isVisible, setTooltipStyle]);
 
   const currentStepData = steps.find(step => step.id === currentStep);
 
@@ -176,9 +174,6 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
         setTooltipStyle(prev => ({ ...prev, ...baseHiddenStyle }));
         return;
       }
-      
-      const viewportWidth = window.innerWidth;
-      const margin = 20;
       
       setTooltipStyle({
         left: '50%',

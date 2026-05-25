@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
   const [streamError, setStreamError] = useState(null);
@@ -30,19 +30,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
     }
   }, [movieDetails?.posterPath]);
 
-  useEffect(() => {
-    if (movieDetails.type === 'tv') {
-      fetchSeasons();
-    }
-  }, [movieDetails.type, movieDetails.tmdb]); // Added movieDetails.type for safety
-
-  useEffect(() => {
-    if (movieDetails.type === 'tv' && selectedSeason) {
-      fetchEpisodes();
-    }
-  }, [selectedSeason, movieDetails.tmdb]); // Added movieDetails.tmdb for safety if modal reuses for different TV show
-
-  const fetchSeasons = async () => {
+  const fetchSeasons = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -59,9 +47,9 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
       setError('Failed to load seasons');
       setLoading(false);
     }
-  };
+  }, [movieDetails.tmdb]);
 
-  const fetchEpisodes = async () => {
+  const fetchEpisodes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -79,7 +67,19 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
       setError('Failed to load episodes');
       setLoading(false);
     }
-  };
+  }, [movieDetails.tmdb, selectedSeason]);
+
+  useEffect(() => {
+    if (movieDetails.type === 'tv') {
+      fetchSeasons();
+    }
+  }, [movieDetails.type, fetchSeasons]);
+
+  useEffect(() => {
+    if (movieDetails.type === 'tv' && selectedSeason) {
+      fetchEpisodes();
+    }
+  }, [movieDetails.type, selectedSeason, fetchEpisodes]);
 
   const handleWatchNow = async () => {
     setStreamError(null); // Clear previous error
