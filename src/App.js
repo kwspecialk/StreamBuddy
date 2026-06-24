@@ -271,6 +271,31 @@ const App = () => {
     return layout;
   };
 
+  // Helper function to auto-downsize layout when streams are removed
+  const autoDownsizeLayout = (streamCount) => {
+    if (layout === 'grid-infinite') return layout; // Don't auto-downsize infinite grid
+    
+    const layoutOptions = [
+      { id: 'single', windows: 1 },
+      { id: 'dual', windows: 2 },
+      { id: 'triple', windows: 3 },
+      { id: 'quad', windows: 4 },
+      { id: 'two-plus-four', windows: 6 },
+      { id: 'grid-3x3', windows: 9 },
+      { id: 'grid-5x2', windows: 10 },
+      { id: 'grid-infinite', windows: Infinity }
+    ];
+    
+    // Find the smallest layout that can fit the remaining streams
+    const bestLayout = layoutOptions.find(l => l.windows >= streamCount);
+    if (bestLayout && bestLayout.id !== layout) {
+      setLayout(bestLayout.id);
+      console.log(`Auto-downsized layout from ${layout} to ${bestLayout.id} for ${streamCount} streams`);
+      return bestLayout.id;
+    }
+    return layout;
+  };
+
   // Load matches when needed
   useEffect(() => {
     if (currentView === 'homepage' || showStreamBrowser) {
@@ -407,7 +432,7 @@ const App = () => {
 
   const addVideoUrl = (url, matchInfo = null) => {
     if (url && !videoUrls.includes(url)) {
-      const newUrls = [...videoUrls, url];
+      const newUrls = [url, ...videoUrls];
       setVideoUrls(newUrls);
       autoSwitchLayout(newUrls.length);
       
@@ -424,7 +449,8 @@ const App = () => {
   };
 
   const handleDeleteUrl = (urlToDelete) => {
-    setVideoUrls(videoUrls.filter(url => url !== urlToDelete));
+    const newUrls = videoUrls.filter(url => url !== urlToDelete);
+    setVideoUrls(newUrls);
     if (videoUrls.indexOf(urlToDelete) === activeVideoId) {
       setActiveVideoId(null);
     }
@@ -435,8 +461,11 @@ const App = () => {
     });
     
     // If no more streams, return to homepage
-    if (videoUrls.length <= 1) {
+    if (newUrls.length === 0) {
       setCurrentView('homepage');
+    } else {
+      // Auto-downsize layout to match remaining stream count
+      autoDownsizeLayout(newUrls.length);
     }
   };
 
