@@ -7,7 +7,7 @@ async function testVidSrcAPI() {
     console.log('Testing API endpoints...');
     
     const domains = [
-        'https://vidsrcme.sh',
+        'https://vidsrc.sh',
         'https://vidsrc.me',
         'https://vidsrc.net',
         'https://vidsrc.pm',

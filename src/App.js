@@ -742,7 +742,7 @@ return (
         })()}
       >
         {displayedVideos.map((url, index) => {
-          const isOnDemand = url.includes('vidsrcme.sh') || url.includes('2embed.cc');
+          const isOnDemand = url.includes('vidsrc.sh') || url.includes('2embed.cc');
           
           return (
             <div key={url} className="video-container">

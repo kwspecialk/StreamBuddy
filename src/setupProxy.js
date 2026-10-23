@@ -6,15 +6,15 @@ module.exports = function(app) {
   app.use(
     '/vidsrc',
     createProxyMiddleware({
-      target: 'https://vidsrcme.sh',
+      target: 'https://vidsrc.sh',
       changeOrigin: true,
       secure: false,
       pathRewrite: {
         '^/vidsrc': ''
       },
       onProxyReq: (proxyReq, req, res) => {
-        proxyReq.setHeader('Referer', 'https://vidsrcme.sh');
-        proxyReq.setHeader('Origin', 'https://vidsrcme.sh');
+        proxyReq.setHeader('Referer', 'https://vidsrc.sh');
+        proxyReq.setHeader('Origin', 'https://vidsrc.sh');
         // Add additional headers that might help
         proxyReq.setHeader('sec-fetch-site', 'same-origin');
         proxyReq.setHeader('sec-fetch-mode', 'cors');
@@ -44,7 +44,7 @@ module.exports = function(app) {
   app.use(
     '/sbx',
     createProxyMiddleware({
-      target: 'https://vidsrcme.sh',
+      target: 'https://vidsrc.sh',
       changeOrigin: true,
       secure: false,
       onProxyRes: (proxyRes, req, res) => {

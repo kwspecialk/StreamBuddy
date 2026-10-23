@@ -73,7 +73,7 @@ const EditStreamsModal = ({
 
   // Helper function to detect TV show URLs
   const isTVShowUrl = (url) => {
-    return url.includes('vidsrcme.sh/embed/tv/') || url.includes('2embed.cc/embed/tv/');
+    return url.includes('vidsrc.sh/embed/tv/') || url.includes('2embed.cc/embed/tv/');
   };
 
   // Helper function to parse TV show URL and extract season/episode info
@@ -87,7 +87,7 @@ const EditStreamsModal = ({
         tmdbId: match[1],
         season: parseInt(match[2]),
         episode: parseInt(match[3]),
-        baseUrl: url.includes('vidsrcme.sh') ? 'https://vidsrcme.sh/embed/tv/' : 'https://2embed.cc/embed/tv/'
+        baseUrl: url.includes('vidsrc.sh') ? 'https://vidsrc.sh/embed/tv/' : 'https://2embed.cc/embed/tv/'
       };
     }
     return null;
@@ -299,7 +299,7 @@ const EditStreamsModal = ({
     }
     
     // Generic on-demand content based on URL patterns
-    if (url.includes('vidsrcme.sh') || url.includes('2embed.cc')) {
+    if (url.includes('vidsrc.sh') || url.includes('2embed.cc')) {
       let title = 'On-Demand Content';
       const movieMatch = url.match(/\/movie\/(\d+)/);
       const tvMatch = url.match(/\/tv\/(\d+)/);

@@ -88,12 +88,12 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
     let streamDetailsToPass;
 
     if (movieDetails.type === 'movie') {
-      streamUrlToPlay = `https://vidsrcme.sh/embed/movie/${movieDetails.tmdb}`;
+      streamUrlToPlay = `https://vidsrc.sh/embed/movie/${movieDetails.tmdb}`;
       streamDetailsToPass = movieDetails;
     } else { // TV Show
       const season = selectedSeason || 1;
       const episode = selectedEpisode || 1;
-      streamUrlToPlay = `https://vidsrcme.sh/embed/tv/${movieDetails.tmdb}/${season}-${episode}`;
+      streamUrlToPlay = `https://vidsrc.sh/embed/tv/${movieDetails.tmdb}/${season}-${episode}`;
       streamDetailsToPass = {
         ...movieDetails,
         title: `${movieDetails.title} S${season.toString().padStart(2, '0')}E${episode.toString().padStart(2, '0')}`

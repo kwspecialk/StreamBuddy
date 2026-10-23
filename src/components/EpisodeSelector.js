@@ -56,7 +56,7 @@ const EpisodeSelector = ({ show, onSelectEpisode, onClose }) => {
   }, [show.tmdb, selectedSeason]);
 
   const handleEpisodeSelect = (episodeNumber) => {
-    const embedUrl = `https://vidsrcme.sh/embed/tv/${show.tmdb}/${selectedSeason}-${episodeNumber}`;
+    const embedUrl = `https://vidsrc.sh/embed/tv/${show.tmdb}/${selectedSeason}-${episodeNumber}`;
     onSelectEpisode(embedUrl);
     onClose();
   };
