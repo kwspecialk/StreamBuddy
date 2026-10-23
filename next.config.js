@@ -8,13 +8,13 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self' https://vidsrcme.su https://*.vidsrcme.su https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrcme.su https://*.vidsrcme.su;",
-              "frame-src 'self' https://vidsrcme.su https://*.vidsrcme.su https://embedme.top https://*.embedme.top;",
+              "default-src 'self' https://vidsrcme.sh https://*.vidsrcme.sh https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrcme.sh https://*.vidsrcme.sh;",
+              "frame-src 'self' https://vidsrcme.sh https://*.vidsrcme.sh https://embedme.top https://*.embedme.top;",
               "img-src 'self' * data: blob:;",
               "media-src 'self' * blob:;",
-              "connect-src 'self' https://vidsrcme.su https://*.vidsrcme.su https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
-              "style-src 'self' 'unsafe-inline' https://vidsrcme.su https://*.vidsrcme.su;",
+              "connect-src 'self' https://vidsrcme.sh https://*.vidsrcme.sh https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
+              "style-src 'self' 'unsafe-inline' https://vidsrcme.sh https://*.vidsrcme.sh;",
               "frame-ancestors 'self';",
               "worker-src 'self' blob: *;"
             ].join(' ')
@@ -82,7 +82,7 @@ const nextConfig = {
       // VidSrc routes
       {
         source: '/api/vidsrc/:path*',
-        destination: 'https://vidsrcme.su/:path*'
+        destination: 'https://vidsrcme.sh/:path*'
       },
       // Security bypass
       {
