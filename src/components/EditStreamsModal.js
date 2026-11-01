@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog } from 'lucide-react';
+import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog, Volume2, VolumeX } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
@@ -24,8 +24,11 @@ const EditStreamsModal = ({
   formatApiUrl,
   sourceIndices,
   onCycleSource,
+  keepStreamsRunning,
+  onKeepStreamsRunningChange,
   currentLayout,
-  onLayoutChange
+  onLayoutChange,
+  streamAudio
 }) => {
   const [refreshingStreams, setRefreshingStreams] = useState(new Set());
   const [nextEpisodeLoading, setNextEpisodeLoading] = useState(new Set());
@@ -265,6 +268,11 @@ const EditStreamsModal = ({
     const baseKeyUrl = getBaseUrlForKey(url);
     const tvInfo = parseTVShowUrl(url);
 
+    // Sports streams always use the match title, over any title saved from the URL
+    if (sourceIndices[url]?.match?.sources?.length > 0) {
+      return sourceIndices[url].match.title;
+    }
+
     // 1. Check for a stored custom/series title for the base URL
     if (streamTitles[baseKeyUrl]) {
       const storedTitle = streamTitles[baseKeyUrl];
@@ -364,6 +372,11 @@ const EditStreamsModal = ({
             { width: '49%', height: '100%', left: '0%', number: streamCount >= 1 ? 1 : null },
             { width: '49%', height: '100%', left: '51%', number: streamCount >= 2 ? 2 : null }
           ];
+        case 'pip':
+          return [
+            { width: '100%', height: '100%', number: streamCount >= 1 ? 1 : null },
+            { width: '38%', height: '38%', left: '58%', top: '58%', number: streamCount >= 2 ? 2 : null, background: '#111' }
+          ];
         case 'triple':
           return [
             { width: '63%', height: '100%', left: '0%', number: streamCount >= 1 ? 1 : null },
@@ -429,7 +442,8 @@ const EditStreamsModal = ({
               width: box.width,
               height: box.height,
               left: box.left || '0%',
-              top: box.top || '0%'
+              top: box.top || '0%',
+              background: box.background
             }}
           >
             {box.number && (
@@ -447,6 +461,7 @@ const EditStreamsModal = ({
     switch(layoutId) {
       case 'single': return 'Single stream focus';
       case 'dual': return 'Side by side viewing';
+      case 'pip': return 'Full screen + floating windows';
       case 'triple': return 'Main + two smaller';
       case 'quad': return 'Equal four-way split';
       case 'two-plus-four': return 'Two large + four small';
@@ -529,6 +544,29 @@ const EditStreamsModal = ({
                                     </div>
                                   )}
                                 </div>
+                                {/* Volume - needs the companion extension */}
+                                {streamAudio.hasExtension && (
+                                  <div className="stream-volume">
+                                    <button
+                                      className="action-btn-new"
+                                      onClick={() => streamAudio.toggleMute(url)}
+                                      title={streamAudio.isMuted(url) ? 'Unmute stream' : 'Mute stream'}
+                                      aria-pressed={streamAudio.isMuted(url)}
+                                    >
+                                      {streamAudio.isMuted(url) ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                                    </button>
+                                    <input
+                                      type="range"
+                                      min="0"
+                                      max="1"
+                                      step="0.01"
+                                      value={streamAudio.isMuted(url) ? 0 : streamAudio.getVolume(url)}
+                                      onChange={(event) => streamAudio.setVolume(url, Number(event.target.value))}
+                                      aria-label="Stream volume"
+                                      title="Stream volume"
+                                    />
+                                  </div>
+                                )}
                                 {/* Actions */}
                                 <div className="stream-actions-new">
                                   <button
@@ -636,6 +674,14 @@ const EditStreamsModal = ({
           </div>
           
           <div className="flex-1 text-center">
+            <label className="footer-tip" title="Streams you can't see keep using CPU, data and sound">
+              <input
+                type="checkbox"
+                checked={keepStreamsRunning}
+                onChange={(e) => onKeepStreamsRunningChange(e.target.checked)}
+              />{' '}
+              Keep hidden streams running
+            </label>
             <div className="footer-tip">
               Drag streams to reorder
             </div>

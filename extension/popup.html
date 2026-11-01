@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>StreamBuddy Companion</title>
+    <style>
+      body {
+        width: 260px;
+        margin: 0;
+        padding: 12px;
+        font: 13px system-ui, sans-serif;
+        color: #1f2328;
+      }
+      label {
+        display: flex;
+        gap: 8px;
+        font-weight: 600;
+      }
+      p {
+        margin: 8px 0 0;
+        color: #57606a;
+      }
+    </style>
+  </head>
+  <body>
+    <label>
+      <input type="checkbox" id="popup-guard" />
+      Block popups from players
+    </label>
+    <p>
+      Replaces window.open inside StreamBuddy embeds. Reduces popups, but won't stop
+      all of them. Turn it off if a source refuses to play. Applies after the stream
+      reloads.
+    </p>
+    <script src="popup.js"></script>
+  </body>
+</html>

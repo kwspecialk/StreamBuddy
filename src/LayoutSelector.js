@@ -14,6 +14,11 @@ const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
             { width: '49%', height: '100%', left: '0%', number: 1 },
             { width: '49%', height: '100%', left: '51%', number: 2 }
           ];
+        case 'pip':
+          return [
+            { width: '100%', height: '100%', number: 1 },
+            { width: '38%', height: '38%', left: '58%', top: '58%', number: 2, background: '#111' }
+          ];
         case 'triple':
           return [
             { width: '63%', height: '100%', left: '0%', number: 1 },
@@ -79,7 +84,8 @@ const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
               width: box.width,
               height: box.height,
               left: box.left || '0%',
-              top: box.top || '0%'
+              top: box.top || '0%',
+              background: box.background
             }}
           >
             {showNumbers && (
@@ -97,6 +103,7 @@ const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
     switch(layoutId) {
       case 'single': return 'Single stream focus';
       case 'dual': return 'Side by side viewing';
+      case 'pip': return 'Full screen + floating windows';
       case 'triple': return 'Main + two smaller';
       case 'quad': return 'Equal four-way split';
       case 'two-plus-four': return 'Two large + four small';

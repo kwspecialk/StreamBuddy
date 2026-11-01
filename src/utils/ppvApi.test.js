@@ -1,4 +1,4 @@
-import { parseLiveMatches, formatEmbedTitle } from './ppvApi';
+import { parseLiveMatches, findMatchForUrl, formatEmbedTitle } from './ppvApi';
 
 const NOW = 1000;
 
@@ -65,6 +65,30 @@ describe('parseLiveMatches', () => {
 
   it('handles an empty response', () => {
     expect(parseLiveMatches(null)).toEqual([]);
+  });
+});
+
+describe('findMatchForUrl', () => {
+  const match = {
+    title: 'Minnesota Vikings at Detroit Lions',
+    sources: [
+      { embedUrl: 'https://example.com/embed/min-det' },
+      { embedUrl: 'https://example.com/embed/min-det_540p' }
+    ]
+  };
+
+  it('finds the match and source for a stream URL', () => {
+    expect(findMatchForUrl([match], 'https://example.com/embed/min-det_540p'))
+      .toEqual({ match, sourceIndex: 1 });
+  });
+
+  it('ignores the refresh_id param', () => {
+    expect(findMatchForUrl([match], 'https://example.com/embed/min-det?refresh_id=123'))
+      .toEqual({ match, sourceIndex: 0 });
+  });
+
+  it('returns null when no match has the URL', () => {
+    expect(findMatchForUrl([match], 'https://example.com/embed/other')).toBeNull();
   });
 });
 

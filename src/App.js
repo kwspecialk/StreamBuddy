@@ -15,13 +15,17 @@ import OnDemandVideoFeed from './OnDemandVideoFeed';
 import StreamHomepage from './components/StreamHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
-import { Plus, Maximize, Minimize, HelpCircle, Settings } from 'lucide-react';
+import { Plus, Maximize, Minimize, HelpCircle, Settings, Volume2, VolumeX } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
 import PlayerViewWizard from './components/wizard/PlayerViewWizard';
 import './components/wizard/PlayerViewWizard.css';
-import { fetchLiveMatches, formatEmbedTitle } from './utils/ppvApi';
+import { fetchLiveMatches, findMatchForUrl, formatEmbedTitle } from './utils/ppvApi';
+import usePipWindow from './usePipWindow';
+import useStreamAudio, { getStreamKey } from './useStreamAudio';
+import ExtensionChip from './components/ExtensionChip';
 
 const MATCH_REFRESH_INTERVAL_MS = 60000;
+const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -51,9 +55,21 @@ const App = () => {
     return savedLayout || 'single';
   });
 
+  const pipWindow = usePipWindow(layout === 'pip');
+  const streamAudio = useStreamAudio(videoUrls);
+
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [movieDetails, setMovieDetails] = useState(null);
-  const [sourceIndices, setSourceIndices] = useState({});
+  const [sourceIndices, setSourceIndices] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('savedSourceIndices')) || {};
+    } catch {
+      return {};
+    }
+  });
+  const [keepStreamsRunning, setKeepStreamsRunning] = useState(
+    () => localStorage.getItem('keepStreamsRunning') !== 'false'
+  );
   const [, setStreamRetries] = useState({});
   const [isActuallyFullscreen, setIsActuallyFullscreen] = useState(false);
   const [isHeaderVisibleInFullscreen, setIsHeaderVisibleInFullscreen] = useState(false);
@@ -253,7 +269,8 @@ const App = () => {
   // Helper function to auto-downsize layout when streams are removed
   const autoDownsizeLayout = (streamCount) => {
     if (layout === 'grid-infinite') return layout; // Don't auto-downsize infinite grid
-    
+    if (layout === 'pip' && streamCount >= 2) return layout; // PiP fits any count, so only leave it for a lone stream
+
     const layoutOptions = [
       { id: 'single', windows: 1 },
       { id: 'dual', windows: 2 },
@@ -283,6 +300,26 @@ const App = () => {
       return () => clearInterval(refreshTimer);
     }
   }, [currentView, showStreamBrowser, fetchMatches]);
+
+  // Saved streams need the match list too, to recover their titles and sources
+  useEffect(() => {
+    if (currentView === 'stream-view') {
+      fetchMatches();
+    }
+  }, [currentView, fetchMatches]);
+
+  // Link streams that have no match info yet to their live match
+  useEffect(() => {
+    const recovered = {};
+    videoUrls.forEach(url => {
+      const found = url && !sourceIndices[url] && findMatchForUrl(matches, url);
+      if (found) recovered[url] = found;
+    });
+
+    if (Object.keys(recovered).length > 0) {
+      setSourceIndices(prev => ({ ...prev, ...recovered }));
+    }
+  }, [matches, videoUrls, sourceIndices]);
 
   const handleStreamSelect = async (itemOrUrl, itemDataIfUrl = null) => {
     let urlToAdd = null;
@@ -412,6 +449,7 @@ const App = () => {
   const handleDeleteUrl = (urlToDelete) => {
     const newUrls = videoUrls.filter(url => url !== urlToDelete);
     setVideoUrls(newUrls);
+    streamAudio.forgetStream(urlToDelete);
     if (videoUrls.indexOf(urlToDelete) === activeVideoId) {
       setActiveVideoId(null);
     }
@@ -432,6 +470,7 @@ const App = () => {
 
   const handleClearAllStreams = () => {
     setVideoUrls([]);
+    streamAudio.forgetAllStreams();
     setActiveVideoId(null);
     setSourceIndices({});
     setStreamRetries({});
@@ -460,6 +499,7 @@ const App = () => {
         const newUrls = [...videoUrls];
         newUrls[urlIndex] = nextUrl;
         setVideoUrls(newUrls);
+        streamAudio.moveStream(url, nextUrl);
 
         setSourceIndices(prev => {
           const updated = { ...prev };
@@ -504,6 +544,14 @@ const App = () => {
   }, [videoUrls]);
 
   useEffect(() => {
+    localStorage.setItem('savedSourceIndices', JSON.stringify(sourceIndices));
+  }, [sourceIndices]);
+
+  useEffect(() => {
+    localStorage.setItem('keepStreamsRunning', keepStreamsRunning);
+  }, [keepStreamsRunning]);
+
+  useEffect(() => {
     localStorage.setItem('savedLayout', layout);
   }, [layout]);
 
@@ -516,10 +564,19 @@ const App = () => {
     }
 };
 
-// Show Homepage
-if (currentView === 'homepage') {
-  return (
-    <div className="app">
+const isStreamView = currentView === 'stream-view';
+
+// Render players in a fixed order and place them with CSS. Moving an iframe in the
+// DOM reloads it, so reordering must not change their order in the markup.
+const renderedVideos = (keepStreamsRunning ? videoUrls : isStreamView ? displayedVideos : [])
+  .filter(Boolean)
+  .sort();
+
+return (
+  <div className={`app${isStreamView ? ' stream-view' : ''}`}>
+    {streamAudio.isCheckDone && !streamAudio.hasExtension && !isActuallyFullscreen && <ExtensionChip />}
+
+    {!isStreamView && (
       <StreamHomepage
         onStreamSelect={handleStreamSelect}
         onEnterStreamView={handleEnterStreamView}
@@ -527,21 +584,10 @@ if (currentView === 'homepage') {
         isLoading={isLoadingMatches}
         onAddUrl={addVideoUrl}
       />
-      <Analytics />
-    </div>
-  );
-}
+    )}
 
-// Show Stream View (multi-stream interface with modal browser)
-console.log('[App.js] Rendering PlayerViewWizard with props:', {
-  isOpen: showPlayerViewWizard,
-  currentView,
-  showStreamBrowser,
-  showEditStreams
-});
-
-return (
-  <div className="app stream-view">
+    {/* Stream View (multi-stream interface with modal browser) */}
+    {isStreamView && (<>
     <PlayerViewWizard
       isOpen={showPlayerViewWizard}
       onClose={handleClosePlayerViewWizard}
@@ -631,11 +677,16 @@ return (
         onCycleSource={cycleSource}
         currentLayout={layout}
         onLayoutChange={handleLayoutChange}
+        keepStreamsRunning={keepStreamsRunning}
+        onKeepStreamsRunningChange={setKeepStreamsRunning}
+        streamAudio={streamAudio}
       />
+    </>)}
 
-      {/* Video Grid */}
-      <div 
-        className={`video-grid ${layout}`}
+      {/* Video Grid - stays mounted so hidden streams keep running */}
+      <div
+        ref={pipWindow.gridRef}
+        className={`video-grid ${layout}${pipWindow.isInteracting ? ' pip-interacting' : ''}`}
         style={(() => {
           const HEADER_HEIGHT = 60; // px
 
@@ -662,16 +713,30 @@ return (
           }
 
           return {
+            display: isStreamView ? undefined : 'none',
             marginTop: `${marginTop}px`,
             height: availableHeight
           };
         })()}
       >
-        {displayedVideos.map((url, index) => {
+        {renderedVideos.map((url) => {
+          const index = videoUrls.indexOf(url);
           const isOnDemand = url.includes('vidsrc.sh') || url.includes('2embed.cc');
-          
+          const isPipWindow = layout === 'pip' && index > 0;
+          const pipSlot = index - 1;
+          const isMuted = streamAudio.isMuted(url);
+
           return (
-            <div key={url} className="video-container">
+            <div
+              key={url}
+              data-streambuddy-stream={streamAudio.hasExtension ? getStreamKey(url) : undefined}
+              className={`video-container slot-${index + 1}${isPipWindow ? ' pip-window' : ''}`}
+              style={{
+                ...(isPipWindow ? pipWindow.getStyle(pipSlot) : undefined),
+                order: index,
+                display: displayedVideos.includes(url) ? undefined : 'none'
+              }}
+            >
               {showEditStreams && <div className="video-number">{index + 1}</div>}
               <ErrorBoundary>
                 {isOnDemand ? (
@@ -681,19 +746,43 @@ return (
                     onVideoSelect={() => handleVideoSelect(index)}
                   />
                 ) : (
-                  <VideoFeed 
-                    url={url}
-                    isActive={activeVideoId === index}
-                  />
+                  <VideoFeed url={url} />
                 )}
               </ErrorBoundary>
+              {streamAudio.hasExtension && (
+                <button
+                  className={`stream-mute-btn${isMuted ? ' muted' : ''}`}
+                  title={isMuted ? 'Unmute stream' : 'Mute stream'}
+                  aria-pressed={isMuted}
+                  onClick={() => streamAudio.toggleMute(url)}
+                >
+                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                </button>
+              )}
+              {isPipWindow && (
+                <>
+                  <div
+                    className="pip-drag-handle"
+                    title="Drag to move"
+                    onPointerDown={(event) => pipWindow.startDrag(event, pipSlot)}
+                  />
+                  {PIP_RESIZE_CORNERS.map(corner => (
+                    <div
+                      key={corner}
+                      className={`pip-resize-handle ${corner}`}
+                      title="Drag to resize"
+                      onPointerDown={(event) => pipWindow.startResize(event, pipSlot, corner)}
+                    />
+                  ))}
+                </>
+              )}
             </div>
           );
         })}
       </div>
 
       {/* Movie Details Modal */}
-      {movieDetails && (
+      {isStreamView && movieDetails && (
         <MovieDetailsModal
           movieDetails={movieDetails}
           onClose={() => setMovieDetails(null)}

@@ -302,6 +302,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     >
       <div className="card-thumbnail match-thumbnail">
         {/* Always try to load sport fallback image first */}
+        {!item.poster && (
         <img 
           src={getSportFallbackImage(item.category)}
           alt={formatSportName(item.category || 'Sports')}
@@ -311,6 +312,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
             e.target.nextElementSibling.style.display = 'flex';
           }}
         />
+        )}
         
         {/* Fallback to green gradient + emoji if image fails */}
         <div className="sport-gradient-fallback" style={{ display: 'none' }}>
@@ -325,7 +327,10 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
             src={getMatchPosterUrl(item.poster)}
             alt={item.title || getMatchTitle(item)}
             className="match-poster-overlay"
-            onError={(e) => { e.target.style.display = 'none'; }}
+            onError={(e) => {
+  e.target.style.display = 'none';
+  e.target.previousElementSibling.style.display = 'flex';
+}}
           />
         )}
         
@@ -559,6 +564,7 @@ return (
                     >
                       <div className="card-thumbnail match-thumbnail">
                         {/* Always try to load sport fallback image first */}
+                        {!match.poster && (
                         <img 
                           src={getSportFallbackImage(match.category)}
                           alt={formatSportName(match.category || 'Sports')}
@@ -568,6 +574,7 @@ return (
                             e.target.nextElementSibling.style.display = 'flex';
                           }}
                         />
+                        )}
                         
                         {/* Fallback to green gradient + emoji if image fails */}
                         <div className="sport-gradient-fallback" style={{ display: 'none' }}>
@@ -583,8 +590,9 @@ return (
                             alt={match.title}
                             className="match-poster-overlay"
                             onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
+  e.target.style.display = 'none';
+  e.target.previousElementSibling.style.display = 'flex';
+}}
                           />
                         )}
                         
@@ -1034,6 +1042,7 @@ return (
                       >
                         <div className="card-thumbnail match-thumbnail">
                             {/* Always try to load sport fallback image first */}
+                            {!item.poster && (
                             <img 
                               src={getSportFallbackImage(item.category)}
                               alt={formatSportName(item.category || 'Sports')}
@@ -1043,6 +1052,7 @@ return (
                                 e.target.nextElementSibling.style.display = 'flex';
                               }}
                             />
+                            )}
                             
                             {/* Fallback to green gradient + emoji if image fails */}
                             <div className="sport-gradient-fallback" style={{ display: 'none' }}>
@@ -1058,8 +1068,9 @@ return (
                                 alt={item.title}
                                 className="match-poster-overlay"
                                 onError={(e) => {
-                                  e.target.style.display = 'none';
-                                }}
+  e.target.style.display = 'none';
+  e.target.previousElementSibling.style.display = 'flex';
+}}
                               />
                             )}
                             

@@ -1,6 +1,7 @@
 export const LAYOUTS = {
     'single': { name: '1', windows: 1 },
     'dual': { name: '2', windows: 2 },
+    'pip': { name: 'PiP', windows: Infinity },
     'triple': { name: '3', windows: 3 },
     'quad': { name: '4', windows: 4 },
     'two-plus-four': { name: '6 (2+4)', windows: 6 },

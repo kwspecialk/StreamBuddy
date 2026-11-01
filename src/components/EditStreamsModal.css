@@ -146,6 +146,19 @@
   opacity: 0.8;
 }
 
+.stream-volume {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.stream-volume input[type="range"] {
+  width: 90px;
+  accent-color: var(--color-s);
+  cursor: pointer;
+}
+
 .stream-actions-new {
   display: flex;
   gap: 8px;

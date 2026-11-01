@@ -378,6 +378,7 @@ const StreamBrowserModal = ({
                       {isStreamItem ? (
                         <>
                           {/* Always try to load sport fallback image first */}
+                          {!item.poster && (
                           <img 
                             src={getSportFallbackImage(item.category)}
                             alt={formatSportName(item.category || 'Sports')}
@@ -387,6 +388,7 @@ const StreamBrowserModal = ({
                               e.target.nextElementSibling.style.display = 'flex';
                             }}
                           />
+                          )}
                           
                           {/* Fallback to green gradient + emoji if image fails */}
                           <div className="sport-gradient-fallback" style={{ display: 'none' }}>
@@ -401,7 +403,10 @@ const StreamBrowserModal = ({
                               src={getMatchPosterUrl(item.poster)}
                               alt={item.title || getMatchTitle(item)}
                               className="match-poster-overlay"
-                              onError={(e) => { e.target.style.display = 'none'; }}
+                              onError={(e) => {
+  e.target.style.display = 'none';
+  e.target.previousElementSibling.style.display = 'flex';
+}}
                             />
                           )}
                           

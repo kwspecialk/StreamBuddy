@@ -48,6 +48,17 @@ export const fetchLiveMatches = async () => {
   return parseLiveMatches(await response.json());
 };
 
+// Find the live match a saved stream URL belongs to, ignoring any refresh_id param
+export const findMatchForUrl = (matches, url) => {
+  const baseUrl = url.split(/[?&]refresh_id=/)[0];
+
+  for (const match of matches) {
+    const sourceIndex = match.sources.findIndex(source => source.embedUrl === baseUrl);
+    if (sourceIndex !== -1) return { match, sourceIndex };
+  }
+  return null;
+};
+
 // Build a readable title from an embed URL, e.g. /embed/nfl-redzone-31494_540p -> Nfl Redzone
 export const formatEmbedTitle = (url) => {
   const slug = url.match(/\/embed\/([^?]+)/)?.[1];
