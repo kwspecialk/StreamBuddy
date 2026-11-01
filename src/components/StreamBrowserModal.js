@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Search, Play, Plus } from 'lucide-react';
+import { X, Search, Play, Plus, Trophy } from 'lucide-react';
 import { imageCache } from '../utils/imageCache';
 import CachedImage from './CachedImage';
 import { MatchStatusBadge, MatchInfo } from './MatchScore';
 import { tmdbApi } from '../utils/tmdbApi'; // Import TMDB API
+import useModalBehavior from '../useModalBehavior';
+import { clickableProps } from '../utils/a11y';
 
 const StreamBrowserModal = ({ 
   isOpen, 
@@ -138,6 +140,15 @@ const StreamBrowserModal = ({
     }
   }, [searchTerm, activeCategory, handleSearch]); // Re-run when searchTerm, activeCategory, or handleSearch changes
 
+  // Escape closes the custom stream popup first, then this modal
+  const dialogRef = useModalBehavior(isOpen, () => {
+    if (isCustomStreamPopupOpen) {
+      setIsCustomStreamPopupOpen(false);
+    } else {
+      onClose();
+    }
+  });
+
   if (!isOpen) return null;
 
   const categories = {
@@ -162,10 +173,6 @@ const StreamBrowserModal = ({
   // Helper functions from StreamHomepage for consistent styling
   const getTeamBadgeUrl = (badgeId) => {
     return imageCache.getTeamBadgeUrl(badgeId);
-  };
-
-  const getSportIcon = (category) => {
-    return imageCache.getSportsEmoji(category);
   };
 
   const getSportFallbackImage = (category) => {
@@ -277,13 +284,13 @@ const StreamBrowserModal = ({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal modal--lg" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal--lg" ref={dialogRef} role="dialog" aria-modal="true" aria-label="Add Stream" tabIndex={-1} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal__header modal__header--accent">
           <div className="header-left">
             <h2 className="modal__title">Add Stream</h2>
           </div>
-          <button className="btn btn--close" onClick={onClose}>
+          <button className="btn btn--close" onClick={onClose} aria-label="Close">
             <X size={24} />
           </button>
         </div>
@@ -373,9 +380,12 @@ const StreamBrowserModal = ({
                   <div 
                     key={item.id} 
                     className={`content-card ${isSelected ? 'selected' : ''} ${isStreamItem ? 'match-card' : ''}`}
-                    onClick={() => handleItemClick(item, activeCategory)}
+                    {...clickableProps(
+                      () => handleItemClick(item, activeCategory),
+                      isStreamItem ? `Add ${getMatchTitle(item)}` : `${item.title} details`
+                    )}
                   >
-                    <div className={`card-thumbnail ${isStreamItem ? 'match-thumbnail' : ''}`}>
+                    <div className={`card-thumbnail ${isStreamItem ? 'match-thumbnail' : 'card-thumbnail--landscape'}`}>
                       {isStreamItem ? (
                         <>
                           {/* Always try to load sport fallback image first */}
@@ -394,7 +404,7 @@ const StreamBrowserModal = ({
                           {/* Fallback to green gradient + emoji if image fails */}
                           <div className="sport-gradient-fallback" style={{ display: 'none' }}>
                             <div className="sport-icon-fallback">
-                              {getSportIcon(item.category)}
+                              <Trophy size={32} />
                             </div>
                           </div>
                           
@@ -451,21 +461,15 @@ const StreamBrowserModal = ({
                       ) : (
                         <>
                           <CachedImage 
-                            src={item.thumbnail}
+                            src={item.backdrop || item.thumbnail}
                             alt={item.title}
-                            className="movie-poster"
+                            className="card-backdrop"
                             fallbackElement={
                               <div className="thumbnail-fallback">
                                 <Play size={24} />
                               </div>
                             }
                           />
-                          {item.thumbnail && (
-                            <div
-                              className="card-blur-bg"
-                              style={{ backgroundImage: `url(${item.thumbnail})` }}
-                            />
-                          )}
                         </>
                       )}
                       
@@ -476,7 +480,7 @@ const StreamBrowserModal = ({
                             <span>Added!</span>
                           </div>
                         ) : (
-                          <button className="add-button">
+                          <button className="add-button" tabIndex={-1} aria-hidden="true">
                             <Plus size={20} />
                             <span>{isStreamItem ? 'Add Stream' : 'Details'}</span>
                           </button>
@@ -490,7 +494,7 @@ const StreamBrowserModal = ({
                       ) : (
                         <>
                           <h3>{item.title}</h3>
-                          <p>{item.genre || (item.year ? `${item.year}` : '') || item.season || item.episode || item.status}</p>
+                          <p>{[item.genre, item.year].filter(value => value && value !== 'Unknown').join(', ')}</p>
                         </>
                       )}
                     </div>
@@ -523,10 +527,10 @@ const StreamBrowserModal = ({
         {/* Custom Stream URL Popup */}
         {isCustomStreamPopupOpen && (
           <div className="modal-backdrop" onClick={closeCustomStreamPopup}>
-            <div className="modal modal--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="modal modal--sm" role="dialog" aria-modal="true" aria-label="Custom Stream" onClick={(e) => e.stopPropagation()}>
               <div className="modal__header">
                 <h3 className="modal__title">Custom Stream</h3>
-                <button className="btn btn--close" onClick={closeCustomStreamPopup}>
+                <button className="btn btn--close" onClick={closeCustomStreamPopup} aria-label="Close">
                   <X size={20} />
                 </button>
               </div>

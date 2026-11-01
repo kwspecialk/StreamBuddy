@@ -721,6 +721,16 @@ return (
           };
         })()}
       >
+        {displayedVideos.length === 0 && (
+          <div className="player-empty">
+            <h1>Nothing playing yet</h1>
+            <p>Add a live game, movie or show to start watching.</p>
+            <button className="btn btn--lg btn--primary" onClick={handleOpenStreamBrowser}>
+              <Plus size={18} />
+              <span>Add a stream</span>
+            </button>
+          </div>
+        )}
         {renderedVideos.map((url) => {
           const index = videoUrls.indexOf(url);
           const isOnDemand = url.includes('vidsrc.sh') || url.includes('2embed.cc');

@@ -89,11 +89,18 @@
   letter-spacing: 0 !important;
 }
 
-.match-status--pre {
+.match-status.match-status--pre {
   background: rgba(0, 0, 0, 0.75) !important;
+  color: var(--color-text-primary) !important;
 }
 
-.match-status--final {
+.match-status.match-status--final {
   background: var(--color-dark-surface) !important;
   color: var(--color-text-secondary) !important;
+}
+
+/* Only live badges get the dot */
+.match-status--pre::before,
+.match-status--final::before {
+  display: none;
 }

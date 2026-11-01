@@ -66,14 +66,14 @@
 /* Button Variants */
 .btn--primary {
   background: var(--gradient-primary);
-  color: white;
+  color: var(--color-on-accent);
   border: none;
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: none;
   padding: var(--space-sm) var(--space-md);
 }
 
 .btn--primary:not(:disabled):hover {
-  box-shadow: 0 6px 20px rgba(37, 129, 95, 0.4);
+  background: var(--color-s-light);
 }
 
 .btn--secondary {
@@ -185,7 +185,7 @@
   background: var(--color-p);
   border-color: var(--color-p);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
 }
 
 .btn--icon.btn--user {

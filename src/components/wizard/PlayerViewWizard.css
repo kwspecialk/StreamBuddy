@@ -54,7 +54,7 @@
 
 .wizard-overlay.intermediate-phase .wizard-tooltip {
   max-width: 320px;
-  transition: all 0.3s ease-out;
+  transition: color 0.3s ease-out, background-color 0.3s ease-out, border-color 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
 /* Content selection phase - even more compact */
@@ -90,29 +90,29 @@
   background: transparent;
   border-radius: 12px;
   box-shadow: 
-    0 0 0 4px rgba(37, 129, 95, 0.8),
-    0 0 0 8px rgba(37, 129, 95, 0.3),
-    0 0 20px rgba(37, 129, 95, 0.4);
+    0 0 0 4px rgba(0, 210, 176, 0.8),
+    0 0 0 8px rgba(0, 210, 176, 0.3),
+    0 0 20px rgba(0, 210, 176, 0.4);
   z-index: 10001;
   pointer-events: none;
   animation: highlightPulse 2s infinite;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 @keyframes highlightPulse {
   0%, 100% {
     transform: scale(1);
     box-shadow: 
-      0 0 0 4px rgba(37, 129, 95, 0.8),
-      0 0 0 8px rgba(37, 129, 95, 0.3),
-      0 0 20px rgba(37, 129, 95, 0.4);
+      0 0 0 4px rgba(0, 210, 176, 0.8),
+      0 0 0 8px rgba(0, 210, 176, 0.3),
+      0 0 20px rgba(0, 210, 176, 0.4);
   }
   50% {
     transform: scale(1.02);
     box-shadow: 
-      0 0 0 6px rgba(37, 129, 95, 0.9),
-      0 0 0 12px rgba(37, 129, 95, 0.4),
-      0 0 30px rgba(37, 129, 95, 0.6);
+      0 0 0 6px rgba(0, 210, 176, 0.9),
+      0 0 0 12px rgba(0, 210, 176, 0.4),
+      0 0 30px rgba(0, 210, 176, 0.6);
   }
 }
 
@@ -149,7 +149,7 @@
 }
 
 .wizard-content {
-  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  background: linear-gradient(135deg, var(--color-dark-bg-secondary) 0%, var(--color-dark-surface-hover) 100%);
   border-radius: 16px;
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.7),
@@ -265,7 +265,7 @@
   align-items: center;
   padding: 20px 24px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(37, 129, 95, 0.1);
+  background: rgba(0, 210, 176, 0.1);
 }
 
 .wizard-step-info {
@@ -292,7 +292,7 @@
   height: 8px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 .progress-dot.active {
@@ -312,7 +312,7 @@
   padding: 8px;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -436,7 +436,7 @@
   background: none;
   color: #fff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   font-family: inherit;
 }
 
@@ -447,7 +447,7 @@
   font-weight: 600;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -483,7 +483,7 @@
 
 .wizard-nav-btn.next:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 129, 95, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 210, 176, 0.4);
 }
 
 .wizard-nav-btn.skip-tour:hover {
@@ -540,7 +540,7 @@
 
 .wizard-arrow.top, .wizard-arrow.top-left, .wizard-arrow.top-right {
   border-width: 12px 12px 0 12px;
-  border-color: #2a2a2a transparent transparent transparent;
+  border-color: var(--color-dark-surface-hover) transparent transparent transparent;
   bottom: -12px;
   left: 50%;
   transform: translateX(-50%);
@@ -550,7 +550,7 @@
 
 .wizard-arrow.bottom, .wizard-arrow.bottom-left, .wizard-arrow.bottom-right {
   border-width: 0 12px 12px 12px;
-  border-color: transparent transparent #1e1e1e transparent;
+  border-color: transparent transparent var(--color-dark-bg-secondary) transparent;
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
@@ -560,7 +560,7 @@
 
 .wizard-arrow.left {
   border-width: 12px 0 12px 12px;
-  border-color: transparent transparent transparent #2a2a2a;
+  border-color: transparent transparent transparent var(--color-dark-surface-hover);
   right: -12px;
   top: 50%;
   transform: translateY(-50%);
@@ -568,7 +568,7 @@
 
 .wizard-arrow.right {
   border-width: 12px 12px 12px 0;
-  border-color: transparent #1e1e1e transparent transparent;
+  border-color: transparent var(--color-dark-bg-secondary) transparent transparent;
   left: -12px;
   top: 50%;
   transform: translateY(-50%);

@@ -4,11 +4,29 @@
 
 :root {
   /* Primary Colors */
-  --color-p: #00957d;
+  --color-p: #00d2b0;
   --color-s: #00d2b0;
-  --color-p-shadow: #245951;
+  --color-p-shadow: #0b3b33;
   --color-s-light: #60d8c4;
   
+  /* Semantic roles: teal is for actions, red only ever means live */
+  --color-on-accent: #04221d;
+  --color-live: #d92d2f;
+  --color-on-live: #ffffff;
+
+  /* Aliases for names components already use */
+  --color-s-dark: var(--color-p-shadow);
+  --color-emerald: var(--color-s);
+  --color-viridian: var(--color-s);
+  --color-viridian-shadow: var(--color-p-shadow);
+  --color-blue-accent: var(--color-s);
+  --color-blue-accent-hover: var(--color-s-light);
+  --color-dark-surface-lighter: var(--color-dark-surface-hover);
+  --border-radius-md: var(--radius-md);
+
+  /* Type: one family, condensed for headlines like a broadcast graphic */
+  --font-sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
   /* Accent Colors */
   --color-butterscotch: #D4A144;
   --color-platinum: #D9DCDE;
@@ -21,25 +39,25 @@
   --color-info: #3b82f6;
   
   /* Dark Theme Colors */
-  --color-dark-bg: #0f0f0f;
-  --color-dark-bg-secondary: #1a1a1a;
-  --color-dark-surface: #242424;
-  --color-dark-surface-hover: #2a2a2a;
-  --color-dark-border: #333333;
+  --color-dark-bg: #101416;
+  --color-dark-bg-secondary: #171c1f;
+  --color-dark-surface: #20272b;
+  --color-dark-surface-hover: #283136;
+  --color-dark-border: #2f383d;
   --color-dark-border-light: rgba(255, 255, 255, 0.1);
   --color-dark-border-medium: rgba(255, 255, 255, 0.2);
   
   /* Text Colors */
   --color-text-primary: #ffffff;
   --color-text-secondary: #e5e5e5;
-  --color-text-muted: #9ca3af;
+  --color-text-muted: #a7b0b3;
   --color-text-disabled: #6b7280;
   
   /* Background Gradients */
-  --gradient-accent: linear-gradient(135deg, var(--color-p), var(--color-s));
-  --gradient-primary: linear-gradient(135deg, var(--color-p-shadow), var(--color-p));
-  --gradient-dark: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-  --gradient-surface: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  --gradient-accent: var(--color-s);
+  --gradient-primary: var(--color-s);
+  --gradient-dark: var(--color-dark-bg);
+  --gradient-surface: var(--color-dark-bg-secondary);
   
   /* Spacing Scale */
   --space-xs: 0.25rem;    /* 4px */
@@ -83,11 +101,11 @@
   --line-height-relaxed: 1.6;
   
   /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
   
   /* Modal & Overlay Shadows */
   --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -111,7 +129,7 @@
   --transition-slow: 0.3s ease;
   --transition-colors: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   --transition-transform: transform 0.2s ease;
-  --transition-all: all 0.2s ease;
+  --transition-all: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   
   /* Backdrop Blur */
   --backdrop-blur: blur(20px);

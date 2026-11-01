@@ -200,7 +200,7 @@
 }/* Stream Homepage Styles */
 .stream-homepage {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  background: var(--color-dark-bg);
   color: #ffffff;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -256,12 +256,12 @@
 .nav-bar-btn {
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 1rem;
   font-weight: 500;
   padding: 0.5rem 0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   border-radius: 0;
   outline: none;
@@ -288,7 +288,7 @@
   bottom: -10px; /* Adjust for shadow positioning */
   height: 4px; /* Area for shadow to appear */
   background: transparent; /* No solid background color */
-  box-shadow: 0 3px 5px -1px var(--color-viridian-shadow, rgba(37, 129, 95, 0.6)); /* Brighter shadow effect */
+  box-shadow: 0 3px 5px -1px var(--color-viridian-shadow, rgba(0, 210, 176, 0.6)); /* Brighter shadow effect */
   /* border-radius: 1px; /* Optional for shadow shape */
 }
 
@@ -326,7 +326,7 @@
   color: #ffffff;
   font-size: 0.9rem;
   width: 150px; /* Further reduced */
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .header-actions .search-container input::placeholder {
@@ -336,7 +336,7 @@
 .header-actions .search-container input:focus {
   outline: none;
   border-color: var(--color-viridian);
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 210, 176, 0.1);
   background: rgba(255, 255, 255, 0.15);
 }
 
@@ -352,7 +352,7 @@
   justify-content: center;
   color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .user-btn:hover,
@@ -372,7 +372,7 @@
   justify-content: center;
   color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   padding: 0; /* Ensure icon is centered */
   /* margin-left: 0; /* Removed, using gap on parent */
 }
@@ -388,7 +388,7 @@
   justify-content: center;
   color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   padding: 0;
 }
 
@@ -396,7 +396,7 @@
   background: var(--color-viridian);
   border-color: var(--color-viridian);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
 }
 
 /* Main Content */
@@ -418,7 +418,7 @@
 .hero-section {
   padding: 4rem 0 6rem;
   text-align: center;
-  background: linear-gradient(135deg, rgba(37, 129, 95, 0.1), rgba(86, 183, 122, 0.05));
+  background: linear-gradient(135deg, rgba(0, 210, 176, 0.1), rgba(86, 183, 122, 0.05));
   border-radius: 16px;
   margin-bottom: 4rem;
 }
@@ -438,7 +438,7 @@
 
 .hero-subtitle {
   font-size: 1.2rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin-bottom: 3rem;
   line-height: 1.5;
 }
@@ -454,17 +454,17 @@
   border-radius: 50px;
   padding: 1rem 2rem;
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 .hero-search:focus-within {
   border-color: var(--color-viridian);
-  box-shadow: 0 0 0 4px rgba(37, 129, 95, 0.1);
+  box-shadow: 0 0 0 4px rgba(0, 210, 176, 0.1);
   background: rgba(255, 255, 255, 0.15);
 }
 
 .hero-search svg {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin-right: 1rem;
   flex-shrink: 0;
 }
@@ -479,7 +479,7 @@
 }
 
 .hero-search-input::placeholder {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 /* Featured Section */
@@ -506,24 +506,24 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+  background: var(--color-dark-surface);
   height: 280px;
-  box-shadow: 0 8px 32px rgba(37, 129, 95, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 210, 176, 0.15);
 }
 
 .featured-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(37, 129, 95, 0.3), 0 0 30px rgba(37, 129, 95, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 210, 176, 0.3), 0 0 30px rgba(0, 210, 176, 0.2);
 }
 
 .featured-card:first-child {
-  box-shadow: 0 8px 32px rgba(37, 129, 95, 0.25), 0 0 20px rgba(37, 129, 95, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 210, 176, 0.25), 0 0 20px rgba(0, 210, 176, 0.15);
 }
 
 .featured-card:first-child:hover {
   transform: translateY(-6px);
-  box-shadow: 0 25px 50px rgba(37, 129, 95, 0.4), 0 0 40px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 25px 50px rgba(0, 210, 176, 0.4), 0 0 40px rgba(0, 210, 176, 0.3);
 }
 
 .featured-thumbnail {
@@ -533,7 +533,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: var(--color-dark-surface);
 }
 
 .sport-icon {
@@ -630,7 +630,7 @@
   justify-content: center;
   color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   opacity: 0;
   z-index: 6;
 }
@@ -651,6 +651,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  padding: 0;
 }
 
 .section-header h2 {
@@ -684,7 +685,7 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 .content-card:hover {
@@ -714,12 +715,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: var(--color-dark-surface);
   z-index: 1;
 }
 
 .sport-gradient-fallback.featured-gradient-fallback {
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: var(--color-dark-surface);
 }
 
 /* Poster overlays */
@@ -769,7 +770,7 @@
   border-radius: 6px;
   padding: 2px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .team-badge-overlay.featured-team-badge {
@@ -874,7 +875,7 @@
   position: relative;
   width: 100%;
   height: 160px;
-  background: #333;
+  background: var(--color-dark-border);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -885,12 +886,12 @@
 /* Only sports cards get the green gradient */
 .content-card.match-card .card-thumbnail,
 .content-card.match-card .card-thumbnail.match-thumbnail {
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: var(--color-dark-surface);
 }
 
 /* Ensure movie/TV cards have dark background */
 .content-section:not([class*="sports"]) .card-thumbnail {
-  background: #333 !important;
+  background: var(--color-dark-border) !important;
 }
 
 /* Legacy team badge system (keep for backward compatibility) */
@@ -913,7 +914,7 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 4px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
@@ -935,7 +936,7 @@
   position: relative;
   width: 100%;
   height: 160px;
-  background: linear-gradient(135deg, var(--color-viridian), var(--color-emerald));
+  background: var(--color-dark-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1033,7 +1034,7 @@
   justify-content: center;
   color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .play-button:hover {
@@ -1060,7 +1061,7 @@
 
 .card-info p {
   margin: 0;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   opacity: 0.8;
 }
@@ -1127,12 +1128,12 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
   outline: none;
 }
@@ -1153,7 +1154,7 @@
   background: var(--color-viridian);
   border-color: var(--color-viridian);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
 }
 
 .sport-filter-btn.active:hover {
@@ -1167,7 +1168,7 @@
   position: relative;
   width: 100%;
   height: 160px;
-  background: #333; /* Fallback color only */
+  background: var(--color-dark-border); /* Fallback color only */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1239,7 +1240,7 @@
   max-height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .sport-fallback-image.featured-sport-image {
@@ -1276,7 +1277,7 @@
   display: block;
   margin-left: 8px;
   margin-right: 0;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 .movie-poster:hover {
@@ -1296,7 +1297,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
   position: absolute;
   top: 0;
   left: 0;
@@ -1381,7 +1382,7 @@
 
 /* Featured card sizing for movies/TV */
 .featured-card .featured-thumbnail {
-  background: #333; /* Fallback color */
+  background: var(--color-dark-border); /* Fallback color */
 }
 
 /* Loading states for movie cards */
@@ -1482,7 +1483,7 @@
 .card-thumbnail,
 .featured-thumbnail {
   min-height: 240px;
-  background-color: #333;
+  background-color: var(--color-dark-border);
 }
 
 .featured-thumbnail {
@@ -1522,7 +1523,7 @@
 }
 
 .modal-content {
-  background: #1a1a1a;
+  background: var(--color-dark-bg-secondary);
   border-radius: 12px;
   max-width: 800px;
   width: 90%;
@@ -1589,7 +1590,7 @@
 }
 
 .movie-meta .year {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 1.1rem;
 }
 
@@ -1625,7 +1626,7 @@
 
 .selectors-container label {
   display: block;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
@@ -1648,7 +1649,7 @@
 .selectors-container select:focus {
   outline: none;
   border-color: var(--color-p);
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 210, 176, 0.1);
 }
 
 .action-buttons {
@@ -1667,14 +1668,14 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   flex: 1;
 }
 
 .watch-now-btn:hover {
   background: var(--color-emerald);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
 }
 
 .close-btn {
@@ -1686,7 +1687,7 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .close-btn:hover {
@@ -1711,7 +1712,7 @@
 }
 
 .text-gray-400 {
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .text-sm {
@@ -1748,7 +1749,7 @@
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .empty-state h3 {
@@ -1815,13 +1816,6 @@
     margin-left: 8px !important;
   }
   
-  .search--mobile .search__input {
-    width: 70px !important;
-    height: 28px !important;
-    font-size: 0.75rem !important;
-    padding: 0.3rem 0.4rem 0.3rem 1.4rem !important;
-    border-radius: var(--radius-md) !important;
-  }
   
   .search--mobile .search__icon {
     left: 4px !important;
@@ -1989,17 +1983,17 @@
   border-radius: 50px;
   padding: 0.9rem 1.8rem; /* Slightly less padding than hero-search if desired */
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 .persistent-search-container:focus-within {
   border-color: var(--color-viridian);
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 210, 176, 0.2);
   background: rgba(35, 35, 35, 0.9);
 }
 
 .persistent-search-container svg {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin-right: 1rem;
   flex-shrink: 0;
 }
@@ -2016,4 +2010,316 @@
 
 .persistent-search-input::placeholder {
   color: #78808c;
+}
+/* ==========================================================================
+   LIVE SPOTLIGHT
+   ========================================================================== */
+
+.spotlight {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(280px, 42vh, 460px);
+  margin-bottom: var(--space-3xl);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--color-dark-surface);
+  cursor: pointer;
+}
+
+/* Art is 16:9, so it sits at full height on the right instead of being cropped */
+.spotlight__art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.spotlight__content {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-2xl);
+  color: var(--color-text-primary);
+}
+
+.spotlight__content h2 {
+  margin: var(--space-sm) 0 var(--space-xs);
+  font-size: clamp(var(--font-size-2xl), 4vw, var(--font-size-4xl));
+  line-height: var(--line-height-tight);
+}
+
+.spotlight__content p {
+  margin: 0 0 var(--space-lg);
+  color: var(--color-text-secondary);
+}
+
+.spotlight__content .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.spotlight__label {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+}
+
+.spotlight__label--live {
+  background: var(--color-butterscotch);
+  color: var(--color-dark-bg-secondary);
+}
+
+@media (max-width: 768px) {
+  .spotlight {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  .spotlight__art {
+    position: relative;
+    width: 100%;
+    height: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .spotlight__content {
+    padding: var(--space-lg);
+  }
+
+
+  /* The header search is the only search on small screens, so give it a full row */
+  .header__nav {
+    flex-wrap: wrap;
+  }
+
+  .search.search--mobile {
+    order: 1;
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: none;
+    margin: 0 !important;
+  }
+
+  .nav .nav__item,
+  .see-all-btn {
+    min-height: 44px;
+  }
+}
+
+/* ==========================================================================
+   LANDSCAPE TMDB CARDS
+   ========================================================================== */
+
+.content-card .card-thumbnail.card-thumbnail--landscape {
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.content-card .card-thumbnail.card-thumbnail--landscape img.card-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.empty-panel {
+  grid-column: 1 / -1;
+  padding: var(--space-3xl);
+  border-radius: var(--radius-md);
+  background: var(--color-dark-surface);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.return-home-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.episode-status {
+  padding: var(--space-lg) 0;
+  text-align: center;
+}
+
+/* ==========================================================================
+   BROADCAST PASS
+   Headlines are condensed like a TV graphic, surfaces are flat, red means live
+   ========================================================================== */
+
+.section-header h2,
+.featured-section h2,
+.sport-filter-container h2,
+.category-title,
+.modal__title,
+.spotlight__content h2 {
+  font-stretch: 75%;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.section-header h2,
+.featured-section h2,
+.category-title {
+  font-size: var(--font-size-3xl);
+}
+
+.spotlight__content {
+  flex: 1;
+  max-width: 45%;
+}
+
+.spotlight__content h2 {
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  line-height: 1;
+}
+
+.spotlight__label--live,
+.live-badge,
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  background: var(--color-live) !important;
+  color: var(--color-on-live) !important;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: none !important;
+}
+
+.spotlight__label--live::before,
+.live-badge::before,
+.live-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+
+.content-card,
+.featured-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.content-card:hover,
+.featured-card:hover,
+.featured-card:first-child:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.content-card:hover .card-info h3 {
+  color: var(--color-s);
+}
+
+.card-info h3 {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.sport-icon,
+.sport-icon-fallback {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .section-header h2 {
+    justify-content: flex-start;
+  }
+
+  .stream-view-header button {
+    min-height: 44px;
+  }
+
+  .spotlight__content {
+    max-width: none;
+  }
+
+  .spotlight__content h2 {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+.player-empty {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.player-empty h1 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-4xl);
+  font-stretch: 75%;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.player-empty p {
+  margin: 0;
+}
+
+/* Teal fills are bright, so text on them is always dark. Legacy rules set white
+   with !important across several files, so this has to win over them */
+.sport-filter-btn.active,
+.sport-filter-btn.active:hover,
+.movie-meta .badge,
+.watch-now-btn,
+.watch-now-btn:hover,
+.checkmark,
+.movie-checkmark,
+.stream-item-number-inline,
+.add-stream-btn,
+.add-stream-btn:hover,
+.add-stream-btn-header,
+.add-stream-btn-header:hover,
+.add-stream-fab,
+.add-stream-fab:hover,
+.custom-stream-popup .save-btn,
+.wizard-nav-btn.next,
+.wizard-nav-btn.finish,
+.help-btn:hover,
+.action-btn.help-btn:hover,
+.layout-toggle:hover,
+.btn--toggle.active,
+.search__result--active,
+.window-indicator,
+.cycle-button,
+.url-input-add,
+.button-group button,
+.custom-file-upload {
+  color: var(--color-on-accent) !important;
 }

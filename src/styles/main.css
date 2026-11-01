@@ -322,3 +322,34 @@
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   KEYBOARD FOCUS
+   Several components set outline: none, so this has to win over them
+   ========================================================================== */
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-s) !important;
+  outline-offset: 2px;
+}
+
+[role="dialog"]:focus {
+  outline: none;
+}
+
+/* Visible to screen readers only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  font-size: var(--font-size-xl);
+}

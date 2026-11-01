@@ -31,14 +31,14 @@
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 6px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .back-to-home-btn:hover {
-  background: rgba(37, 129, 95, 0.1);
+  background: rgba(0, 210, 176, 0.1);
   color: var(--color-s);
 }
 
@@ -51,7 +51,7 @@
   cursor: pointer;
   padding: 8px 14px;
   border-radius: 6px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -81,18 +81,18 @@
   cursor: pointer;
   padding: 12px 20px;
   border-radius: 20px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 2px 8px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 210, 176, 0.3);
 }
 
 .add-stream-btn-header:hover {
   background: var(--color-s);
   border-color: var(--color-s);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.4);
 }
 
 .header-right {
@@ -188,7 +188,7 @@
     flex-shrink: 0;
     background: var(--color-p);
     border: 1px solid var(--color-p);
-    color: white;
+    color: var(--color-on-accent);
   }
   
   /* Make + icon bigger */
@@ -305,7 +305,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   line-height: 1; /* Ensure icon vertical alignment is good */
 }
 
@@ -325,7 +325,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   line-height: 1;
 }
 
@@ -334,7 +334,7 @@
   border-color: var(--color-p);
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 129, 95, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
 }
 
 /* Ensure consistent sizing for icons within header buttons if needed */

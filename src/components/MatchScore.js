@@ -10,7 +10,7 @@ const getBadgeText = (score) => (score.status === 'pre' ? `Starts ${formatStart(
 // The badge on a match thumbnail. `className` is the badge style of the card it sits on.
 export const MatchStatusBadge = ({ match, className }) => {
   const { score } = match;
-  if (!score) return <div className={`${className} pulse`}>● LIVE</div>;
+  if (!score) return <div className={`${className} pulse`}>Live</div>;
 
   return (
     <div className={`${className} match-status match-status--${score.status} ${score.status === 'live' ? 'pulse' : ''}`}>
