@@ -2,6 +2,12 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
+  // npm start has no /api routes, so run the scores function here
+  app.get('/api/scores', async (req, res) => {
+    const { default: handler } = await import('../api/scores.js');
+    handler(req, res);
+  });
+
   // Existing proxy setup
   app.use(
     '/vidsrc',
