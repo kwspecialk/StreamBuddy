@@ -57,11 +57,6 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      // Video proxies
-      {
-        source: '/proxy/video',
-        destination: '/api/proxy/video'
-      },
       // VidSrc routes
       {
         source: '/api/vidsrc/:path*',
