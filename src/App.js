@@ -23,6 +23,7 @@ import { fetchLiveMatches, findMatchForUrl, formatEmbedTitle } from './utils/ppv
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
+import { useMatchScores } from './useMatchScores';
 
 const MATCH_REFRESH_INTERVAL_MS = 60000;
 const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
@@ -44,6 +45,7 @@ const App = () => {
   const [playerViewWizardResetToken, setPlayerViewWizardResetToken] = useState(0);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const hasLoadedMatchesRef = React.useRef(false);
+  const scoredMatches = useMatchScores(matches, currentView === 'homepage' || showStreamBrowser);
 
   const [videoUrls, setVideoUrls] = useState(() => {
     const savedUrls = localStorage.getItem('savedVideoUrls');
@@ -580,7 +582,7 @@ return (
       <StreamHomepage
         onStreamSelect={handleStreamSelect}
         onEnterStreamView={handleEnterStreamView}
-        matches={matches}
+        matches={scoredMatches}
         isLoading={isLoadingMatches}
         onAddUrl={addVideoUrl}
       />
@@ -654,7 +656,7 @@ return (
         isOpen={showStreamBrowser}
         onClose={handleCloseStreamBrowser}
         onAddStream={addVideoUrl}
-        matches={matches}
+        matches={scoredMatches}
         isLoading={isLoadingMatches}
         onShowMovieDetails={setMovieDetails}
       />
