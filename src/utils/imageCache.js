@@ -2,25 +2,25 @@
 
 // Sports image mappings
 const SPORTS_IMAGE_MAP = {
-  'soccer': '/images/sports/soccer.png',
-  'football': '/images/sports/soccer.png', // Non-American football
-  'american-football': '/images/sports/football.png',
-  'basketball': '/images/sports/basketball.png',
-  'tennis': '/images/sports/tennis.png',
-  'baseball': '/images/sports/baseball.png',
-  'hockey': '/images/sports/hockey.png',
-  'golf': '/images/sports/golf.png',
-  'cricket': '/images/sports/cricket.png',
-  'rugby': '/images/sports/rugby.png',
-  'motor-sports': '/images/sports/racing.png',
-  'motorsports': '/images/sports/racing.png',
-  'racing': '/images/sports/racing.png',
-  'combat-sports': '/images/sports/fight.png',
-  'boxing': '/images/sports/fight.png',
-  'mma': '/images/sports/fight.png',
-  'fight': '/images/sports/fight.png',
-  'darts': '/images/sports/darts.png',
-  'generic': '/images/sports/generic.png'
+  'soccer': '/images/sports/soccer.jpg',
+  'football': '/images/sports/soccer.jpg', // Non-American football
+  'american-football': '/images/sports/football.jpg',
+  'basketball': '/images/sports/basketball.jpg',
+  'tennis': '/images/sports/tennis.jpg',
+  'baseball': '/images/sports/baseball.jpg',
+  'hockey': '/images/sports/hockey.jpg',
+  'golf': '/images/sports/golf.jpg',
+  'cricket': '/images/sports/cricket.jpg',
+  'rugby': '/images/sports/rugby.jpg',
+  'motor-sports': '/images/sports/racing.jpg',
+  'motorsports': '/images/sports/racing.jpg',
+  'racing': '/images/sports/racing.jpg',
+  'combat-sports': '/images/sports/fight.jpg',
+  'boxing': '/images/sports/fight.jpg',
+  'mma': '/images/sports/fight.jpg',
+  'fight': '/images/sports/fight.jpg',
+  'darts': '/images/sports/darts.jpg',
+  'generic': '/images/sports/generic.jpg'
 };
 
 // Sports emoji fallbacks
