@@ -19,6 +19,9 @@ import { Plus, Maximize, Minimize, HelpCircle, Settings } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
 import PlayerViewWizard from './components/wizard/PlayerViewWizard';
 import './components/wizard/PlayerViewWizard.css';
+import { fetchLiveMatches, formatEmbedTitle } from './utils/ppvApi';
+
+const MATCH_REFRESH_INTERVAL_MS = 60000;
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -36,6 +39,7 @@ const App = () => {
   const [matches, setMatches] = useState([]);
   const [playerViewWizardResetToken, setPlayerViewWizardResetToken] = useState(0);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const hasLoadedMatchesRef = React.useRef(false);
 
   const [videoUrls, setVideoUrls] = useState(() => {
     const savedUrls = localStorage.getItem('savedVideoUrls');
@@ -207,42 +211,17 @@ const App = () => {
 
   // Fetch matches for Homepage and Stream Browser
   const fetchMatches = useCallback(async () => {
-    if (matches.length > 0) return;
-    
     try {
-      setIsLoadingMatches(true);
-      const response = await fetch('https://streamed.pk/api/matches/live');
-      if (!response.ok) return;
-      
-      const data = await response.json();
-      const uniqueMatches = new Map();
-      
-      data.forEach(match => {
-        const uniqueKey = `${match.teams?.home?.name}-${match.teams?.away?.name}-${match.title}`.toLowerCase();
-        
-        if (!uniqueMatches.has(uniqueKey) || 
-            (match.sources?.length > uniqueMatches.get(uniqueKey).sources?.length)) {
-          const isLive = match.title.toLowerCase().includes('live');
-          const cleanTitle = match.title.replace(/LIVE/i, '').trim();
-          
-          uniqueMatches.set(uniqueKey, {
-            ...match,
-            id: match.id,
-            title: cleanTitle,
-            popular: match.popular || isLive,
-            isLive: isLive,
-            sources: match.sources?.filter(Boolean) || []
-          });
-        }
-      });
-
-      setMatches(Array.from(uniqueMatches.values()));
+      // Later refreshes update the list in the background
+      if (!hasLoadedMatchesRef.current) setIsLoadingMatches(true);
+      setMatches(await fetchLiveMatches());
+      hasLoadedMatchesRef.current = true;
     } catch (error) {
       console.error('Error fetching matches:', error);
     } finally {
       setIsLoadingMatches(false);
     }
-  }, [matches]);
+  }, []);
 
   // Helper function to auto-switch layout based on stream count
   const autoSwitchLayout = (streamCount) => {
@@ -300,6 +279,8 @@ const App = () => {
   useEffect(() => {
     if (currentView === 'homepage' || showStreamBrowser) {
       fetchMatches();
+      const refreshTimer = setInterval(fetchMatches, MATCH_REFRESH_INTERVAL_MS);
+      return () => clearInterval(refreshTimer);
     }
   }, [currentView, showStreamBrowser, fetchMatches]);
 
@@ -321,29 +302,9 @@ const App = () => {
     } else if (itemOrUrl && itemOrUrl.sources && itemOrUrl.sources.length > 0) {
       // Sports match object
       dataForStream = itemOrUrl; // itemOrUrl is the match object
-      try {
-        // Basic source selection: use the first one. Could be more sophisticated.
-        const sourceToFetch = dataForStream.sources.find(s => s.source && s.id);
-        if (sourceToFetch) {
-          const response = await fetch(`https://streamed.pk/api/stream/${sourceToFetch.source}/${sourceToFetch.id}`);
-          if (response.ok) {
-            const responseData = await response.json();
-            if (responseData?.[0]?.embedUrl) {
-              urlToAdd = responseData[0].embedUrl;
-              addVideoUrl(urlToAdd, dataForStream);
-              streamSuccessfullyProcessed = true;
-            } else {
-              console.error('[App.js] API response for sports stream did not contain embedUrl:', responseData);
-            }
-          } else {
-            console.error('[App.js] Failed to fetch sports stream:', response.status, await response.text().catch(() => ''));
-          }
-        } else {
-          console.error('[App.js] Sports item has sources, but no valid source found (missing source.source or source.id):', dataForStream.sources);
-        }
-      } catch (error) {
-        console.error('[App.js] Error fetching stream for', dataForStream.title || 'sports item', error);
-      }
+      urlToAdd = dataForStream.sources[0].embedUrl;
+      addVideoUrl(urlToAdd, dataForStream);
+      streamSuccessfullyProcessed = true;
     } else {
       console.warn('[App.js] handleStreamSelect: Invalid itemOrUrl or itemDataIfUrl provided.', itemOrUrl, itemDataIfUrl);
     }
@@ -494,30 +455,21 @@ const App = () => {
       if (urlData?.match?.sources?.length > 1) {
         const currentSource = urlData.sourceIndex;
         const nextIndex = (currentSource + 1) % urlData.match.sources.length;
-        
-        try {
-          const source = urlData.match.sources[nextIndex];
-          const response = await fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
-          const data = await response.json();
+        const nextUrl = urlData.match.sources[nextIndex].embedUrl;
 
-          if (data?.[0]?.embedUrl) {
-            const newUrls = [...videoUrls];
-            newUrls[urlIndex] = data[0].embedUrl;
-            setVideoUrls(newUrls);
+        const newUrls = [...videoUrls];
+        newUrls[urlIndex] = nextUrl;
+        setVideoUrls(newUrls);
 
-            setSourceIndices(prev => {
-              const updated = { ...prev };
-              delete updated[url]; // Remove old URL
-              updated[data[0].embedUrl] = {
-                match: urlData.match,
-                sourceIndex: nextIndex
-              };
-              return updated;
-            });
-          }
-        } catch (error) {
-          console.error('Error cycling source:', error);
-        }
+        setSourceIndices(prev => {
+          const updated = { ...prev };
+          delete updated[url]; // Remove old URL
+          updated[nextUrl] = {
+            match: urlData.match,
+            sourceIndex: nextIndex
+          };
+          return updated;
+        });
       }
     }
   };
@@ -557,33 +509,7 @@ const App = () => {
 
   const formatApiUrl = (url) => {
     try {
-      if (url.includes('embedme.top')) {
-        const match = url.match(/embedme\.top\/embed\/\w+\/(.+?)\/\d+$/);
-        if (!match) return url;
-        let title = match[1];
-        title = title.replace(/^\d+-/, '');
-        
-        if (title.includes('-vs-') || title.includes('-v-')) {
-          const parts = title.split(/-vs-|-v-/);
-          if (parts.length === 2) {
-            const team1 = parts[0].replace(/-/g, ' ').trim();
-            const team2 = parts[1].replace(/-/g, ' ').trim();
-            
-            const capitalize = (str) => {
-              return str.split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-            };
-            
-            return `${capitalize(team1)} vs ${capitalize(team2)}`;
-          }
-        }
-        return title.replace(/-/g, ' ')
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      }
-      return url;
+      return formatEmbedTitle(url);
     } catch (error) {
       console.error('Error formatting URL:', error);
       return url;

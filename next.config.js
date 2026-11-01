@@ -8,12 +8,12 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self' https://vidsrc.sh https://*.vidsrc.sh https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
+              "default-src 'self' https://vidsrc.sh https://*.vidsrc.sh;",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vidsrc.sh https://*.vidsrc.sh;",
-              "frame-src 'self' https://vidsrc.sh https://*.vidsrc.sh https://embedme.top https://*.embedme.top;",
+              "frame-src 'self' https:;",
               "img-src 'self' * data: blob:;",
               "media-src 'self' * blob:;",
-              "connect-src 'self' https://vidsrc.sh https://*.vidsrc.sh https://streamed.pk https://embedme.top https://rr.vipstreams.in;",
+              "connect-src 'self' https://vidsrc.sh https://*.vidsrc.sh https://api.ppv.st;",
               "style-src 'self' 'unsafe-inline' https://vidsrc.sh https://*.vidsrc.sh;",
               "frame-ancestors 'self';",
               "worker-src 'self' blob: *;"
@@ -57,24 +57,7 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      // Live sports streams
-      {
-        source: '/api/stream/:source/:id*',
-        destination: 'https://streamed.pk/api/stream/:source/:id*'
-      },
-      {
-        source: '/api/stream/:path*',
-        destination: '/api/stream/:path*', // This will be handled by your API route
-      },
       // Video proxies
-      {
-        source: '/proxy/embed/:path*',
-        destination: 'https://embedme.top/embed/:path*'
-      },
-      {
-        source: '/proxy/vip/:path*',
-        destination: 'https://rr.vipstreams.in/:path*'
-      },
       {
         source: '/proxy/video',
         destination: '/api/proxy/video'

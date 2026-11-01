@@ -1,5 +1,4 @@
 // Simplified image cache utility without CORS-violating preloading
-const STREAMED_IMAGE_BASE = 'https://streamed.pk/api/images';
 
 // Sports image mappings
 const SPORTS_IMAGE_MAP = {
@@ -14,7 +13,9 @@ const SPORTS_IMAGE_MAP = {
   'cricket': '/images/sports/cricket.png',
   'rugby': '/images/sports/rugby.png',
   'motor-sports': '/images/sports/racing.png',
+  'motorsports': '/images/sports/racing.png',
   'racing': '/images/sports/racing.png',
+  'combat-sports': '/images/sports/fight.png',
   'boxing': '/images/sports/fight.png',
   'mma': '/images/sports/fight.png',
   'fight': '/images/sports/fight.png',
@@ -34,7 +35,9 @@ const SPORTS_EMOJI_MAP = {
   'golf': '⛳',
   'rugby': '🏉',
   'motor-sports': '🏁',
+  'motorsports': '🏁',
   'racing': '🏁',
+  'combat-sports': '🥊',
   'boxing': '🥊',
   'mma': '🥊',
   'fighting': '🥊',
@@ -82,16 +85,10 @@ export const imageCache = {
   },
 
   // Get team badge URL (no preloading)
-  getTeamBadgeUrl: (badgeId) => {
-    if (!badgeId) return null;
-    return `${STREAMED_IMAGE_BASE}/badge/${badgeId}.webp`;
-  },
+  getTeamBadgeUrl: (badgeUrl) => badgeUrl || null,
 
   // Get match poster URL (no preloading)
-  getMatchPosterUrl: (posterId) => {
-    if (!posterId) return null;
-    return `${STREAMED_IMAGE_BASE}/poster/${posterId}/${posterId}.webp`;
-  }
+  getMatchPosterUrl: (posterUrl) => posterUrl || null
 };
 
 export default imageCache;

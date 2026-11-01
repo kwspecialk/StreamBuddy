@@ -1354,6 +1354,31 @@
   /* background-color: rgba(0, 0, 0, 0.1); */
 }
 
+/* Sports posters are 16:9, so size the card to match instead of cropping them */
+.content-card .card-thumbnail.match-thumbnail {
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  padding-bottom: 0;
+}
+
+.content-card .card-thumbnail img.match-poster-overlay {
+  object-fit: cover;
+  object-position: center;
+  opacity: 1;
+}
+
+/* Featured cards are taller than the poster, leaving room below it for the title */
+.featured-thumbnail img.match-poster-overlay.featured-poster-overlay {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent);
+  mask-image: linear-gradient(to bottom, #000 80%, transparent);
+}
+
 /* Featured card sizing for movies/TV */
 .featured-card .featured-thumbnail {
   background: #333; /* Fallback color */

@@ -197,25 +197,13 @@ const StreamBrowserModal = ({
       
       // Handle sports streams
       if (item.sources && item.sources.length > 0) {
-        try {
-          const source = item.sources[0];
-          const response = await fetch(`https://streamed.pk/api/stream/${source.source}/${source.id}`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data?.[0]?.embedUrl) {
-              onAddStream(data[0].embedUrl, item);
-              
-              // Keep the animation for longer for successful streams
-              setTimeout(() => {
-                setSelectedStreams(prev => prev.filter(id => id !== item.id));
-              }, 1500); // Shortened from 2500ms to 1500ms
-              return; // Success, keep animation
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching stream:', error);
-        }
+        onAddStream(item.sources[0].embedUrl, item);
+
+        // Keep the animation for longer for successful streams
+        setTimeout(() => {
+          setSelectedStreams(prev => prev.filter(id => id !== item.id));
+        }, 1500); // Shortened from 2500ms to 1500ms
+        return; // Success, keep animation
       }
       // If we get here, there was an error - remove animation faster
       setTimeout(() => {
