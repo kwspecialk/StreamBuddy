@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { X, ArrowRight, ArrowLeft, Eye, Shield, MousePointer, LightbulbIcon, CircleGauge } from 'lucide-react';
 import './PlayerViewWizard.css';
+import { useEscapeKey } from '../../useModalBehavior';
 
 // Define steps outside the component so it's not recreated on every render
 const steps = [
   {
     id: 1,
     title: "Add Streams",
-    content: "Click 'Add Streams' to browse and add live sports, movies, or TV shows to your player.",
+    content: "Click 'Add' to browse and add live sports, movies, or TV shows to your player.",
     highlight: '.btn--primary',
     position: "bottom-left"
   },
   {
     id: 2,
     title: "Manage Your Streams",
-    content: "Use 'Manage Streams' to reorder, delete, refresh, or switch episodes for your active streams.",
+    content: "Use 'Manage' to reorder, delete, refresh, or switch episodes for your active streams.",
     highlight: '.btn--md--settings',
     position: "bottom-left"
   },
@@ -207,6 +208,12 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
           case 'top':
             position = { top: highlightRect.top - tooltipRect.height - arrowHeight, left: highlightRect.left + highlightRect.width / 2 - tooltipRect.width / 2, transform: '' };
             break;
+          case 'bottom-left':
+            position = { top: highlightRect.bottom + arrowHeight, left: highlightRect.right - tooltipRect.width, transform: '' };
+            break;
+          case 'bottom-right':
+            position = { top: highlightRect.bottom + arrowHeight, left: highlightRect.left, transform: '' };
+            break;
           case 'bottom':
             position = { top: highlightRect.bottom + arrowHeight, left: highlightRect.left + highlightRect.width / 2 - tooltipRect.width / 2, transform: '' };
             break;
@@ -297,6 +304,8 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
     onClose();
   };
 
+  useEscapeKey(isOpen, handleClose);
+
   const handleSkip = () => {
     handleClose(); // Same behavior as finishing
   };
@@ -318,23 +327,14 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
   }
 
   const progressDots = [];
-  const totalDisplayedSteps = 6;
 
-  for (let i = 1; i <= totalDisplayedSteps; i++) {
+  for (let i = 1; i <= totalSteps; i++) {
     let dotClassName = 'progress-dot';
-    if (i <= 2) { // First 2 steps (QuickstartWizard) are always completed
+    if (currentStep === i) {
+      dotClassName += ' active';
+    }
+    if (stepCompleted[i]) {
       dotClassName += ' completed';
-    } else {
-      // Map displayed step (3-6) to PVW internal step (1-4)
-      // PVW's `currentStep` state is 1-based and corresponds to its own steps.
-      const pvwEquivalentStep = i - 2;
-      if (currentStep === pvwEquivalentStep) {
-        dotClassName += ' active';
-      }
-      // `stepCompleted` uses PVW's internal 1-based step numbers.
-      if (stepCompleted[pvwEquivalentStep]) {
-        dotClassName += ' completed';
-      }
     }
     progressDots.push(<div key={`dot-${i}`} className={dotClassName} />);
   }
@@ -417,7 +417,7 @@ const PlayerViewWizard = ({ isOpen, onClose, currentView, videoUrls, showStreamB
           <div className="wizard-content">
             <div className="wizard-header">
               <div className="wizard-step-info">
-                <span className="wizard-step-number">Step {currentStepData.id+2} of {6}</span>
+                <span className="wizard-step-number">Step {currentStepData.id} of {totalSteps}</span>
                 <div className="wizard-progress-dots">
                   {progressDots}
                 </div>

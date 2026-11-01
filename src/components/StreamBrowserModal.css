@@ -21,7 +21,7 @@
   display: block;
   margin-left: 8px;
   margin-right: 0;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
 }
 
 .movie-poster:hover {
@@ -55,7 +55,7 @@
   outline: none;
   border-color: var(--color-p);
   background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.2);
+  box-shadow: 0 0 0 2px rgba(0, 210, 176, 0.2);
 }
 
 /* Stream Browser Modal Styles */
@@ -84,7 +84,7 @@
 }
 
 .stream-browser-modal {
-  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); /* Match homepage */
+  background: linear-gradient(135deg, var(--color-dark-bg) 0%, var(--color-dark-bg-secondary) 100%); /* Match homepage */
   border-radius: 16px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   width: 100%;
@@ -152,7 +152,7 @@
   justify-content: center;
   color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .modal-icon-close-btn:hover {
@@ -180,7 +180,7 @@
 .nav-btn {
   background: none;
   border: none;
-  color: #9ca3af; /* Match homepage inactive tab color */
+  color: var(--color-text-muted); /* Match homepage inactive tab color */
   padding: 0.5rem 1rem; /* Match homepage tab padding */
   border-radius: 6px; /* Match homepage tab radius */
   font-size: 1rem; /* Match homepage tab font size */
@@ -220,7 +220,7 @@
   color: var(--color-platinum);
   font-size: 0.9rem;
   width: 100%;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stream-browser-modal .search-container input::placeholder {
@@ -230,7 +230,7 @@
 .stream-browser-modal .search-container input:focus {
   outline: none;
   border-color: var(--color-p);
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 210, 176, 0.1);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -263,7 +263,7 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
   position: relative;
 }
 
@@ -275,9 +275,9 @@
 
 .browser-card.selected {
   border-color: var(--color-p);
-  box-shadow: 0 0 0 2px rgba(37, 129, 95, 0.3), 0 8px 25px rgba(37, 129, 95, 0.2);
+  box-shadow: 0 0 0 2px rgba(0, 210, 176, 0.3), 0 8px 25px rgba(0, 210, 176, 0.2);
   transform: translateY(-2px) scale(1.02);
-  background: rgba(37, 129, 95, 0.1);
+  background: rgba(0, 210, 176, 0.1);
 }
 
 .card-thumbnail {
@@ -356,19 +356,19 @@
 
 .browser-card.selected .card-overlay {
   opacity: 1 !important; /* Force visibility */
-  background: linear-gradient(135deg, rgba(37, 129, 95, 0.9), rgba(86, 183, 122, 0.8));
+  background: linear-gradient(135deg, rgba(0, 210, 176, 0.9), rgba(86, 183, 122, 0.8));
   animation: successPulse 0.5s ease-out;
 }
 
 @keyframes successPulse {
   0% {
-    background: rgba(37, 129, 95, 0.8);
+    background: rgba(0, 210, 176, 0.8);
   }
   50% {
-    background: linear-gradient(135deg, rgba(37, 129, 95, 0.95), rgba(86, 183, 122, 0.9));
+    background: linear-gradient(135deg, rgba(0, 210, 176, 0.95), rgba(86, 183, 122, 0.9));
   }
   100% {
-    background: linear-gradient(135deg, rgba(37, 129, 95, 0.9), rgba(86, 183, 122, 0.8));
+    background: linear-gradient(135deg, rgba(0, 210, 176, 0.9), rgba(86, 183, 122, 0.8));
   }
 }
 
@@ -381,7 +381,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -482,7 +482,7 @@
 
 .card-info p {
   margin: 0;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   opacity: 0.8;
 }
@@ -551,7 +551,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .add-custom-stream-btn:hover {
@@ -588,7 +588,7 @@
 }
 
 .custom-stream-popup {
-  background: #1e1e1e; /* Darker than main modal for contrast */
+  background: var(--color-dark-bg-secondary); /* Darker than main modal for contrast */
   padding: 25px 30px;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -676,7 +676,7 @@
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .empty-state h3 {
@@ -699,7 +699,7 @@
 
 .footer-tip {
   margin: 0;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   text-align: center;
 }
@@ -924,7 +924,7 @@
   border-radius: 6px;
   padding: 2px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .team-badge-overlay:hover {

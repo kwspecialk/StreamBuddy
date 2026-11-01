@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { LAYOUTS } from './layouts';
+import { useEscapeKey } from './useModalBehavior';
 
 const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
   const [isMenuVisible, setMenuVisible] = useState(false);
+
+  useEscapeKey(isMenuVisible, () => setMenuVisible(false));
 
   const getLayoutPreview = (layoutId, showNumbers = false) => {
     const getPreviewBoxes = () => {      
@@ -111,6 +114,8 @@ const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
     <div className="layout-controls">
       <button 
         className="layout-toggle enhanced"
+        aria-label={`Layout: ${LAYOUTS[currentLayout]?.name || 'Select'}`}
+        aria-expanded={isMenuVisible}
         onClick={() => setMenuVisible(!isMenuVisible)}
       >
         <div className="layout-toggle-preview">

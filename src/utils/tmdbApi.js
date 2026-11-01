@@ -31,7 +31,8 @@ export const tmdbApi = {
         rating: movie.vote_average,
         genre: movie.genre_ids?.[0] ? getGenreName(movie.genre_ids[0], 'movie') : 'Unknown',
         type: 'movie',
-        thumbnail: getOptimizedImageUrl(movie.poster_path, 'w500')
+        thumbnail: getOptimizedImageUrl(movie.poster_path, 'w500'),
+        backdrop: movie.backdrop_path ? getOptimizedImageUrl(movie.backdrop_path, 'w780') : null
       }));
 
       return movies;
@@ -63,7 +64,8 @@ export const tmdbApi = {
         genre: show.genre_ids?.[0] ? getGenreName(show.genre_ids[0], 'tv') : 'Unknown',
         type: 'tv',
         season: 'Latest Season',
-        thumbnail: getOptimizedImageUrl(show.poster_path, 'w500')
+        thumbnail: getOptimizedImageUrl(show.poster_path, 'w500'),
+        backdrop: show.backdrop_path ? getOptimizedImageUrl(show.backdrop_path, 'w780') : null
       }));
 
       return shows;
@@ -198,7 +200,8 @@ export const tmdbApi = {
             : (item.first_air_date ? new Date(item.first_air_date).getFullYear() : 'Unknown'),
           rating: item.vote_average,
           type: item.media_type,
-          thumbnail: getOptimizedImageUrl(item.poster_path, 'w500')
+          thumbnail: getOptimizedImageUrl(item.poster_path, 'w500'),
+          backdrop: item.backdrop_path ? getOptimizedImageUrl(item.backdrop_path, 'w780') : null
         }));
 
       return results;

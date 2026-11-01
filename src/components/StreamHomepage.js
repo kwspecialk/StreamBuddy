@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, User, Play, ArrowLeft, Maximize, Minimize, Radio, ClapperboardIcon, TvIcon } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, User, Play, ArrowLeft, Maximize, Minimize, Film, Tv, Trophy } from 'lucide-react';
 import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
 import CachedImage from './CachedImage';
+import { clickableProps } from '../utils/a11y';
+
+const GRID_PREVIEW_COUNT = 8;
 
 const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,8 +20,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
   const [tvShowsLoading, setTVShowsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const searchInputRef = useRef(null); // Ref for the HERO search input
-  const persistentSearchInputRef = useRef(null); // Ref for the search input visible with results
+  const [expandedSections, setExpandedSections] = useState({});
   
   // Modal states
   const [selectedMovieDetails, setSelectedMovieDetails] = useState(null);
@@ -35,9 +37,6 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     setSearchTerm('');
     setActiveCategory('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Ensure focus is removed from any search input if it had focus
-    if (persistentSearchInputRef.current) persistentSearchInputRef.current.blur();
-    if (searchInputRef.current) searchInputRef.current.blur();
   };
 
   const handleCategoryChange = (category) => {
@@ -119,10 +118,6 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     console.log(`Search useEffect: searchTerm: '${searchTerm}', activeCategory: ${activeCategory}`);
     if (searchTerm.trim()) {
       handleSearch(searchTerm); // Perform the search based on current searchTerm and activeCategory
-      // If the persistent search input exists (meaning search results are shown), focus it.
-      if (persistentSearchInputRef.current) {
-        persistentSearchInputRef.current.focus();
-      }
     } else {
       // Only clear search results if not transitioning between categories during an active search
       // This check might be redundant if handleCategoryChange handles it, but good for safety.
@@ -202,10 +197,6 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     return imageCache.getTeamBadgeUrl(badgeId);
   };
 
-  const getSportIcon = (category) => {
-    return imageCache.getSportsEmoji(category);
-  };
-
   const getSportFallbackImage = (category) => {
     return imageCache.getSportsImageUrl(category);
   };
@@ -264,41 +255,135 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
   // console.log('StreamHomepage - selectedSport:', selectedSport);
   // console.log('StreamHomepage - getFilteredMatches():', getFilteredMatches());
 
+  const getTmdbMeta = (item) => (
+    [item.genre || (item.type === 'tv' ? 'TV Series' : 'Movie'), item.year]
+      .filter(value => value && value !== 'Unknown')
+      .join(', ')
+  );
+
+  const getMatchMeta = (match) => {
+    const watching = match.viewers >= 1000
+      ? `${(match.viewers / 1000).toFixed(1)}k watching`
+      : match.viewers > 0 && `${match.viewers} watching`;
+
+    return [formatSportName(match.category || 'Sports'), watching].filter(Boolean).join(', ');
+  };
+
   const renderTmdbCard = (item, type) => (
     <div
       key={`${type}-${item.id}`}
       className="content-card"
-      onClick={() => handleItemClick(item, type)}
+      {...clickableProps(() => handleItemClick(item, type), `${item.title} details`)}
     >
-      <div className="card-thumbnail">
-        {item.thumbnail && (
-          <div
-            className="card-blur-bg"
-            style={{ backgroundImage: `url(${item.thumbnail})` }}
-          />
-        )}
-        <CachedImage 
-          src={item.thumbnail}
+      <div className="card-thumbnail card-thumbnail--landscape">
+        <CachedImage
+          src={item.backdrop || item.thumbnail}
           alt={item.title}
-          className="movie-poster" // Assuming 'movie-poster' class works for both
-          fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>{type === 'movie' ? '🎦' : '📺'}</div>}
+          className="card-backdrop"
+          fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>{type === 'movies' ? <Film size={32} /> : <Tv size={32} />}</div>}
         />
-        <div className="card-overlay">
-          {/* Add play button or other elements if desired for search results */}
-        </div>
       </div>
       <div className="card-info">
         <h3>{item.title}</h3>
-        <p>{item.genre || (item.first_air_date ? new Date(item.first_air_date).getFullYear() : '')}{item.year ? ` • ${item.year}` : ''}</p>
+        <p>{getTmdbMeta(item)}</p>
       </div>
     </div>
   );
+
+  const renderFeaturedTmdbCard = (item, type) => (
+    <div
+      key={item.id}
+      className="featured-card"
+      {...clickableProps(() => handleItemClick(item, type), `${item.title} details`)}
+    >
+      <div className="featured-thumbnail">
+        <CachedImage
+          src={item.backdrop || item.thumbnail}
+          alt={item.title}
+          className="featured-movie-poster"
+          fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>{type === 'movies' ? <Film size={32} /> : <Tv size={32} />}</div>}
+        />
+      </div>
+      <div className="featured-info">
+        <h3>{item.title}</h3>
+        <p>{getTmdbMeta(item)}</p>
+      </div>
+    </div>
+  );
+
+  const renderSeeAllToggle = (categoryKey, itemCount) => {
+    if (itemCount <= GRID_PREVIEW_COUNT) return null;
+
+    const isExpanded = expandedSections[categoryKey];
+    return (
+      <button
+        className="see-all-btn"
+        aria-expanded={!!isExpanded}
+        onClick={() => setExpandedSections(prev => ({ ...prev, [categoryKey]: !isExpanded }))}
+      >
+        {isExpanded ? 'Show less' : `See all (${itemCount})`}
+      </button>
+    );
+  };
+
+  // Lead with a live game, or a trending title when nothing is on
+  const spotlightMatch = matches?.find(match => match.popular) || matches?.[0];
+  const spotlightTitle = trendingMovies[0];
+  const liveNowMatches = (matches || []).filter(match => match !== spotlightMatch).slice(0, GRID_PREVIEW_COUNT);
+
+  const renderSpotlight = () => {
+    if (spotlightMatch) {
+      const title = getMatchTitle(spotlightMatch);
+      const image = spotlightMatch.poster
+        ? getMatchPosterUrl(spotlightMatch.poster)
+        : getSportFallbackImage(spotlightMatch.category);
+      const fallbackImage = getSportFallbackImage(spotlightMatch.category);
+      const handleImageError = (e) => {
+        e.target.onerror = null;
+        e.target.src = fallbackImage;
+      };
+
+      return (
+        <section
+          className="spotlight"
+          {...clickableProps(() => handleItemClick(spotlightMatch, 'live-sports'), `Watch ${title}`)}
+        >
+          <img src={image} alt="" className="spotlight__art" onError={handleImageError} />
+          <div className="spotlight__content">
+            <span className="spotlight__label spotlight__label--live">Live</span>
+            <h2>{title}</h2>
+            <p>{getMatchMeta(spotlightMatch)}</p>
+            <span className="btn btn--primary btn--lg"><Play size={18} fill="currentColor" /> Watch now</span>
+          </div>
+        </section>
+      );
+    }
+
+    if (spotlightTitle) {
+      return (
+        <section
+          className="spotlight"
+          {...clickableProps(() => handleItemClick(spotlightTitle, 'movies'), `${spotlightTitle.title} details`)}
+        >
+          <img src={spotlightTitle.backdrop || spotlightTitle.thumbnail} alt="" className="spotlight__art" />
+          <div className="spotlight__content">
+            <span className="spotlight__label">Trending today</span>
+            <h2>{spotlightTitle.title}</h2>
+            <p>{getTmdbMeta(spotlightTitle)}</p>
+            <span className="btn btn--primary btn--lg"><Play size={18} fill="currentColor" /> View details</span>
+          </div>
+        </section>
+      );
+    }
+
+    return <section className="spotlight loading-shimmer" aria-hidden="true" />;
+  };
 
   const renderSportCard = (item, categoryKey) => (
     <div
       key={`sport-${item.id}`}
       className="content-card match-card"
-      onClick={() => handleItemClick(item, categoryKey)} 
+      {...clickableProps(() => handleItemClick(item, categoryKey), `Watch ${getMatchTitle(item)}`)}
     >
       <div className="card-thumbnail match-thumbnail">
         {/* Always try to load sport fallback image first */}
@@ -315,7 +400,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
         {/* Fallback to green gradient + emoji if image fails */}
         <div className="sport-gradient-fallback" style={{ display: 'none' }}>
           <div className="sport-icon-fallback">
-            {getSportIcon(item.category)}
+            <Trophy size={32} />
           </div>
         </div>
         
@@ -360,16 +445,16 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
           </div>
         )}
         
-        <div className="live-badge pulse">● LIVE</div>
+        <div className="live-badge pulse">Live</div>
         <div className="card-overlay">
-          <button className="play-button">
+          <button className="play-button" tabIndex={-1} aria-hidden="true">
             <Play size={20} fill="white" />
           </button>
         </div>
       </div>
       <div className="card-info">
         <h3>{getMatchTitle(item)}</h3>
-        <p>{formatSportName(item.category || 'Sports')}</p>
+        <p>{getMatchMeta(item)}</p>
       </div>
     </div>
   );
@@ -387,12 +472,12 @@ if (!searchTerm.trim()) { // Should not happen if this section is rendered, but 
 
 return (
   <section className="content-section search-results-section">
-    <div style={{ marginLeft: '20px', marginRight: '20px', marginTop:'20px', marginBottom: '10px' }}>
-      <span onClick={handleClearSearch} className="return-home-link" title="Return Home">
+    <div style={{ marginTop: '20px', marginBottom: '10px' }}>
+      <button onClick={handleClearSearch} className="return-home-link">
         <ArrowLeft size={22} style={{ marginRight: '5px' }} /> Return Home
-      </span>
+      </button>
     </div>
-    <h2 className="category-title" style={{ color: 'white', marginLeft: '20px', marginBottom: '20px', marginTop:'0px' }}>Search Results for "{searchTerm}"</h2>
+    <h2 className="category-title" style={{ color: 'white', marginBottom: '20px', marginTop: '0px' }}>Search Results for "{searchTerm}"</h2>
     <div className="content-grid">
       {searchResults.map(item => {
         if (item.type === 'movie' || item.type === 'tv') {
@@ -426,8 +511,8 @@ return (
     {/* Header */}
     <header className="header header--sticky">
       <div className="header__content">
-        <div className="header__logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-          <h1><img src="/logo.png" alt="StreamBuddy Logo" style={{ height: '32px', verticalAlign: 'middle' }} /></h1>
+        <div className="header__logo" {...clickableProps(handleLogoClick, 'StreamBuddy home')}>
+          <img src="/logo.png" alt="StreamBuddy" style={{ height: '32px', verticalAlign: 'middle' }} />
         </div>
 
         <div className="header__nav">
@@ -467,6 +552,7 @@ return (
               type="text"
               className="search__input"
               placeholder="Search"
+              aria-label="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -479,7 +565,8 @@ return (
               <input
                 type="text"
                 className="search__input"
-                placeholder="Search "
+                placeholder="Search"
+                aria-label="Search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -487,7 +574,7 @@ return (
             <button onClick={toggleFullscreen} className="btn btn--icon header__actions--desktop" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
               {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
             </button>
-            <button className="btn btn--icon btn--user header__actions--desktop">
+            <button className="btn btn--icon btn--user header__actions--desktop" aria-label="Profile">
               <User size={24} />
             </button>
           </div>
@@ -497,19 +584,9 @@ return (
 
     {/* Main Content */}
     <main className="homepage-content">
+      <h1 className="sr-only">StreamBuddy: live sports, movies and TV</h1>
       {searchTerm.trim() ? (
         <>
-          <div className="persistent-search-container">
-            <Search size={24} />
-            <input
-              ref={persistentSearchInputRef}
-              type="text"
-              placeholder="Search for live games, movies, TV shows..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="persistent-search-input" // Similar to hero-search-input but can be distinct
-            />
-          </div>
           {renderSearchResultsSection()}
         </>
       ) : (
@@ -517,152 +594,35 @@ return (
           {/* Home Page */}
           {activeCategory === 'home' && (
             <>
-              {/* Hero Section with Search */}
-              <section className="hero-section">
-                <div className="hero-content">
-                  <h1 className="hero-title">Your New Home for Streaming</h1>
-                  <p className="hero-subtitle">Sports. Movies. TV. Don't miss a moment</p>
-                  
-                  <div className="hero-search" ref={searchInputRef}>
-                    <Search size={24} />
-                    <input
-                      className="hero-search-input"
-                      type="text"
-                      placeholder="Search for live games, movies, TV shows..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-            </section>
+              {renderSpotlight()}
 
             {/* Live Events Section */}
-            {matches && matches.length > 0 && (
+            {liveNowMatches.length > 0 && (
               <section className="content-section">
                 <div className="section-header">
-                  <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Radio size={24} /> Live Now
-                  </h2>
+                  <h2>Live now</h2>
                   <button 
                     className="see-all-btn"
                     onClick={() => setActiveCategory('live-sports')}
                   >
-                    See All Sports
+                    See all sports
                   </button>
                 </div>
                 <div className="content-grid">
-                  {matches && Array.isArray(matches) ? matches.slice(0, 6).map((match) => (
-                    <div
-                      key={match.id}
-                      className="content-card match-card"
-                      onClick={() => handleItemClick(match, 'live-sports')}
-                    >
-                      <div className="card-thumbnail match-thumbnail">
-                        {/* Always try to load sport fallback image first */}
-                        <img 
-                          src={getSportFallbackImage(match.category)}
-                          alt={formatSportName(match.category || 'Sports')}
-                          className="sport-background-image"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextElementSibling.style.display = 'flex';
-                          }}
-                        />
-                        
-                        {/* Fallback to green gradient + emoji if image fails */}
-                        <div className="sport-gradient-fallback" style={{ display: 'none' }}>
-                          <div className="sport-icon-fallback">
-                            {getSportIcon(match.category)}
-                          </div>
-                        </div>
-                        
-                        {/* Overlay poster if available */}
-                        {match.poster && (
-                          <img 
-                            src={getMatchPosterUrl(match.poster)}
-                            alt={match.title}
-                            className="match-poster-overlay"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        )}
-                        
-                        {/* Overlay team badges if available */}
-                        {(match.teams?.home?.badge || match.teams?.away?.badge) && (
-                          <div className="team-badges-overlay">
-                            {match.teams.home?.badge ? (
-                              <img 
-                                src={getTeamBadgeUrl(match.teams.home.badge)} 
-                                alt={match.teams.home.name}
-                                className="team-badge-overlay home-badge"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextElementSibling.style.display = 'flex';
-                                }}
-                              />
-                            ) : match.teams.home?.name && (
-                              <div className="team-placeholder-overlay home-placeholder">
-                                <span className="team-initial">
-                                  {match.teams.home.name.charAt(0)}
-                                </span>
-                              </div>
-                            )}
-                            
-                            <div className="vs-divider-overlay">VS</div>
-                            
-                            {match.teams.away?.badge ? (
-                              <img 
-                                src={getTeamBadgeUrl(match.teams.away.badge)} 
-                                alt={match.teams.away.name}
-                                className="team-badge-overlay away-badge"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextElementSibling.style.display = 'flex';
-                                }}
-                              />
-                            ) : match.teams.away?.name && (
-                              <div className="team-placeholder-overlay away-placeholder">
-                                <span className="team-initial">
-                                  {match.teams.away.name.charAt(0)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        
-                        <div className="live-badge pulse">● LIVE</div>
-                        <div className="card-overlay">
-                          <button className="play-button">
-                            <Play size={20} fill="white" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="card-info">
-                        <h3>{getMatchTitle(match)}</h3>
-                        <p>{formatSportName(match.category || 'Sports')}</p>
-                      </div>
-                    </div>
-                  )) : (
-                    <div style={{ color: 'white', padding: '20px', textAlign: 'center' }}>
-                      No matches available
-                    </div>
-                  )}
+                  {liveNowMatches.map((match) => renderSportCard(match, 'live-sports'))}
                 </div>
               </section>
             )}
 
-            {/* Featured Movies */}
+            {/* Featured movies */}
             <section className="content-section">
               <div className="section-header">
-                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ClapperboardIcon size={24} /> Featured Movies
-                </h2>
+                <h2>Featured movies</h2>
                 <button 
                   className="see-all-btn"
                   onClick={() => setActiveCategory('movies')}
                 >
-                  See All Movies
+                  See all movies
                 </button>
               </div>
               <div className="content-grid">
@@ -677,49 +637,20 @@ return (
                     </div>
                   ))
                 ) : (
-                  categories['movies'].items.slice(0, 6).map((movie) => (
-                    <div
-                      key={movie.id}
-                      className="content-card"
-                      onClick={() => handleItemClick(movie, 'movies')}
-                    >
-                      <div className="card-thumbnail">
-                        {movie.thumbnail && (
-                          <div
-                            className="card-blur-bg"
-                            style={{ backgroundImage: `url(${movie.thumbnail})` }}
-                          />
-                        )}
-                        <CachedImage 
-                          src={movie.thumbnail}
-                          alt={movie.title}
-                          className="movie-poster"
-                          fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>🎦</div>}
-                        />
-                        <div className="card-overlay">
-                        </div>
-                      </div>
-                      <div className="card-info">
-                        <h3>{movie.title}</h3>
-                        <p>{movie.genre} • {movie.year}</p>
-                      </div>
-                    </div>
-                  ))
+                  categories['movies'].items.slice(0, GRID_PREVIEW_COUNT).map((movie) => renderTmdbCard(movie, 'movies'))
                 )}
               </div>
             </section>
 
-            {/* Featured TV Shows */}
+            {/* Featured TV shows */}
             <section className="content-section">
               <div className="section-header">
-              <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <TvIcon size={24} /> Featured Shows
-                  </h2>
+              <h2>Featured shows</h2>
                 <button 
                   className="see-all-btn"
                   onClick={() => setActiveCategory('tv-shows')}
                 >
-                  See All Shows
+                  See all shows
                 </button>
               </div>
               <div className="content-grid">
@@ -734,34 +665,7 @@ return (
                     </div>
                   ))
                 ) : (
-                  categories['tv-shows'].items.slice(0, 6).map((show) => (
-                    <div
-                      key={show.id}
-                      className="content-card"
-                      onClick={() => handleItemClick(show, 'tv-shows')}
-                    >
-                      <div className="card-thumbnail">
-                        <CachedImage 
-                          src={show.thumbnail}
-                          alt={show.title}
-                          className="movie-poster portrait"
-                          fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>📺</div>}
-                        />
-                        {show.thumbnail && (
-                          <div
-                            className="card-blur-bg"
-                            style={{ backgroundImage: `url(${show.thumbnail})` }}
-                          />
-                        )}
-                        <div className="card-overlay">
-                        </div>
-                      </div>
-                      <div className="card-info">
-                        <h3>{show.title}</h3>
-                        <p>{show.genre} • {show.year}</p>
-                      </div>
-                    </div>
-                  ))
+                  categories['tv-shows'].items.slice(0, GRID_PREVIEW_COUNT).map((show) => renderTmdbCard(show, 'tv-shows'))
                 )}
               </div>
             </section>
@@ -773,7 +677,7 @@ return (
             {/* Sport Filter */}
             <section className="sport-filter-section">
               <div className="sport-filter-container">
-                <h2>Filter by Sport</h2>
+                <h2>Filter by sport</h2>
                 <div className="sport-filter-buttons">
                   <button
                     className={`sport-filter-btn ${selectedSport === 'all' ? 'active' : ''}`}
@@ -794,9 +698,9 @@ return (
               </div>
             </section>
 
-            {/* Featured Live Games */}
+            {/* Featured live games */}
             <section className="featured-section">
-              <h2>Featured Live Games</h2>
+              <h2>Featured live games</h2>
               
               <div className="featured-grid">
                 {getFilteredMatches().length > 0 ? (
@@ -804,7 +708,7 @@ return (
                   <div
                     key={match.id}
                     className="featured-card"
-                    onClick={() => handleItemClick(match, 'live-sports')}
+                    {...clickableProps(() => handleItemClick(match, 'live-sports'), `Watch ${getMatchTitle(match)}`)}
                   >
                     <div className="featured-thumbnail">
                         {/* Always try to load sport fallback image first */}
@@ -821,7 +725,7 @@ return (
                         {/* Fallback to green gradient + emoji if image fails */}
                         <div className="sport-gradient-fallback featured-gradient-fallback" style={{ display: 'none' }}>
                           <div className="sport-icon-fallback">
-                            {getSportIcon(match.category)}
+                            <Trophy size={32} />
                           </div>
                         </div>
                         
@@ -879,28 +783,24 @@ return (
                             )}
                           </div>
                         )}
-                      <div className="live-indicator">● LIVE</div>
+                      <div className="live-indicator">Live</div>
                     </div>
                     
                     {/* Match title overlay - moved outside of featured-thumbnail */}
                     <div className="match-title-overlay">
                       <h3>{getMatchTitle(match)}</h3>
-                      <p>{formatSportName(match.category || 'Sports')}</p>
+                      <p>{getMatchMeta(match)}</p>
                     </div>
                     
-                    <button className="play-btn">
+                    <button className="play-btn" tabIndex={-1} aria-hidden="true">
                       <Play size={24} fill="white" />
                     </button>
                   </div>
                 ))
                 ) : (
-                  <div style={{ color: 'white', padding: '40px', textAlign: 'center', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                    <h3>No Live Games Available</h3>
-                    <p>
-                      {isLoading ? 'Loading matches...' : 'No matches found'}<br/>
-                      <small>Total matches available: {matches?.length || 0}</small><br/>
-                      <small>Filtered matches: {getFilteredMatches()?.length || 0}</small>
-                    </p>
+                  <div className="empty-panel">
+                    <h3>{isLoading ? 'Loading live games...' : 'No live games right now'}</h3>
+                    {!isLoading && <p>Check back soon, or browse movies and TV shows.</p>}
                   </div>
                 )}
               </div>
@@ -911,7 +811,7 @@ return (
         {/* Movies Featured Section */}
         {activeCategory === 'movies' && (
           <section className="featured-section">
-            <h2>Featured Movies</h2>
+            <h2>Featured movies</h2>
             <div className="featured-grid">
               {moviesLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
@@ -924,26 +824,7 @@ return (
                   </div>
                 ))
               ) : (
-                categories['movies'].items.slice(0, 3).map((movie, index) => (
-                  <div
-                    key={movie.id}
-                    className="featured-card"
-                    onClick={() => handleItemClick(movie, 'movies')}
-                  >
-                    <div className="featured-thumbnail">
-                      <CachedImage 
-                        src={movie.thumbnail}
-                        alt={movie.title}
-                        className="featured-movie-poster"
-                        fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>🎦</div>}
-                      />
-                      </div>
-                    <div className="featured-info">
-                      <h3>{movie.title}</h3>
-                      <p>{movie.genre} • {movie.year}</p>
-                    </div>
-                  </div>
-                ))
+                categories['movies'].items.slice(0, 3).map((movie) => renderFeaturedTmdbCard(movie, 'movies'))
               )}
             </div>
           </section>
@@ -952,7 +833,7 @@ return (
         {/* TV Shows Featured Section */}
         {activeCategory === 'tv-shows' && (
           <section className="featured-section">
-            <h2>Featured TV Shows</h2>
+            <h2>Featured TV shows</h2>
             <div className="featured-grid">
               {tvShowsLoading ? (
                 Array.from({ length: 3 }).map((_, i) => (
@@ -965,26 +846,7 @@ return (
                   </div>
                 ))
               ) : (
-                categories['tv-shows'].items.slice(0, 3).map((show, index) => (
-                  <div
-                    key={show.id}
-                    className="featured-card"
-                    onClick={() => handleItemClick(show, 'tv-shows')}
-                  >
-                    <div className="featured-thumbnail">
-                      <CachedImage 
-                        src={show.thumbnail}
-                        alt={show.title}
-                        className="featured-movie-poster"
-                        fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>📺</div>}
-                      />
-                    </div>
-                    <div className="featured-info">
-                      <h3>{show.title}</h3>
-                      <p>{show.genre} • {show.year}</p>
-                    </div>
-                  </div>
-                ))
+                categories['tv-shows'].items.slice(0, 3).map((show) => renderFeaturedTmdbCard(show, 'tv-shows'))
               )}
             </div>
           </section>
@@ -997,19 +859,16 @@ return (
             // For sports, only show all-sports section with filtered data
             if (categoryKey !== 'all-sports') return null;
             
-            const items = getMainSectionMatches().filter(item =>
-              searchTerm === '' || getMatchTitle(item).toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            
+            const items = getMainSectionMatches();
+            const visibleItems = expandedSections[categoryKey] ? items : items.slice(0, GRID_PREVIEW_COUNT);
+
             if (items.length === 0 && !isLoading) return null;
 
             return (
               <section key={categoryKey} className="content-section">
                 <div className="section-header">
-                  <h2>{selectedSport === 'all' ? 'All Live Sports' : `${formatSportName(selectedSport)} - Live`}</h2>
-                  {items.length > 6 && (
-                    <button className="see-all-btn">See All</button>
-                  )}
+                  <h2>{selectedSport === 'all' ? 'All live sports' : `${formatSportName(selectedSport)} - Live`}</h2>
+                  {renderSeeAllToggle(categoryKey, items.length)}
                 </div>
 
                 {isLoading && items.length === 0 ? (
@@ -1026,98 +885,7 @@ return (
                   </div>
                 ) : (
                   <div className="content-grid">
-                    {items.slice(0, 12).map((item) => (
-                      <div
-                        key={item.id}
-                        className="content-card match-card"
-                        onClick={() => handleItemClick(item, categoryKey)}
-                      >
-                        <div className="card-thumbnail match-thumbnail">
-                            {/* Always try to load sport fallback image first */}
-                            <img 
-                              src={getSportFallbackImage(item.category)}
-                              alt={formatSportName(item.category || 'Sports')}
-                              className="sport-background-image"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextElementSibling.style.display = 'flex';
-                              }}
-                            />
-                            
-                            {/* Fallback to green gradient + emoji if image fails */}
-                            <div className="sport-gradient-fallback" style={{ display: 'none' }}>
-                              <div className="sport-icon-fallback">
-                                {getSportIcon(item.category)}
-                              </div>
-                            </div>
-                            
-                            {/* Overlay poster if available */}
-                            {item.poster && (
-                              <img 
-                                src={getMatchPosterUrl(item.poster)}
-                                alt={item.title}
-                                className="match-poster-overlay"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            )}
-                            
-                            {/* Overlay team badges if available */}
-                            {(item.teams?.home?.badge || item.teams?.away?.badge) && (
-                              <div className="team-badges-overlay">
-                                {item.teams.home?.badge ? (
-                                  <img 
-                                    src={getTeamBadgeUrl(item.teams.home.badge)} 
-                                    alt={item.teams.home.name}
-                                    className="team-badge-overlay"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextElementSibling.style.display = 'flex';
-                                    }}
-                                  />
-                                ) : item.teams.home?.name && (
-                                  <div className="team-placeholder-overlay">
-                                    <span className="team-initial">
-                                      {item.teams.home.name.charAt(0)}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                <div className="vs-divider-overlay">VS</div>
-                                
-                                {item.teams.away?.badge ? (
-                                  <img 
-                                    src={getTeamBadgeUrl(item.teams.away.badge)} 
-                                    alt={item.teams.away.name}
-                                    className="team-badge-overlay"
-                                    onError={(e) => {
-                                      e.target.style.display = 'none';
-                                      e.target.nextElementSibling.style.display = 'flex';
-                                    }}
-                                  />
-                                ) : item.teams.away?.name && (
-                                  <div className="team-placeholder-overlay">
-                                    <span className="team-initial">
-                                      {item.teams.away.name.charAt(0)}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          <div className="live-badge">● LIVE</div>
-                          <div className="card-overlay">
-                            <button className="play-button">
-                              <Play size={20} fill="white" />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="card-info">
-                          <h3>{getMatchTitle(item)}</h3>
-                          <p>{formatSportName(item.category || 'Sports')}</p>
-                        </div>
-                      </div>
-                    ))}
+                    {visibleItems.map((item) => renderSportCard(item, categoryKey))}
                   </div>
                 )}
               </section>
@@ -1127,13 +895,9 @@ return (
             if (categoryKey !== activeCategory) return null;
           }
 
-          const items = categoryKey.includes('sports')
-            ? category.items.filter(item =>
-                searchTerm === '' || getMatchTitle(item).toLowerCase().includes(searchTerm.toLowerCase())
-              )
-            : category.items.filter(item =>
-                searchTerm === '' || item.title.toLowerCase().includes(searchTerm.toLowerCase())
-              );
+          // The first three are already in the featured row
+          const items = category.items.slice(3);
+          const visibleItems = expandedSections[categoryKey] ? items : items.slice(0, GRID_PREVIEW_COUNT);
 
           if (items.length === 0 && !isLoading) return null;
 
@@ -1141,9 +905,7 @@ return (
             <section key={categoryKey} className="content-section">
               <div className="section-header">
                 <h2>{category.title}</h2>
-                {items.length > 6 && (
-                  <button className="see-all-btn">See All</button>
-                )}
+                {renderSeeAllToggle(categoryKey, items.length)}
               </div>
 
               {isLoading && items.length === 0 ? (
@@ -1160,71 +922,13 @@ return (
                 </div>
               ) : (
                 <div className="content-grid">
-                  {items.slice(0, 12).map((item) => (
-                    <div
-                      key={item.id}
-                      className="content-card"
-                      onClick={() => handleItemClick(item, categoryKey)}
-                    >
-                      <div className="card-thumbnail">
-                        {categoryKey === 'movies' ? (
-                          <>
-                            <CachedImage 
-                              src={item.thumbnail}
-                              alt={item.title}
-                              className="movie-poster"
-                              fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>🎦</div>}
-                            />
-                            {item.thumbnail && (
-                              <div
-                                className="card-blur-bg"
-                                style={{ backgroundImage: `url(${item.thumbnail})` }}
-                              />
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <CachedImage 
-                              src={item.thumbnail}
-                              alt={item.title}
-                              className="movie-poster"
-                              fallbackElement={<div className="sport-icon" style={{ display: 'flex' }}>📺</div>}
-                            />
-                            {item.thumbnail && (
-                              <div
-                                className="card-blur-bg"
-                                style={{ backgroundImage: `url(${item.thumbnail})` }}
-                              />
-                            )}
-                          </>
-                        )}
-                        <div className="card-overlay">
-                        
-                        </div>
-                      </div>
-                      <div className="card-info">
-                        <h3>{item.title}</h3>
-                        <p>{item.genre || item.season || item.episode || item.status} {item.year && `• ${item.year}`}</p>
-                      </div>
-                    </div>
-                  ))}
+                  {visibleItems.map((item) => renderTmdbCard(item, categoryKey))}
                 </div>
               )}
             </section>
           );
         })}
 
-        {/* Empty State */}
-        {searchTerm && Object.values(categories).every((cat) =>
-          cat.items.filter((item) =>
-            (item.title || getMatchTitle(item)).toLowerCase().includes(searchTerm.toLowerCase())
-          ).length === 0
-        ) && (
-          <div className="empty-state">
-            <h3>No results found for "{searchTerm}"</h3>
-            <p>Try searching for something else or browse our categories above.</p>
-          </div>
-        )}
           </> /* End of wrapper for original content when not searching */
         )}
       </main>

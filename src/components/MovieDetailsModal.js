@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import useModalBehavior from '../useModalBehavior';
 
 const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
   const [streamError, setStreamError] = useState(null);
@@ -10,6 +11,7 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
   const [error, setError] = useState(null);
   const [showAddedAnimation, setShowAddedAnimation] = useState(false);
   const posterContainerRef = useRef(null);
+  const dialogRef = useModalBehavior(true, onClose);
 
   const TMDB_API_KEY = '76e3744ab1806aa6becb288ebb3d1dc4';
 
@@ -130,6 +132,11 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
     >
       <div 
         className="modal-content"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={movieDetails.title}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
       >
         <div className="movie-details">
@@ -158,18 +165,18 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                 {movieDetails.type === 'tv' && (
                   <div className="episode-selector">
                     {loading ? (
-                      <div className="text-center py-4">Loading...</div>
+                      <div className="episode-status">Loading...</div>
                     ) : error ? (
-                      <div className="text-red-500 text-center py-4">{error}</div>
+                      <div className="episode-status stream-error-message">{error}</div>
                     ) : (
                       <div className="selectors-wrapper">
                         <div className="selectors-container">
                           <div className="selector-group season">
-                            <label>Season</label>
+                            <label htmlFor="season-select">Season</label>
                             <select
+                              id="season-select"
                               value={selectedSeason}
                               onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                              className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 hover:border-gray-600 transition-colors"
                             >
                               {seasons.map(season => (
                                 <option key={season.season_number} value={season.season_number}>
@@ -179,11 +186,11 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
                             </select>
                           </div>
                           <div className="selector-group episode">
-                            <label>Episode</label>
+                            <label htmlFor="episode-select">Episode</label>
                             <select
+                              id="episode-select"
                               value={selectedEpisode || ''}
                               onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-                              className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 hover:border-gray-600 transition-colors"
                             >
                               {episodes.map(episode => (
                                 <option 

@@ -3,6 +3,7 @@ import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog } fr
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
+import useModalBehavior from '../useModalBehavior';
 
 // Simple reorder function
 const reorder = (list, startIndex, endIndex) => {
@@ -457,11 +458,13 @@ const EditStreamsModal = ({
     }
   };
 
+  const dialogRef = useModalBehavior(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal modal--md" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal--md" ref={dialogRef} role="dialog" aria-modal="true" aria-label="Manage Streams" tabIndex={-1} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal__header modal__header--accent">
           <div className="header-left">
@@ -470,7 +473,7 @@ const EditStreamsModal = ({
               <p className="modal__subtitle">Add, remove, or reorder streams ({videoUrls.length} active)</p>
             </div>
           </div>
-          <button className="btn btn--close" onClick={onClose}>
+          <button className="btn btn--close" onClick={onClose} aria-label="Close">
             <X size={24} />
           </button>
         </div>

@@ -77,7 +77,8 @@
 }
 
 .modal__header--accent {
-  background: var(--color-p-shadow);
+  background: transparent;
+  border-bottom: 1px solid var(--color-dark-border-light);
   color: white;
 }
 
@@ -96,7 +97,6 @@
 
 .modal__header--accent .modal__title {
   color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .modal__subtitle {
@@ -229,7 +229,7 @@
 .modal__search-input:focus {
   outline: none;
   border-color: var(--color-p);
-  box-shadow: 0 0 0 3px rgba(37, 129, 95, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 210, 176, 0.1);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -293,11 +293,11 @@
 
 /* Special Modal Types */
 .modal--wizard {
-  border: 2px solid rgba(37, 129, 95, 0.3);
+  border: 2px solid rgba(0, 210, 176, 0.3);
 }
 
 .modal--wizard .modal__header {
-  background: linear-gradient(135deg, rgba(37, 129, 95, 0.2), rgba(86, 183, 122, 0.1));
+  background: linear-gradient(135deg, rgba(0, 210, 176, 0.2), rgba(86, 183, 122, 0.1));
 }
 
 /* Scrollbar Styling for Modal Content */
