@@ -17,6 +17,8 @@ const toMatch = (stream) => ({
   title: stream.name,
   category: stream.category_name?.toLowerCase().replace(/\s+/g, '-'),
   poster: stream.poster,
+  uriName: stream.uri_name,
+  startsAt: stream.starts_at,
   isLive: true,
   popular: false,
   viewers: Number(stream.viewers) || 0,

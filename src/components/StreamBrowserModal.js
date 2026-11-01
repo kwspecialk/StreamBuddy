@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, Search, Play, Plus } from 'lucide-react';
 import { imageCache } from '../utils/imageCache';
 import CachedImage from './CachedImage';
+import { MatchStatusBadge, MatchInfo } from './MatchScore';
 import { tmdbApi } from '../utils/tmdbApi'; // Import TMDB API
 
 const StreamBrowserModal = ({ 
@@ -440,7 +441,7 @@ const StreamBrowserModal = ({
                             </div>
                           )}
                           
-                          <div className="live-badge pulse">● LIVE</div>
+                          <MatchStatusBadge match={item} className="live-badge" />
                         </>
                       ) : (
                         <>
@@ -479,13 +480,14 @@ const StreamBrowserModal = ({
                     </div>
                     
                     <div className="card-info">
-                      <h3>{isStreamItem ? getMatchTitle(item) : item.title}</h3>
-                      <p>
-                        {isStreamItem 
-                          ? formatSportName(item.category || 'Sports')
-                          : (item.genre || (item.year ? `${item.year}` : '') || item.season || item.episode || item.status)
-                        }
-                      </p>
+                      {isStreamItem ? (
+                        <MatchInfo match={item} title={getMatchTitle(item)} sport={formatSportName(item.category || 'Sports')} />
+                      ) : (
+                        <>
+                          <h3>{item.title}</h3>
+                          <p>{item.genre || (item.year ? `${item.year}` : '') || item.season || item.episode || item.status}</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 );

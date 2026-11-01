@@ -20,6 +20,7 @@ import { Analytics } from "@vercel/analytics/react";
 import PlayerViewWizard from './components/wizard/PlayerViewWizard';
 import './components/wizard/PlayerViewWizard.css';
 import { fetchLiveMatches, formatEmbedTitle } from './utils/ppvApi';
+import { useMatchScores } from './useMatchScores';
 
 const MATCH_REFRESH_INTERVAL_MS = 60000;
 
@@ -40,6 +41,7 @@ const App = () => {
   const [playerViewWizardResetToken, setPlayerViewWizardResetToken] = useState(0);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const hasLoadedMatchesRef = React.useRef(false);
+  const scoredMatches = useMatchScores(matches, currentView === 'homepage' || showStreamBrowser);
 
   const [videoUrls, setVideoUrls] = useState(() => {
     const savedUrls = localStorage.getItem('savedVideoUrls');
@@ -523,7 +525,7 @@ if (currentView === 'homepage') {
       <StreamHomepage
         onStreamSelect={handleStreamSelect}
         onEnterStreamView={handleEnterStreamView}
-        matches={matches}
+        matches={scoredMatches}
         isLoading={isLoadingMatches}
         onAddUrl={addVideoUrl}
       />
@@ -608,7 +610,7 @@ return (
         isOpen={showStreamBrowser}
         onClose={handleCloseStreamBrowser}
         onAddStream={addVideoUrl}
-        matches={matches}
+        matches={scoredMatches}
         isLoading={isLoadingMatches}
         onShowMovieDetails={setMovieDetails}
       />

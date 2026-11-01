@@ -9,6 +9,7 @@ const stream = (overrides) => ({
   poster: 'https://example.com/poster.jpg',
   source_tag: 'HD',
   iframe: 'https://example.com/embed/chiefs-broncos',
+  uri_name: 'nfl/2026-11-01/kc-den',
   starts_at: 900,
   ends_at: 1100,
   always_live: 0,
@@ -30,6 +31,8 @@ describe('parseLiveMatches', () => {
       title: 'Chiefs at Broncos',
       category: 'american-football',
       poster: 'https://example.com/poster.jpg',
+      uriName: 'nfl/2026-11-01/kc-den',
+      startsAt: 900,
       sources: [
         { embedUrl: 'https://example.com/embed/chiefs-broncos', label: 'HD' },
         { embedUrl: 'https://example.com/embed/chiefs-broncos_540p', label: 'SD' }

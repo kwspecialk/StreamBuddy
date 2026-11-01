@@ -4,6 +4,7 @@ import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
 import CachedImage from './CachedImage';
+import { MatchStatusBadge, MatchInfo } from './MatchScore';
 
 const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -360,7 +361,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
           </div>
         )}
         
-        <div className="live-badge pulse">● LIVE</div>
+        <MatchStatusBadge match={item} className="live-badge" />
         <div className="card-overlay">
           <button className="play-button">
             <Play size={20} fill="white" />
@@ -368,8 +369,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
         </div>
       </div>
       <div className="card-info">
-        <h3>{getMatchTitle(item)}</h3>
-        <p>{formatSportName(item.category || 'Sports')}</p>
+        <MatchInfo match={item} title={getMatchTitle(item)} sport={formatSportName(item.category || 'Sports')} />
       </div>
     </div>
   );
@@ -631,7 +631,7 @@ return (
                           </div>
                         )}
                         
-                        <div className="live-badge pulse">● LIVE</div>
+                        <MatchStatusBadge match={match} className="live-badge" />
                         <div className="card-overlay">
                           <button className="play-button">
                             <Play size={20} fill="white" />
@@ -639,8 +639,7 @@ return (
                         </div>
                       </div>
                       <div className="card-info">
-                        <h3>{getMatchTitle(match)}</h3>
-                        <p>{formatSportName(match.category || 'Sports')}</p>
+                        <MatchInfo match={match} title={getMatchTitle(match)} sport={formatSportName(match.category || 'Sports')} />
                       </div>
                     </div>
                   )) : (
@@ -879,13 +878,12 @@ return (
                             )}
                           </div>
                         )}
-                      <div className="live-indicator">● LIVE</div>
+                      <MatchStatusBadge match={match} className="live-indicator" />
                     </div>
                     
                     {/* Match title overlay - moved outside of featured-thumbnail */}
                     <div className="match-title-overlay">
-                      <h3>{getMatchTitle(match)}</h3>
-                      <p>{formatSportName(match.category || 'Sports')}</p>
+                      <MatchInfo match={match} title={getMatchTitle(match)} sport={formatSportName(match.category || 'Sports')} />
                     </div>
                     
                     <button className="play-btn">
@@ -1105,7 +1103,7 @@ return (
                                 )}
                               </div>
                             )}
-                          <div className="live-badge">● LIVE</div>
+                          <MatchStatusBadge match={item} className="live-badge" />
                           <div className="card-overlay">
                             <button className="play-button">
                               <Play size={20} fill="white" />
@@ -1113,8 +1111,7 @@ return (
                           </div>
                         </div>
                         <div className="card-info">
-                          <h3>{getMatchTitle(item)}</h3>
-                          <p>{formatSportName(item.category || 'Sports')}</p>
+                          <MatchInfo match={item} title={getMatchTitle(item)} sport={formatSportName(item.category || 'Sports')} />
                         </div>
                       </div>
                     ))}

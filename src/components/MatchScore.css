@@ -1,0 +1,83 @@
+/* Score rows and status badges on sports match cards */
+
+/* .card-info h3 and the featured overlay both clamp or force block layout, so these need the extra weight */
+.card-info h3.match-teams,
+.featured-section .featured-card .match-title-overlay h3.match-teams {
+  display: grid !important;
+  gap: 2px;
+  margin: 0 0 var(--space-xs) !important;
+  overflow: visible !important;
+}
+
+.featured-section .featured-card .match-title-overlay .match-team,
+.match-team {
+  display: flex !important;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.featured-section .featured-card .match-title-overlay .match-team__name,
+.match-team__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-team__score {
+  flex: none;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.match-team--trailing {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+.featured-section .featured-card .match-title-overlay .match-team--trailing,
+.featured-section .featured-card .match-title-overlay .match-team--trailing * {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.card-info .match-odds,
+.featured-section .featured-card .match-title-overlay p.match-odds {
+  margin-top: 2px !important;
+  color: var(--color-s-light) !important;
+  opacity: 1 !important;
+  overflow-wrap: anywhere;
+}
+
+/* The stream browser's cards are narrower, so give the names more room */
+.browser-content-grid .match-team {
+  gap: var(--space-sm);
+}
+
+.browser-content-grid .match-team__score {
+  font-size: var(--font-size-base);
+}
+
+/* Status badges: live keeps the card's own colours and pulse */
+.match-status {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.match-status--pre {
+  background: rgba(0, 0, 0, 0.75) !important;
+}
+
+.match-status--final {
+  background: var(--color-dark-surface) !important;
+  color: var(--color-text-secondary) !important;
+}
