@@ -47,10 +47,26 @@
 
 .card-info .match-odds,
 .featured-section .featured-card .match-title-overlay p.match-odds {
-  margin-top: 2px !important;
-  color: var(--color-s-light) !important;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px var(--space-md);
+  margin-top: var(--space-sm) !important;
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--color-dark-border-light);
+  color: var(--color-text-muted) !important;
+  font-size: var(--font-size-xs) !important;
   opacity: 1 !important;
-  overflow-wrap: anywhere;
+}
+
+.featured-section .featured-card .match-title-overlay .match-odds__values,
+.match-odds__values {
+  display: flex !important;
+  gap: var(--space-md);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
 }
 
 /* The stream browser's cards are narrower, so give the names more room */

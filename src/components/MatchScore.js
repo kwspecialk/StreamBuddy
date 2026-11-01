@@ -51,7 +51,11 @@ export const MatchInfo = ({ match, title, sport }) => {
       <p className="match-sport">{sport}</p>
       {score.odds && (
         <p className="match-odds">
-          Pre-game odds: {score.odds.line}{score.odds.total !== null && `, O/U ${score.odds.total}`}
+          <span className="match-odds__label">Pre-game odds</span>
+          <span className="match-odds__values">
+            <span>{score.odds.line}</span>
+            {score.odds.total !== null && <span>O/U {score.odds.total}</span>}
+          </span>
         </p>
       )}
     </>
