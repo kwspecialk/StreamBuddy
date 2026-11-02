@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LAYOUTS } from './layouts';
 import { useEscapeKey } from './useModalBehavior';
 
-const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
+const LayoutSelector = ({ onLayoutChange, currentLayout, allowedLayouts }) => {
   const [isMenuVisible, setMenuVisible] = useState(false);
 
   useEscapeKey(isMenuVisible, () => setMenuVisible(false));
@@ -143,7 +143,7 @@ const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
         </div>
         
         <div className="layout-menu-grid">
-          {Object.entries(LAYOUTS).map(([id, layout]) => (
+          {allowedLayouts.map((id) => (
             <button
               key={id}
               className={`layout-option ${currentLayout === id ? 'selected' : ''}`}
@@ -156,7 +156,7 @@ const LayoutSelector = ({ onLayoutChange, currentLayout }) => {
                 {getLayoutPreview(id, false)}
               </div>
               <div className="layout-option-info">
-                <div className="layout-option-name">{layout.name}</div>
+                <div className="layout-option-name">{LAYOUTS[id].name}</div>
                 <div className="layout-option-desc">{getLayoutDescription(id)}</div>
               </div>
             </button>

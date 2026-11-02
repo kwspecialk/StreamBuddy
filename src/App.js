@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import VideoFeed from './VideoFeed';
 import LayoutSelector from './LayoutSelector';
-import { LAYOUTS } from './layouts';
+import { LAYOUTS, getAllowedLayouts, getMaxStreams } from './layouts';
 import './App.css';
 import './components/LayoutSelector.css';
 import './components/StreamHomepage.css';
@@ -9,24 +9,30 @@ import './components/StreamViewHeader.css';
 import './components/AddStreamButton.css';
 import './components/StreamBrowserModal.css';
 import './components/EditStreamsModal.css';
+import './styles/mobile.css';
 import ErrorBoundary from './components/ErrorBoundary';
 import MovieDetailsModal from './components/MovieDetailsModal';
 import OnDemandVideoFeed from './OnDemandVideoFeed';
 import StreamHomepage from './components/StreamHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
-import { Plus, Maximize, Minimize, HelpCircle, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Plus, Maximize, Minimize, Play, Settings, Volume2, VolumeX } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
-import PlayerViewWizard from './components/wizard/PlayerViewWizard';
-import './components/wizard/PlayerViewWizard.css';
 import { fetchLiveMatches, findMatchForUrl, formatEmbedTitle } from './utils/ppvApi';
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
 import { useMatchScores } from './useMatchScores';
+import useWakeLock from './useWakeLock';
+import StreamHelp from './components/StreamHelp';
+import StreamNotice from './components/StreamNotice';
+import { deviceType, isTouchDevice, canFullscreenPage } from './deviceProfile';
 
 const MATCH_REFRESH_INTERVAL_MS = 60000;
 const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
+const ALLOWED_LAYOUTS = getAllowedLayouts(deviceType);
+// Saved under a separate key on touch, where the default is off
+const KEEP_RUNNING_KEY = isTouchDevice ? 'keepStreamsRunningOnTouch' : 'keepStreamsRunning';
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -42,7 +48,6 @@ const App = () => {
 
   // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
-  const [playerViewWizardResetToken, setPlayerViewWizardResetToken] = useState(0);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const hasLoadedMatchesRef = React.useRef(false);
   const scoredMatches = useMatchScores(matches, currentView === 'homepage' || showStreamBrowser);
@@ -54,8 +59,12 @@ const App = () => {
 
   const [layout, setLayout] = useState(() => {
     const savedLayout = localStorage.getItem('savedLayout');
-    return savedLayout || 'single';
+    return ALLOWED_LAYOUTS.includes(savedLayout) ? savedLayout : 'single';
   });
+
+  // On touch, saved streams wait for a tap. Loading them all at once can crash the tab,
+  // and the reload after a crash would load them again.
+  const [isResumePending, setIsResumePending] = useState(() => isTouchDevice && videoUrls.length > 0);
 
   const pipWindow = usePipWindow(layout === 'pip');
   const streamAudio = useStreamAudio(videoUrls);
@@ -69,18 +78,12 @@ const App = () => {
       return {};
     }
   });
-  const [keepStreamsRunning, setKeepStreamsRunning] = useState(
-    () => localStorage.getItem('keepStreamsRunning') !== 'false'
-  );
-  const [, setStreamRetries] = useState({});
+  const [keepStreamsRunning, setKeepStreamsRunning] = useState(() => {
+    const saved = localStorage.getItem(KEEP_RUNNING_KEY);
+    return saved === null ? !isTouchDevice : saved === 'true';
+  });
   const [isActuallyFullscreen, setIsActuallyFullscreen] = useState(false);
   const [isHeaderVisibleInFullscreen, setIsHeaderVisibleInFullscreen] = useState(false);
-
-  const [showPlayerViewWizard, setShowPlayerViewWizard] = useState(() => {
-    const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
-    console.log('[App.js Init] Initializing showPlayerViewWizard. Completed status:', pvwCompleted);
-    return !pvwCompleted; // Show wizard if not completed
-  });
 
   // Fullscreen logic
   const toggleFullScreen = async () => {
@@ -176,57 +179,6 @@ const App = () => {
     };
   }, [isActuallyFullscreen, currentView]); // isHeaderVisibleInFullscreen removed from deps
 
-  // Wizard Handlers & Logic
-  const handleOpenPlayerViewWizardManual = () => {
-    console.log('[App.js] Manually opening PlayerViewWizard via help button.');
-    setPlayerViewWizardResetToken(prevToken => prevToken + 1);
-    setShowPlayerViewWizard(true);
-  };
-
-  const handleClosePlayerViewWizard = () => {
-    console.log('[App.js handleClosePlayerViewWizard] Closing PlayerViewWizard');
-    setShowPlayerViewWizard(false);
-    localStorage.setItem('streambuddy_player_wizard_completed', 'true');
-  };
-
-  useEffect(() => {
-    const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
-    
-    // Check if user is on mobile
-    const isMobile = window.innerWidth <= 768;
-
-    console.log('[App.js Wizards useEffect] Checking states:', {
-      currentView, 
-      pvwCompleted,
-      isMobile,
-      showPlayerViewWizard_state: showPlayerViewWizard
-    });
-
-    // Disable wizards on mobile devices
-    if (isMobile) {
-      if (showPlayerViewWizard) {
-        console.log('[App.js] Hiding PlayerViewWizard on mobile');
-        setShowPlayerViewWizard(false);
-      }
-      return;
-    }
-
-    // Handle PlayerViewWizard (stream-view only)
-    if (currentView === 'stream-view') {
-      // Show PlayerViewWizard if not completed
-      if (!pvwCompleted && !showPlayerViewWizard) {
-        console.log('[App.js] Showing PlayerViewWizard (first time in stream-view)');
-        setShowPlayerViewWizard(true);
-      }
-    } else {
-      // Hide PlayerViewWizard on other views
-      if (showPlayerViewWizard) {
-        console.log('[App.js] Hiding PlayerViewWizard');
-        setShowPlayerViewWizard(false);
-      }
-    }
-  }, [currentView, showPlayerViewWizard]);
-
   // Fetch matches for Homepage and Stream Browser
   const fetchMatches = useCallback(async () => {
     try {
@@ -243,6 +195,9 @@ const App = () => {
 
   // Helper function to auto-switch layout based on stream count
   const autoSwitchLayout = (streamCount) => {
+    // A phone keeps one large stream rather than shrinking it to fit another
+    if (deviceType === 'phone') return layout;
+
     const currentMaxWindows = LAYOUTS[layout]?.windows || 1;
     if (streamCount > currentMaxWindows && layout !== 'grid-infinite') {
       // Find the best layout for the current stream count
@@ -255,7 +210,7 @@ const App = () => {
         { id: 'grid-3x3', windows: 9 },
         { id: 'grid-5x2', windows: 10 },
         { id: 'grid-infinite', windows: Infinity }
-      ];
+      ].filter(option => ALLOWED_LAYOUTS.includes(option.id));
       
       // Find the smallest layout that can accommodate all streams
       const bestLayout = layoutOptions.find(l => l.windows >= streamCount);
@@ -282,7 +237,7 @@ const App = () => {
       { id: 'grid-3x3', windows: 9 },
       { id: 'grid-5x2', windows: 10 },
       { id: 'grid-infinite', windows: Infinity }
-    ];
+    ].filter(option => ALLOWED_LAYOUTS.includes(option.id));
     
     // Find the smallest layout that can fit the remaining streams
     const bestLayout = layoutOptions.find(l => l.windows >= streamCount);
@@ -359,18 +314,7 @@ const App = () => {
   };
 
   const handleEnterStreamView = () => {
-    console.log('[App.js] handleEnterStreamView: Setting currentView to stream-view. Previous view:', currentView);
-    const pvwCompleted = localStorage.getItem('streambuddy_player_wizard_completed') === 'true';
-    console.log('[App.js] handleEnterStreamView: PlayerViewWizard completed status:', pvwCompleted);
-    
-    // Set the view to stream-view
     setCurrentView('stream-view');
-    
-    // Only show the wizard if it hasn't been completed
-    if (!pvwCompleted) {
-      console.log('[App.js] handleEnterStreamView: Showing PlayerViewWizard');
-      setShowPlayerViewWizard(true);
-    }
   };
 
   const handleReturnToHomepage = () => {
@@ -395,34 +339,15 @@ const App = () => {
 
 
   const handleStreamRecovery = (urlToRefresh, index) => {
-    setStreamRetries(prev => {
-      const currentRetries = prev[index] || 0;
-      // Keeping retry limit, but can be removed if refresh should always be allowed.
-      if (currentRetries < 5) { // Increased retry limit slightly, or remove for unlimited retries
-        const newUrls = [...videoUrls];
-        
-        // Use urlToRefresh as the source of truth for the original URL
-        let originalUrl = urlToRefresh;
+    // Remove any existing refresh_id so they don't stack up
+    const baseUrl = getStreamKey(urlToRefresh);
 
-        // Remove any existing refresh_id query param to prevent them from stacking up
-        let baseOriginalUrl = originalUrl.split('?refresh_id=')[0];
-        baseOriginalUrl = baseOriginalUrl.split('&refresh_id=')[0]; // In case it's not the first param
+    // A new unique query parameter forces a reload
+    const refreshedUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}refresh_id=${Date.now()}`;
 
-        // Append a new unique query parameter to force reload
-        const refreshedUrl = `${baseOriginalUrl}${baseOriginalUrl.includes('?') ? '&' : '?'}refresh_id=${Date.now()}`;
-        
-        newUrls[index] = refreshedUrl;
-        setVideoUrls([...newUrls]); // Ensure a new array instance for React state update
-
-        // The URL will now contain refresh_id. If this becomes an issue for display
-        // or long-term storage, a mechanism to revert it after a delay could be added,
-        // but that adds complexity and potential race conditions.
-        // Forcing a reload is the primary goal here.
-
-        return { ...prev, [index]: currentRetries + 1 };
-      }
-      return prev;
-    });
+    const newUrls = [...videoUrls];
+    newUrls[index] = refreshedUrl;
+    setVideoUrls(newUrls);
   };
 
   const handleReorderUrls = (newUrls) => {
@@ -430,8 +355,13 @@ const App = () => {
     // autoSwitchLayout(newUrls.length); // Temporarily commented out for debugging DND
   };
 
+  const handleMakeMain = (url) => {
+    setVideoUrls([url, ...videoUrls.filter(otherUrl => otherUrl !== url)]);
+  };
+
   const addVideoUrl = (url, matchInfo = null) => {
     if (url && !videoUrls.includes(url)) {
+      setIsResumePending(false);
       const newUrls = [url, ...videoUrls];
       setVideoUrls(newUrls);
       autoSwitchLayout(newUrls.length);
@@ -475,9 +405,11 @@ const App = () => {
     streamAudio.forgetAllStreams();
     setActiveVideoId(null);
     setSourceIndices({});
-    setStreamRetries({});
+    setIsResumePending(false);
     setCurrentView('homepage');
   };
+
+  useWakeLock(isTouchDevice && currentView === 'stream-view' && !isResumePending && videoUrls.length > 0);
 
   const handleVideoSelect = (videoId) => {
     setActiveVideoId(videoId === '' ? null : Number(videoId));
@@ -517,11 +449,11 @@ const App = () => {
   };
 
   const getDisplayedVideos = () => {
+    if (isResumePending) return [];
     if (layout === 'grid-infinite') {
       return videoUrls;
     }
-    const maxWindows = LAYOUTS[layout]?.windows || 1;
-    return videoUrls.slice(0, maxWindows);
+    return videoUrls.slice(0, getMaxStreams(deviceType, layout));
   };
 
   const displayedVideos = getDisplayedVideos();
@@ -550,7 +482,7 @@ const App = () => {
   }, [sourceIndices]);
 
   useEffect(() => {
-    localStorage.setItem('keepStreamsRunning', keepStreamsRunning);
+    localStorage.setItem(KEEP_RUNNING_KEY, keepStreamsRunning);
   }, [keepStreamsRunning]);
 
   useEffect(() => {
@@ -567,10 +499,11 @@ const App = () => {
 };
 
 const isStreamView = currentView === 'stream-view';
+const isPageFullscreen = isActuallyFullscreen && isStreamView;
 
 // Render players in a fixed order and place them with CSS. Moving an iframe in the
 // DOM reloads it, so reordering must not change their order in the markup.
-const renderedVideos = (keepStreamsRunning ? videoUrls : isStreamView ? displayedVideos : [])
+const renderedVideos = (keepStreamsRunning && !isResumePending ? videoUrls : isStreamView ? displayedVideos : [])
   .filter(Boolean)
   .sort();
 
@@ -590,14 +523,6 @@ return (
 
     {/* Stream View (multi-stream interface with modal browser) */}
     {isStreamView && (<>
-    <PlayerViewWizard
-      isOpen={showPlayerViewWizard}
-      onClose={handleClosePlayerViewWizard}
-      forceReset={playerViewWizardResetToken}
-      currentView={currentView}
-      showStreamBrowser={showStreamBrowser}
-      showEditStreams={showEditStreams}
-    />
     {/* Stream View Header - with Edit button */}
     <div className={`stream-view-header ${
       isActuallyFullscreen && currentView === 'stream-view' && !isHeaderVisibleInFullscreen ? 'header-hidden-fullscreen' : ''
@@ -625,28 +550,23 @@ return (
             className="btn btn--md--settings btn--secondary--settings"
             onClick={handleOpenEditStreams}
           >
-            <Settings size={20} />
+            <Settings size={18} strokeWidth={1.75} />
             <span>Manage</span>
           </button>
           
-          <button 
-            className="fullscreen-btn header-icon-btn"
+          {canFullscreenPage && <button 
+            className="icon-btn"
             onClick={toggleFullScreen} 
-            title={isActuallyFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            title={isActuallyFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            aria-label={isActuallyFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           >
-            {isActuallyFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-          </button>
-
-          {/* Help button for PlayerViewWizard - only in stream-view */}
-          {currentView === 'stream-view' && (
-            <button onClick={handleOpenPlayerViewWizardManual} className="action-btn help-btn" title="Player View Tour">
-              <HelpCircle size={20} />
-            </button>
-          )}
+            {isActuallyFullscreen ? <Minimize size={18} strokeWidth={1.75} /> : <Maximize size={18} strokeWidth={1.75} />}
+          </button>}
 
           <LayoutSelector
             onLayoutChange={handleLayoutChange}
             currentLayout={layout}
+            allowedLayouts={ALLOWED_LAYOUTS}
           />
         </div>
       </div>
@@ -670,6 +590,7 @@ return (
         onClearAllStreams={handleClearAllStreams}
         onRefreshStream={handleStreamRecovery}
         onReorderStreams={handleReorderUrls}
+        onMakeMain={handleMakeMain}
         onOpenStreamBrowser={() => {
           setShowEditStreams(false);
           setShowStreamBrowser(true);
@@ -679,6 +600,7 @@ return (
         onCycleSource={cycleSource}
         currentLayout={layout}
         onLayoutChange={handleLayoutChange}
+        allowedLayouts={ALLOWED_LAYOUTS}
         keepStreamsRunning={keepStreamsRunning}
         onKeepStreamsRunningChange={setKeepStreamsRunning}
         streamAudio={streamAudio}
@@ -688,40 +610,25 @@ return (
       {/* Video Grid - stays mounted so hidden streams keep running */}
       <div
         ref={pipWindow.gridRef}
-        className={`video-grid ${layout}${pipWindow.isInteracting ? ' pip-interacting' : ''}`}
-        style={(() => {
-          const HEADER_HEIGHT = 60; // px
-
-          let marginTop = 0;
-          let availableHeight = '100vh';
-
-          const isImmersiveFullscreen = isActuallyFullscreen && currentView === 'stream-view' && !isHeaderVisibleInFullscreen;
-
-          if (isImmersiveFullscreen) {
-            // Fullscreen, stream view, header hidden
-            marginTop = 0;
-            availableHeight = '100vh';
-          } else {
-            // Not immersive fullscreen OR fullscreen with header visible
-            if (isActuallyFullscreen && currentView === 'stream-view' && isHeaderVisibleInFullscreen) {
-              // Fullscreen, stream view, header visible on hover
-              marginTop = 0; // Header overlays
-              availableHeight = '100vh'; // Video grid takes full height behind header
-            } else {
-              // Not fullscreen (standard view)
-              marginTop = HEADER_HEIGHT; // Header pushes content down
-              availableHeight = `calc(100vh - ${HEADER_HEIGHT}px)`;
-            }
-          }
-
-          return {
-            display: isStreamView ? undefined : 'none',
-            marginTop: `${marginTop}px`,
-            height: availableHeight
-          };
-        })()}
+        className={`video-grid ${layout}${pipWindow.isInteracting ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}`}
+        style={{ display: isStreamView ? undefined : 'none' }}
       >
-        {displayedVideos.length === 0 && (
+        {isResumePending && (
+          <div className="player-empty">
+            <h1>Pick up where you left off</h1>
+            <p className="resume-streams__hint">
+              {videoUrls.length === 1 ? '1 saved stream' : `${videoUrls.length} saved streams`}
+            </p>
+            <button className="btn btn--lg btn--primary" onClick={() => setIsResumePending(false)}>
+              <Play size={18} />
+              <span>Resume</span>
+            </button>
+            <button className="btn btn--lg btn--secondary" onClick={handleReturnToHomepage}>
+              <span>Browse instead</span>
+            </button>
+          </div>
+        )}
+        {displayedVideos.length === 0 && !isResumePending && (
           <div className="player-empty">
             <h1>Nothing playing yet</h1>
             <p>Add a live game, movie or show to start watching.</p>
@@ -754,7 +661,7 @@ return (
                 {isOnDemand ? (
                   <OnDemandVideoFeed 
                     url={url}
-                    isActive={activeVideoId === index}
+                    isActive={isTouchDevice || activeVideoId === index}
                     onVideoSelect={() => handleVideoSelect(index)}
                   />
                 ) : (
@@ -770,6 +677,14 @@ return (
                 >
                   {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
+              )}
+              {isTouchDevice && (
+                <StreamHelp
+                  showEndedHint={Boolean(sourceIndices[url]?.match) && matches.length > 0 && !findMatchForUrl(matches, url)}
+                  onReload={() => handleStreamRecovery(url, index)}
+                  onNextSource={sourceIndices[url]?.match?.sources?.length > 1 ? () => cycleSource(url, index) : null}
+                  onMakeMain={index > 0 ? () => handleMakeMain(url) : null}
+                />
               )}
               {isPipWindow && (
                 <>
@@ -792,6 +707,8 @@ return (
           );
         })}
       </div>
+
+      {isTouchDevice && isStreamView && displayedVideos.length > 0 && <StreamNotice />}
 
       {/* Movie Details Modal */}
       {isStreamView && movieDetails && (

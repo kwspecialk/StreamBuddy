@@ -8,7 +8,7 @@
   justify-content: center;
   gap: var(--space-sm);
   font-weight: var(--font-weight-semibold);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   transition: var(--transition-all);
   cursor: pointer;
   text-decoration: none;
@@ -155,7 +155,7 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--color-text-primary);
@@ -177,19 +177,36 @@
 }
 
 .btn--icon-circle {
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-control);
 }
 
 /* Specific Icon Button Variants */
-.btn--icon.btn--help:not(:disabled):hover {
-  background: var(--color-p);
-  border-color: var(--color-p);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
-}
+
 
 .btn--icon.btn--user {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
+}
+
+/* Quiet icon button for headers and overlays */
+.icon-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.icon-btn:hover {
+  background: var(--color-dark-surface);
+  color: var(--color-text-primary);
 }
 
 /* Full Width Button */
@@ -213,7 +230,7 @@
   margin: -8px 0 0 -8px;
   border: 2px solid transparent;
   border-top-color: currentColor;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-control);
   animation: btn-spin 0.8s linear infinite;
 }
 
@@ -226,7 +243,7 @@
 .btn--close {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--color-dark-border-medium);
   color: var(--color-text-primary);
@@ -239,7 +256,7 @@
 .btn--toggle {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--color-dark-border-light);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
 }
 
 .btn--toggle.active {

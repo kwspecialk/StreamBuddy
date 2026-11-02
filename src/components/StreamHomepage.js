@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, User, Play, ArrowLeft, Maximize, Minimize, Film, Tv, Trophy } from 'lucide-react';
+import { Search, Play, ArrowLeft, Maximize, Minimize, Film, Tv, Trophy } from 'lucide-react';
 import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
 import CachedImage from './CachedImage';
 import { MatchStatusBadge, MatchInfo } from './MatchScore';
 import { clickableProps } from '../utils/a11y';
+import { canFullscreenPage } from '../deviceProfile';
 
 const GRID_PREVIEW_COUNT = 8;
 
@@ -167,11 +168,11 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
       items: (matches && Array.isArray(matches)) ? matches.slice(0, 12) : []
     },
     'movies': {
-      title: 'Trending Movies',
+      title: 'Trending movies',
       items: searchTerm ? searchResults.filter(item => item.type === 'movie') : trendingMovies
     },
     'tv-shows': {
-      title: 'Popular TV Shows',
+      title: 'Popular TV shows',
       items: searchTerm ? searchResults.filter(item => item.type === 'tv') : trendingTVShows
     }
   };
@@ -542,7 +543,7 @@ return (
               TV Shows
             </button>
             <button
-              className="nav__item nav__item--highlight"
+              className="nav__item"
               onClick={onEnterStreamView}
             >
               Player
@@ -552,7 +553,7 @@ return (
           
           {/* Mobile: Search in navigation row */}
           <div className="search search--header search--mobile">
-            <Search size={16} className="search__icon" />
+            <Search size={16} strokeWidth={1.75} className="search__icon" />
             <input
               type="text"
               className="search__input"
@@ -566,7 +567,7 @@ return (
           <div className="header__actions">
             {/* Search bar - DESKTOP ONLY */}
             <div className="search search--header header__actions--desktop">
-              <Search size={20} className="search__icon" />
+              <Search size={16} strokeWidth={1.75} className="search__icon" />
               <input
                 type="text"
                 className="search__input"
@@ -576,12 +577,14 @@ return (
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button onClick={toggleFullscreen} className="btn btn--icon header__actions--desktop" title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
-              {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-            </button>
-            <button className="btn btn--icon btn--user header__actions--desktop" aria-label="Profile">
-              <User size={24} />
-            </button>
+            {canFullscreenPage && <button
+              onClick={toggleFullscreen}
+              className="icon-btn header__actions--desktop"
+              title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+              {isFullscreen ? <Minimize size={18} strokeWidth={1.75} /> : <Maximize size={18} strokeWidth={1.75} />}
+            </button>}
           </div>
         </div>
       </div>

@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { deviceType } from './deviceProfile';
 
 const STORAGE_KEY = 'savedPipPositions';
 const ASPECT_RATIO = 16 / 9;
-const MIN_WIDTH = 200;
+const MIN_WIDTH = deviceType === 'phone' ? 140 : 200;
 const DEFAULT_WIDTH = 0.24;
 const DEFAULT_ROWS = 3;
 const DEFAULT_SPACING = 0.33;

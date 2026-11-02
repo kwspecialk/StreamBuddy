@@ -14,6 +14,7 @@ const VideoFeed = ({ url }) => (
     <iframe
       src={url}
       title="Video Player"
+      allowFullScreen
       allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
       style={{
         width: '100%',

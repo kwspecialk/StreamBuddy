@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, RefreshCw, Plus, GripVertical, Trash2, ChevronRight, MonitorCog, Volume2, VolumeX } from 'lucide-react';
+import { X, RefreshCw, Plus, ArrowUpToLine, GripVertical, Trash2, ChevronRight, MonitorCog, Volume2, VolumeX } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
@@ -21,6 +21,7 @@ const EditStreamsModal = ({
   onClearAllStreams,
   onRefreshStream,
   onReorderStreams,
+  onMakeMain,
   onOpenStreamBrowser,
   formatApiUrl,
   sourceIndices,
@@ -28,6 +29,7 @@ const EditStreamsModal = ({
   keepStreamsRunning,
   onKeepStreamsRunningChange,
   currentLayout,
+  allowedLayouts,
   onLayoutChange,
   streamAudio
 }) => {
@@ -572,6 +574,16 @@ const EditStreamsModal = ({
                                 )}
                                 {/* Actions */}
                                 <div className="stream-actions-new">
+                                  {index > 0 && (
+                                    <button
+                                      className="action-btn-new manage-make-main"
+                                      onClick={() => onMakeMain(url)}
+                                      title="Make main stream"
+                                      aria-label="Make main stream"
+                                    >
+                                      <ArrowUpToLine size={16} />
+                                    </button>
+                                  )}
                                   <button
                                     className={`action-btn-new refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
                                     onClick={() => handleRefreshStream(url, index)}
@@ -644,7 +656,7 @@ const EditStreamsModal = ({
                   </div>
                   
                   <div className="layout-dropdown-options">
-                    {Object.entries(LAYOUTS).map(([id, layout]) => (
+                    {allowedLayouts.map((id) => (
                       <button
                         key={id}
                         className={`layout-dropdown-option ${currentLayout === id ? 'selected' : ''}`}
@@ -657,7 +669,7 @@ const EditStreamsModal = ({
                           {getLayoutPreview(id, false)}
                         </div>
                         <div className="layout-option-info">
-                          <div className="layout-option-name">{layout.name}</div>
+                          <div className="layout-option-name">{LAYOUTS[id].name}</div>
                           <div className="layout-option-desc">{getLayoutDescription(id)}</div>
                         </div>
                       </button>
@@ -677,7 +689,7 @@ const EditStreamsModal = ({
           </div>
           
           <div className="flex-1 text-center">
-            <label className="footer-tip" title="Streams you can't see keep using CPU, data and sound">
+            <label className="footer-tip manage-keep-running" title="Streams you can't see keep using CPU, data and sound">
               <input
                 type="checkbox"
                 checked={keepStreamsRunning}
@@ -685,7 +697,7 @@ const EditStreamsModal = ({
               />{' '}
               Keep hidden streams running
             </label>
-            <div className="footer-tip">
+            <div className="footer-tip manage-drag-tip">
               Drag streams to reorder
             </div>
           </div>

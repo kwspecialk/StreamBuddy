@@ -1,0 +1,303 @@
+/* ==========================================================================
+   PHONE AND TABLET OVERRIDES
+   Loaded after every other stylesheet, so these win without !important where possible.
+   ========================================================================== */
+
+:root {
+  --stream-header-height: 60px;
+  --tap-target: 44px;
+}
+
+/* Modal backdrops sit at 1000. The header has to stay under them, or it takes taps
+   meant for the close button. */
+.stream-view-header {
+  z-index: 950;
+}
+
+/* The stream header's .header-left rules stop this shrinking, which pushes out the close button */
+.modal__header .header-left {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Video grid height. dvh follows the browser's toolbars, vh doesn't. */
+.app.stream-view {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.video-grid {
+  margin-top: var(--stream-header-height);
+  height: calc(100vh - var(--stream-header-height));
+  height: calc(100dvh - var(--stream-header-height));
+}
+
+.video-grid.page-fullscreen {
+  margin-top: 0;
+  height: 100vh;
+  height: 100dvh;
+}
+
+.resume-streams__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* Stream options, shown on touch devices only */
+.stream-help {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 3;
+}
+
+.stream-help__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.stream-help__menu {
+  display: grid;
+  min-width: 190px;
+  margin-top: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-dark-border-medium);
+  border-radius: var(--radius-control);
+  background: var(--color-dark-surface);
+}
+
+.stream-help__menu p {
+  margin: 0;
+  padding: 8px 10px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.stream-help__menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap-target);
+  padding: 0 10px;
+  border: none;
+  color: var(--color-text-primary);
+  background: none;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.stream-notice {
+  position: fixed;
+  right: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  left: 8px;
+  z-index: 900;
+  display: grid;
+  gap: 8px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px;
+  border: 1px solid var(--color-dark-border-medium);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+  background: var(--color-dark-surface);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.stream-notice p {
+  margin: 0;
+}
+
+.stream-notice .btn {
+  justify-self: end;
+  min-height: var(--tap-target);
+  padding: 0 16px;
+}
+
+.manage-make-main {
+  display: none;
+}
+
+.manage-keep-running {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap-target);
+}
+
+.manage-keep-running input {
+  width: 20px;
+  height: 20px;
+}
+
+/* Touch targets */
+@media (hover: none) {
+  .sport-filter-btn,
+  .return-home-link,
+  .btn--secondary {
+    min-height: var(--tap-target);
+  }
+
+  .action-btn-new {
+    width: var(--tap-target);
+    height: var(--tap-target);
+  }
+
+  .btn--close {
+    width: var(--tap-target);
+    height: var(--tap-target);
+  }
+
+  /* Below 16px, iOS zooms the page when an input gets focus */
+  .search__input {
+    min-height: var(--tap-target);
+    font-size: 16px !important;
+  }
+
+  .pip-resize-handle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .pip-drag-handle {
+    left: 32px;
+    right: 32px;
+    height: 32px;
+  }
+}
+
+.btn--close {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --stream-header-height: 56px;
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .video-grid.dual {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --stream-header-height: 52px;
+  }
+
+  .stream-view-header {
+    padding: 0 8px;
+  }
+
+  /* The header fits on 320px screens: icon-only logo and buttons */
+  .back-to-home-btn img {
+    width: 19px;
+    object-fit: cover;
+    object-position: left;
+  }
+
+  .header-actions {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .btn--md--settings {
+    justify-content: center;
+    min-width: var(--tap-target);
+  }
+
+  .btn--md--settings span {
+    display: none;
+  }
+
+  .stream-view-header .btn--md,
+  .stream-view-header .icon-btn {
+    min-width: var(--tap-target);
+    height: var(--tap-target);
+  }
+
+  .stream-view-header .layout-toggle-arrow {
+    display: none;
+  }
+
+  .stream-view-header .layout-toggle.enhanced {
+    min-width: var(--tap-target);
+    height: var(--tap-target);
+    padding: 0 8px;
+  }
+
+  /* No room for drag handles, so reordering uses a button instead */
+  .manage-make-main {
+    display: flex;
+  }
+
+  .manage-drag-tip {
+    display: none;
+  }
+
+  .modal--md .modal__title,
+  .modal--md .modal__subtitle {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Width-based rules treat a phone on its side as desktop */
+@media (max-height: 500px) {
+  .layout-menu.enhanced {
+    max-height: calc(100dvh - var(--stream-header-height) - 8px);
+    overflow: hidden;
+  }
+
+  .layout-menu-header,
+  .layout-option-desc {
+    display: none;
+  }
+
+  .layout-menu-grid {
+    max-height: calc(100dvh - var(--stream-header-height) - 8px);
+    padding: 6px;
+    gap: 2px;
+  }
+
+  .layout-option {
+    min-height: var(--tap-target);
+    padding: 4px 8px;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .modal__header {
+    padding: 4px 16px;
+  }
+
+  .modal__subtitle {
+    display: none;
+  }
+
+  .modal__footer {
+    padding: 4px 16px;
+  }
+
+  .modal .search--inline {
+    margin-block: 4px;
+  }
+}
