@@ -64,3 +64,10 @@
   color: var(--color-s);
   background: var(--color-dark-surface);
 }
+
+.extension-page__notice {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--color-dark-surface);
+}

@@ -31,6 +31,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "package-extension": "rm -f public/streambuddy-companion.zip && cd extension && zip -r ../public/streambuddy-companion.zip . -x README.md",
+    "package-extension-firefox": "node scripts/package-firefox-extension.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

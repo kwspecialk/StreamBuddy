@@ -20,9 +20,19 @@
         margin: 8px 0 0;
         color: #57606a;
       }
+      #site-access {
+        margin-bottom: 12px;
+      }
+      #site-access p {
+        margin: 0 0 8px;
+      }
     </style>
   </head>
   <body>
+    <div id="site-access" hidden>
+      <p>Firefox hasn't given this extension access to the sites players load from, so it can't control them yet.</p>
+      <button id="allow-site-access">Allow access to all sites</button>
+    </div>
     <label>
       <input type="checkbox" id="popup-guard" />
       Block popups from players

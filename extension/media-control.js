@@ -16,10 +16,12 @@
   const watchedRoots = new WeakSet();
 
   // Only HTML elements can host a shadow root, and the chrome.dom call throws on
-  // anything else, such as the SVG icons in a player's controls
-  const shadowRootOf = (element) => element instanceof HTMLElement
-    ? chrome.dom.openOrClosedShadowRoot(element)
-    : null;
+  // anything else, such as the SVG icons in a player's controls. Firefox has no
+  // chrome.dom and puts the same thing on the element instead.
+  const shadowRootOf = (element) => {
+    if (!(element instanceof HTMLElement)) return null;
+    return chrome.dom ? chrome.dom.openOrClosedShadowRoot(element) : element.openOrClosedShadowRoot;
+  };
 
   const collectMedia = (root, found = new Set()) => {
     root.querySelectorAll(MEDIA_SELECTOR).forEach((media) => found.add(media));

@@ -13,6 +13,24 @@ After changing the extension, click its reload icon on `chrome://extensions`, th
 StreamBuddy tab. Bump `version` in `manifest.json` and run `npm run package-extension` to refresh the
 zip that the app's `/extension` page offers for download.
 
+## Firefox
+
+`npm run package-extension-firefox` writes `public/streambuddy-companion-firefox.zip` from this same
+folder. `scripts/package-firefox-extension.js` derives the manifest from `manifest.json`, so there is
+no separate copy to maintain: it swaps `background.service_worker` for `background.scripts` and adds
+the gecko id, and the JS is shared. Bump `version` here and run both package scripts.
+
+- Load it from `about:debugging#/runtime/this-firefox` > **Load Temporary Add-on**, choosing the zip.
+  It's unsigned, so release Firefox drops it on restart. A permanent install needs signing through
+  an addons.mozilla.org account, which hasn't been done. Signing will fix the gecko id for good.
+- Firefox lets people decline or revoke host permissions, and without them no content script runs.
+  The toolbar popup then shows an **Allow access to all sites** button. Chrome never shows it.
+- `chrome.dom` doesn't exist in Firefox, so `media-control.js` falls back to the
+  `element.openOrClosedShadowRoot` property. `web-ext lint` warns about the `chrome.dom` call, which
+  is expected.
+- Popup blocking relies on `location.ancestorOrigins`, which older Firefox lacks. Without it
+  `popup-guard.js` stops early, so `window.open` is left alone and the option does nothing.
+
 ## Try it
 
 1. Open StreamBuddy with at least two streams, in any layout. Mute buttons appear when you hover a

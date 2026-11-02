@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Puzzle, X } from 'lucide-react';
-import { EXTENSION_PAGE_PATH } from '../extensionInfo';
+import { EXTENSION_PAGE_PATH, isFirefoxBrowser } from '../extensionInfo';
 
 const DISMISSED_KEY = 'extensionChipDismissed';
 
-// Extensions only install on desktop Chromium browsers
+// Extensions only install on desktop Chromium browsers and desktop Firefox
 const canInstallExtension = () =>
-  Boolean(window.chrome) && !/Mobi|Android/i.test(navigator.userAgent);
+  (Boolean(window.chrome) || isFirefoxBrowser()) && !/Mobi|Android/i.test(navigator.userAgent);
 
 const ExtensionChip = () => {
   const [isDismissed, setIsDismissed] = useState(
