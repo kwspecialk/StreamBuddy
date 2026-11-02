@@ -3,10 +3,82 @@ const TMDB_API_KEY = '76e3744ab1806aa6becb288ebb3d1dc4';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
+// Curated rows: raw trending is global and includes unreleased or barely-rated titles
+const CURATED_PAGES = 3;
+const CURATED_MIN_VOTES = 100;
+// Non-English titles drop this many places, so big hits stay visible but don't dominate
+const NON_ENGLISH_RANK_PENALTY = 12;
+
 // Get optimized image URL with size options
 const getOptimizedImageUrl = (path, size = 'w500') => {
   if (!path) return '/api/placeholder/400/600';
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
+};
+
+const mapMovie = (movie) => ({
+  id: movie.id,
+  tmdb: movie.id,
+  title: movie.title,
+  overview: movie.overview,
+  posterPath: movie.poster_path,
+  backdropPath: movie.backdrop_path,
+  releaseDate: movie.release_date,
+  year: movie.release_date ? new Date(movie.release_date).getFullYear() : 'Unknown',
+  rating: movie.vote_average,
+  voteCount: movie.vote_count,
+  genre: movie.genre_ids?.[0] ? getGenreName(movie.genre_ids[0], 'movie') : 'Unknown',
+  type: 'movie',
+  thumbnail: getOptimizedImageUrl(movie.poster_path, 'w500'),
+  backdrop: movie.backdrop_path ? getOptimizedImageUrl(movie.backdrop_path, 'w780') : null
+});
+
+const mapTVShow = (show) => ({
+  id: show.id,
+  tmdb: show.id,
+  title: show.name,
+  overview: show.overview,
+  posterPath: show.poster_path,
+  backdropPath: show.backdrop_path,
+  firstAirDate: show.first_air_date,
+  year: show.first_air_date ? new Date(show.first_air_date).getFullYear() : 'Unknown',
+  rating: show.vote_average,
+  voteCount: show.vote_count,
+  genre: show.genre_ids?.[0] ? getGenreName(show.genre_ids[0], 'tv') : 'Unknown',
+  type: 'tv',
+  season: 'Latest Season',
+  thumbnail: getOptimizedImageUrl(show.poster_path, 'w500'),
+  backdrop: show.backdrop_path ? getOptimizedImageUrl(show.backdrop_path, 'w780') : null
+});
+
+// Filter raw TMDB trending results and re-rank them, keeping trending order otherwise
+export const curateTrending = (results, today = new Date().toISOString().slice(0, 10)) => {
+  const seen = new Set();
+  return results
+    .filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      const date = item.release_date || item.first_air_date;
+      return date && date <= today && item.poster_path && item.vote_count >= CURATED_MIN_VOTES;
+    })
+    .map((item, index) => ({
+      item,
+      rank: index + (item.original_language === 'en' ? 0 : NON_ENGLISH_RANK_PENALTY)
+    }))
+    .sort((a, b) => a.rank - b.rank)
+    .map(({ item }) => item);
+};
+
+const fetchTrendingPages = async (mediaType) => {
+  const pages = await Promise.all(
+    Array.from({ length: CURATED_PAGES }, async (_, index) => {
+      const response = await fetch(
+        `${TMDB_BASE_URL}/trending/${mediaType}/week?api_key=${TMDB_API_KEY}&page=${index + 1}`
+      );
+      if (!response.ok) throw new Error(`Failed to fetch trending ${mediaType}`);
+      return (await response.json()).results;
+    })
+  );
+  return pages.flat();
 };
 
 export const tmdbApi = {
@@ -19,21 +91,7 @@ export const tmdbApi = {
       if (!response.ok) throw new Error('Failed to fetch trending movies');
       const data = await response.json();
       
-      const movies = data.results.map(movie => ({
-        id: movie.id,
-        tmdb: movie.id,
-        title: movie.title,
-        overview: movie.overview,
-        posterPath: movie.poster_path,
-        backdropPath: movie.backdrop_path,
-        releaseDate: movie.release_date,
-        year: movie.release_date ? new Date(movie.release_date).getFullYear() : 'Unknown',
-        rating: movie.vote_average,
-        genre: movie.genre_ids?.[0] ? getGenreName(movie.genre_ids[0], 'movie') : 'Unknown',
-        type: 'movie',
-        thumbnail: getOptimizedImageUrl(movie.poster_path, 'w500'),
-        backdrop: movie.backdrop_path ? getOptimizedImageUrl(movie.backdrop_path, 'w780') : null
-      }));
+      const movies = data.results.map(mapMovie);
 
       return movies;
     } catch (error) {
@@ -51,26 +109,31 @@ export const tmdbApi = {
       if (!response.ok) throw new Error('Failed to fetch trending TV shows');
       const data = await response.json();
       
-      const shows = data.results.map(show => ({
-        id: show.id,
-        tmdb: show.id,
-        title: show.name,
-        overview: show.overview,
-        posterPath: show.poster_path,
-        backdropPath: show.backdrop_path,
-        firstAirDate: show.first_air_date,
-        year: show.first_air_date ? new Date(show.first_air_date).getFullYear() : 'Unknown',
-        rating: show.vote_average,
-        genre: show.genre_ids?.[0] ? getGenreName(show.genre_ids[0], 'tv') : 'Unknown',
-        type: 'tv',
-        season: 'Latest Season',
-        thumbnail: getOptimizedImageUrl(show.poster_path, 'w500'),
-        backdrop: show.backdrop_path ? getOptimizedImageUrl(show.backdrop_path, 'w780') : null
-      }));
+      const shows = data.results.map(mapTVShow);
 
       return shows;
     } catch (error) {
       console.error('Error fetching trending TV shows:', error);
+      return [];
+    }
+  },
+
+  // Get this week's trending movies, curated for the browse rows
+  getCuratedMovies: async () => {
+    try {
+      return curateTrending(await fetchTrendingPages('movie')).map(mapMovie);
+    } catch (error) {
+      console.error('Error fetching curated movies:', error);
+      return [];
+    }
+  },
+
+  // Get this week's trending TV shows, curated for the browse rows
+  getCuratedTVShows: async () => {
+    try {
+      return curateTrending(await fetchTrendingPages('tv')).map(mapTVShow);
+    } catch (error) {
+      console.error('Error fetching curated TV shows:', error);
       return [];
     }
   },

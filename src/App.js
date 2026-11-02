@@ -31,8 +31,6 @@ import { deviceType, isTouchDevice, canFullscreenPage } from './deviceProfile';
 const MATCH_REFRESH_INTERVAL_MS = 60000;
 const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
 const ALLOWED_LAYOUTS = getAllowedLayouts(deviceType);
-// Saved under a separate key on touch, where the default is off
-const KEEP_RUNNING_KEY = isTouchDevice ? 'keepStreamsRunningOnTouch' : 'keepStreamsRunning';
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -77,10 +75,6 @@ const App = () => {
     } catch {
       return {};
     }
-  });
-  const [keepStreamsRunning, setKeepStreamsRunning] = useState(() => {
-    const saved = localStorage.getItem(KEEP_RUNNING_KEY);
-    return saved === null ? !isTouchDevice : saved === 'true';
   });
   const [isActuallyFullscreen, setIsActuallyFullscreen] = useState(false);
   const [isHeaderVisibleInFullscreen, setIsHeaderVisibleInFullscreen] = useState(false);
@@ -482,10 +476,6 @@ const App = () => {
   }, [sourceIndices]);
 
   useEffect(() => {
-    localStorage.setItem(KEEP_RUNNING_KEY, keepStreamsRunning);
-  }, [keepStreamsRunning]);
-
-  useEffect(() => {
     localStorage.setItem('savedLayout', layout);
   }, [layout]);
 
@@ -503,7 +493,7 @@ const isPageFullscreen = isActuallyFullscreen && isStreamView;
 
 // Render players in a fixed order and place them with CSS. Moving an iframe in the
 // DOM reloads it, so reordering must not change their order in the markup.
-const renderedVideos = (keepStreamsRunning && !isResumePending ? videoUrls : isStreamView ? displayedVideos : [])
+const renderedVideos = (isResumePending ? [] : videoUrls)
   .filter(Boolean)
   .sort();
 
@@ -601,8 +591,6 @@ return (
         currentLayout={layout}
         onLayoutChange={handleLayoutChange}
         allowedLayouts={ALLOWED_LAYOUTS}
-        keepStreamsRunning={keepStreamsRunning}
-        onKeepStreamsRunningChange={setKeepStreamsRunning}
         streamAudio={streamAudio}
       />
     </>)}

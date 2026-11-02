@@ -40,7 +40,7 @@ const StreamBrowserModal = ({
     setMoviesLoading(true);
     try {
       console.log('Loading trending movies...');
-      const movies = await tmdbApi.getTrendingMovies('day');
+      const movies = await tmdbApi.getCuratedMovies();
       console.log('Movies loaded:', movies?.length || 0);
       setTrendingMovies(movies || []);
     } catch (error) {
@@ -56,7 +56,7 @@ const StreamBrowserModal = ({
     setTVShowsLoading(true);
     try {
       console.log('Loading trending TV shows...');
-      const shows = await tmdbApi.getTrendingTVShows('day');
+      const shows = await tmdbApi.getCuratedTVShows();
       console.log('TV shows loaded:', shows?.length || 0);
       setTrendingTVShows(shows || []);
     } catch (error) {

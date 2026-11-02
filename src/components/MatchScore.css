@@ -35,14 +35,28 @@
   font-variant-numeric: tabular-nums;
 }
 
-.match-team--trailing {
+/* Only a finished game has a loser. During a game both teams look the same */
+.match-team--lost {
   color: var(--color-text-muted);
   font-weight: var(--font-weight-medium);
 }
 
-.featured-section .featured-card .match-title-overlay .match-team--trailing,
-.featured-section .featured-card .match-title-overlay .match-team--trailing * {
+.featured-section .featured-card .match-title-overlay .match-team--lost,
+.featured-section .featured-card .match-title-overlay .match-team--lost * {
   color: rgba(255, 255, 255, 0.78) !important;
+}
+
+/* Hover highlights the team names and leaves the score alone */
+.content-card:hover .card-info h3.match-teams {
+  color: var(--color-text-primary);
+}
+
+.content-card:hover .match-team__name {
+  color: var(--color-s);
+}
+
+.content-card:hover .match-team--lost .match-team__score {
+  color: var(--color-text-muted);
 }
 
 .card-info .match-odds,

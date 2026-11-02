@@ -291,15 +291,6 @@
   margin: 0;
 }
 
-/* Special Modal Types */
-.modal--wizard {
-  border: 2px solid rgba(0, 210, 176, 0.3);
-}
-
-.modal--wizard .modal__header {
-  background: linear-gradient(135deg, rgba(0, 210, 176, 0.2), rgba(86, 183, 122, 0.1));
-}
-
 /* Scrollbar Styling for Modal Content */
 .modal__content::-webkit-scrollbar {
   width: 6px;

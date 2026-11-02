@@ -1,5 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Check, Play, X } from 'lucide-react';
 import useModalBehavior from '../useModalBehavior';
+import { tmdbApi } from '../utils/tmdbApi';
+import './MovieDetailsModal.css';
+
+const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p';
 
 const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
   const [streamError, setStreamError] = useState(null);
@@ -7,92 +12,62 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
   const [episodes, setEpisodes] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingEpisodes, setLoadingEpisodes] = useState(false);
   const [error, setError] = useState(null);
-  const [showAddedAnimation, setShowAddedAnimation] = useState(false);
-  const posterContainerRef = useRef(null);
+  const [isAdded, setIsAdded] = useState(false);
   const dialogRef = useModalBehavior(true, onClose);
 
-  const TMDB_API_KEY = '76e3744ab1806aa6becb288ebb3d1dc4';
+  const isTV = movieDetails.type === 'tv';
+  const heroPath = movieDetails.backdropPath || movieDetails.posterPath;
+  const meta = [
+    isTV ? 'TV series' : 'Movie',
+    movieDetails.genre !== 'Unknown' && movieDetails.genre,
+    movieDetails.year !== 'Unknown' && movieDetails.year,
+    movieDetails.rating > 0 && `${movieDetails.rating.toFixed(1)} rating`
+  ].filter(Boolean).join(', ');
 
-  // Effect to set the background image for both poster and backdrop
   useEffect(() => {
-    if (posterContainerRef.current && movieDetails?.posterPath) {
-      const backgroundPosterUrl = `https://image.tmdb.org/t/p/w780${movieDetails.posterPath}`;
-      posterContainerRef.current.style.setProperty('--poster-bg-url', `url(${backgroundPosterUrl})`);
-      
-      // Also set backdrop image
-      const backdropElement = document.querySelector('.movie-backdrop');
-      if (backdropElement) {
-        backdropElement.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url(https://image.tmdb.org/t/p/w1280${movieDetails.posterPath})`;
+    if (!isTV) return;
+
+    let isCurrent = true;
+    tmdbApi.getTVShowDetails(movieDetails.tmdb).then((show) => {
+      if (!isCurrent) return;
+      if (show) {
+        setSeasons(show.seasons.filter(season => season.season_number > 0));
+      } else {
+        setError('Seasons could not be loaded. Close this and try again.');
       }
-    } else if (posterContainerRef.current) {
-      // Clear the property if no posterPath to prevent showing old image
-      posterContainerRef.current.style.removeProperty('--poster-bg-url');
-    }
-  }, [movieDetails?.posterPath]);
+    });
 
-  const fetchSeasons = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `https://api.themoviedb.org/3/tv/${movieDetails.tmdb}?api_key=${TMDB_API_KEY}`
-      );
-      
-      if (!response.ok) throw new Error('Failed to fetch show details');
-      
-      const data = await response.json();
-      const filteredSeasons = data.seasons.filter(season => season.season_number > 0);
-      setSeasons(filteredSeasons);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load seasons');
-      setLoading(false);
-    }
-  }, [movieDetails.tmdb]);
-
-  const fetchEpisodes = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `https://api.themoviedb.org/3/tv/${movieDetails.tmdb}/season/${selectedSeason}?api_key=${TMDB_API_KEY}`
-      );
-      
-      if (!response.ok) throw new Error('Failed to fetch episodes');
-      
-      const data = await response.json();
-      setEpisodes(data.episodes);
-      // Set first episode as default when loading new season
-      setSelectedEpisode(data.episodes[0]?.episode_number || 1);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load episodes');
-      setLoading(false);
-    }
-  }, [movieDetails.tmdb, selectedSeason]);
+    return () => { isCurrent = false; };
+  }, [isTV, movieDetails.tmdb]);
 
   useEffect(() => {
-    if (movieDetails.type === 'tv') {
-      fetchSeasons();
-    }
-  }, [movieDetails.type, fetchSeasons]);
+    if (!isTV) return;
 
-  useEffect(() => {
-    if (movieDetails.type === 'tv' && selectedSeason) {
-      fetchEpisodes();
-    }
-  }, [movieDetails.type, selectedSeason, fetchEpisodes]);
+    let isCurrent = true;
+    setLoadingEpisodes(true);
+    tmdbApi.getSeasonDetails(movieDetails.tmdb, selectedSeason).then((season) => {
+      if (!isCurrent) return;
+      if (season) {
+        setEpisodes(season.episodes);
+        setSelectedEpisode(season.episodes[0]?.episode_number || 1);
+      } else {
+        setError('Episodes could not be loaded. Close this and try again.');
+      }
+      setLoadingEpisodes(false);
+    });
+
+    return () => { isCurrent = false; };
+  }, [isTV, movieDetails.tmdb, selectedSeason]);
 
   const handleWatchNow = async () => {
-    setStreamError(null); // Clear previous error
+    setStreamError(null);
 
     let streamUrlToPlay;
     let streamDetailsToPass;
 
-    if (movieDetails.type === 'movie') {
-      streamUrlToPlay = `https://vidsrc.sh/embed/movie/${movieDetails.tmdb}`;
-      streamDetailsToPass = movieDetails;
-    } else { // TV Show
+    if (isTV) {
       const season = selectedSeason || 1;
       const episode = selectedEpisode || 1;
       streamUrlToPlay = `https://vidsrc.sh/embed/tv/${movieDetails.tmdb}/${season}-${episode}`;
@@ -100,38 +75,31 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
         ...movieDetails,
         title: `${movieDetails.title} S${season.toString().padStart(2, '0')}E${episode.toString().padStart(2, '0')}`
       };
+    } else {
+      streamUrlToPlay = `https://vidsrc.sh/embed/movie/${movieDetails.tmdb}`;
+      streamDetailsToPass = movieDetails;
     }
 
-    if (onPlayStream) {
-      // Show animation immediately
-      setShowAddedAnimation(true);
-      
-      // onPlayStream is App.js's handleStreamSelect, which is async and returns a boolean
-      const success = await onPlayStream(streamUrlToPlay, streamDetailsToPass);
-      if (success) {
-        // Keep animation for a moment, then close modal
-        setTimeout(() => {
-          onClose(); // Close modal after successful add
-        }, 1500);
-      } else {
-        // Hide animation on error
-        setShowAddedAnimation(false);
-        setStreamError('Stream not available for this selection. Please try another title or check back later.');
-      }
+    setIsAdded(true);
+
+    // onPlayStream is App.js's handleStreamSelect, which is async and returns a boolean
+    const success = await onPlayStream(streamUrlToPlay, streamDetailsToPass);
+    if (success) {
+      setTimeout(onClose, 800);
     } else {
-      // Fallback or error if onPlayStream is not provided (should not happen in normal flow)
-      setStreamError('Playback function not available.');
-      console.error('onPlayStream prop is not defined in MovieDetailsModal');
+      setIsAdded(false);
+      setStreamError('This title is not available right now. Try another one.');
     }
   };
 
+  const watchLabel = isTV && selectedEpisode
+    ? `Watch S${selectedSeason} E${selectedEpisode}`
+    : 'Watch now';
+
   return (
-    <div 
-      className="movie-details-backdrop" 
-      onClick={onClose}
-    >
-      <div 
-        className="modal-content"
+    <div className="title-modal-backdrop" onClick={onClose}>
+      <div
+        className="title-modal"
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
@@ -139,115 +107,79 @@ const MovieDetailsModal = ({ movieDetails, onClose, onPlayStream }) => {
         tabIndex={-1}
         onClick={e => e.stopPropagation()}
       >
-        <div className="movie-details">
-          {movieDetails.posterPath && (
-            <div className="movie-backdrop" />
-          )}
-          
-          <div className="movie-content">
-            <div className="movie-poster" ref={posterContainerRef}>
-              <img 
-                src={`https://image.tmdb.org/t/p/w300${movieDetails.posterPath}`}
-                alt={movieDetails.title}
-              />
-            </div>
-            
-            <div className="movie-details-container">
-              <div className="movie-info">
-                <h1>{movieDetails.title}</h1>
-                <div className="movie-meta">
-                  <span className="year">{movieDetails.year}</span>
-                  <span className="badge">{movieDetails.type === 'movie' ? 'Movie' : 'TV Series'}</span>
-                </div>
-                
-                <p className="overview">{movieDetails.overview}</p>
+        <button className="icon-btn title-modal__close" onClick={onClose} aria-label="Close">
+          <X size={18} strokeWidth={1.75} />
+        </button>
 
-                {movieDetails.type === 'tv' && (
-                  <div className="episode-selector">
-                    {loading ? (
-                      <div className="episode-status">Loading...</div>
-                    ) : error ? (
-                      <div className="episode-status stream-error-message">{error}</div>
-                    ) : (
-                      <div className="selectors-wrapper">
-                        <div className="selectors-container">
-                          <div className="selector-group season">
-                            <label htmlFor="season-select">Season</label>
-                            <select
-                              id="season-select"
-                              value={selectedSeason}
-                              onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                            >
-                              {seasons.map(season => (
-                                <option key={season.season_number} value={season.season_number}>
-                                  Season {season.season_number}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="selector-group episode">
-                            <label htmlFor="episode-select">Episode</label>
-                            <select
-                              id="episode-select"
-                              value={selectedEpisode || ''}
-                              onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-                            >
-                              {episodes.map(episode => (
-                                <option 
-                                  key={episode.episode_number} 
-                                  value={episode.episode_number}
-                                  title={episode.name}
-                                >
-                                  {episode.episode_number}. {episode.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        {selectedEpisode && episodes.find(ep => ep.episode_number === selectedEpisode)?.overview && (
-                          <div className="episode-description">
-                            {episodes.find(ep => ep.episode_number === selectedEpisode).overview}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {streamError && (
-                  <div className="stream-error-message" style={{ color: 'red', marginTop: '10px' }}>
-                    {streamError}
-                  </div>
+        {heroPath && (
+          <img
+            className="title-modal__hero"
+            src={`${TMDB_IMAGE_URL}/w1280${heroPath}`}
+            alt=""
+          />
+        )}
+
+        <div className="title-modal__body">
+          <h2>{movieDetails.title}</h2>
+          <p className="title-modal__meta">{meta}</p>
+
+          <button className="btn btn--lg btn--primary title-modal__watch" onClick={handleWatchNow} disabled={isAdded}>
+            {isAdded ? <Check size={18} /> : <Play size={18} fill="currentColor" />}
+            {isAdded ? 'Added' : watchLabel}
+          </button>
+
+          {streamError && <p className="title-modal__error">{streamError}</p>}
+
+          <p className="title-modal__overview">{movieDetails.overview}</p>
+
+          {isTV && (
+            <section className="title-modal__episodes">
+              <div className="title-modal__episodes-header">
+                <h3>Episodes</h3>
+                {seasons.length > 0 && (
+                  <select
+                    aria-label="Season"
+                    value={selectedSeason}
+                    onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                  >
+                    {seasons.map(season => (
+                      <option key={season.season_number} value={season.season_number}>
+                        Season {season.season_number}
+                      </option>
+                    ))}
+                  </select>
                 )}
               </div>
-            </div>
-          </div>
-          
-          <div className="modal-footer">
-            <button
-              className="btn btn--md btn--secondary"
-              onClick={onClose}
-            >
-              Close
-            </button>
-            <button
-              className="btn btn--md btn--primary"
-              onClick={handleWatchNow}
-              disabled={showAddedAnimation}
-            >
-              Watch Now
-              {movieDetails.type === 'tv' && !selectedEpisode && " (S1:E1)"}
-            </button>
-          </div>
-          
-          {/* Added Animation Overlay */}
-          {showAddedAnimation && (
-            <div className="movie-added-overlay">
-              <div className="movie-added-indicator">
-                <div className="movie-checkmark">✓</div>
-                <span>Added to Stream!</span>
-              </div>
-            </div>
+
+              {error && <p className="title-modal__error">{error}</p>}
+              {!error && loadingEpisodes && <p className="title-modal__status">Loading episodes...</p>}
+
+              {!error && !loadingEpisodes && (
+                <ol className="title-modal__episode-list">
+                  {episodes.map(episode => (
+                    <li key={episode.episode_number}>
+                      <button
+                        className="title-modal__episode"
+                        aria-pressed={selectedEpisode === episode.episode_number}
+                        onClick={() => setSelectedEpisode(episode.episode_number)}
+                        onDoubleClick={handleWatchNow}
+                      >
+                        <span className="title-modal__still">
+                          {episode.still_path && (
+                            <img src={`${TMDB_IMAGE_URL}/w300${episode.still_path}`} alt="" loading="lazy" />
+                          )}
+                        </span>
+                        <span className="title-modal__episode-text">
+                          <strong>{episode.episode_number}. {episode.name}</strong>
+                          {episode.runtime > 0 && <small>{episode.runtime} min</small>}
+                          <span>{episode.overview}</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
           )}
         </div>
       </div>

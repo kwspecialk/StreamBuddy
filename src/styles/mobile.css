@@ -127,19 +127,6 @@
   display: none;
 }
 
-.manage-keep-running {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: var(--tap-target);
-}
-
-.manage-keep-running input {
-  width: 20px;
-  height: 20px;
-}
-
 /* Touch targets */
 @media (hover: none) {
   .sport-filter-btn,
@@ -242,10 +229,6 @@
   /* No room for drag handles, so reordering uses a button instead */
   .manage-make-main {
     display: flex;
-  }
-
-  .manage-drag-tip {
-    display: none;
   }
 
   .modal--md .modal__title,

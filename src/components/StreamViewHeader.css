@@ -30,7 +30,7 @@
   font-weight: 600;
   cursor: pointer;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
@@ -50,7 +50,7 @@
   font-weight: 500;
   cursor: pointer;
   padding: 8px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
@@ -80,7 +80,7 @@
   font-weight: 600;
   cursor: pointer;
   padding: 12px 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-control);
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
@@ -113,7 +113,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--color-platinum);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   min-width: auto;
   font-size: 0.9rem;
 }
@@ -180,7 +180,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: var(--radius-control);
     flex-shrink: 0; /* Prevent individual buttons from shrinking */
   }
   
@@ -211,13 +211,9 @@
     display: none;
   }
 
-  .fullscreen-btn {
-    display: none !important; /* Hide fullscreen button on mobile */
-  }
   
-  .help-btn {
-    display: none !important; /* Hide help button on mobile */
-  }
+  
+  
   
   .edit-streams-btn {
     font-size: 0.8rem;
@@ -295,47 +291,13 @@
   }
 }
 
-.fullscreen-btn {
-  background: rgba(255, 255, 255, 0.08); /* Subtle background */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Neutral border */
-  color: #e5e7eb; /* Light gray icon color */
-  padding: 8px; /* Square padding for icon */
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
-  line-height: 1; /* Ensure icon vertical alignment is good */
-}
 
-.fullscreen-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff; /* Brighter icon on hover */
-}
 
-.help-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #e5e7eb;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
-  line-height: 1;
-}
 
-.help-btn:hover {
-  background: var(--color-p);
-  border-color: var(--color-p);
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 210, 176, 0.3);
-}
+
+
+
+
 
 /* Ensure consistent sizing for icons within header buttons if needed */
 .stream-view-header .header-right button svg {

@@ -41,42 +41,37 @@
   cursor: pointer;
   transition: var(--transition-colors);
   position: relative;
-  border-radius: 0;
-  outline: none;
 }
 
-.nav__item:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.nav__item:hover {
-  color: var(--color-s);
-}
-
-.nav__item--active {
-  color: var(--color-s);
-}
-
-.nav__item--active::after {
+/* The underline is always there, so hover and active only differ in colour */
+.nav__item::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -10px;
-  height: 4px;
-  background: transparent;
-  box-shadow: 0 3px 5px -1px rgba(0, 210, 176, 0.6);
+  bottom: 0;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-base);
 }
 
-/* Navigation Item Variants */
-.nav__item--highlight {
-  color: var(--color-text-muted);
+.nav__item:hover {
+  color: var(--color-text-primary);
 }
 
-.nav__item--highlight:hover {
-  color: var(--color-warning);
-  background-color: transparent;
+.nav__item:hover::after {
+  opacity: 1;
+}
+
+.nav__item--active {
+  color: var(--color-text-primary);
+}
+
+.nav__item--active::after {
+  background: var(--color-s);
+  opacity: 1;
 }
 
 /* Tab Navigation */

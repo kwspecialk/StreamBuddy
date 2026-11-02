@@ -9,6 +9,7 @@ import { clickableProps } from '../utils/a11y';
 import { canFullscreenPage } from '../deviceProfile';
 
 const GRID_PREVIEW_COUNT = 8;
+const SPOTLIGHT_MIN_VOTES = 300;
 
 const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading, onAddUrl }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,7 +134,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     setMoviesLoading(true);
     try {
       console.log('Loading trending movies...');
-      const movies = await tmdbApi.getTrendingMovies('day');
+      const movies = await tmdbApi.getCuratedMovies();
       console.log('Movies loaded:', movies?.length || 0);
       setTrendingMovies(movies || []);
     } catch (error) {
@@ -147,7 +148,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
     setTVShowsLoading(true);
     try {
       console.log('Loading trending TV shows...');
-      const shows = await tmdbApi.getTrendingTVShows('day');
+      const shows = await tmdbApi.getCuratedTVShows();
       console.log('TV shows loaded:', shows?.length || 0);
       setTrendingTVShows(shows || []);
     } catch (error) {
@@ -330,7 +331,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
 
   // Lead with a live game, or a trending title when nothing is on
   const spotlightMatch = matches?.find(match => match.popular) || matches?.[0];
-  const spotlightTitle = trendingMovies[0];
+  const spotlightTitle = trendingMovies.find(movie => movie.backdrop && movie.voteCount >= SPOTLIGHT_MIN_VOTES) || trendingMovies[0];
   const liveNowMatches = (matches || []).filter(match => match !== spotlightMatch).slice(0, GRID_PREVIEW_COUNT);
 
   const renderSpotlight = () => {

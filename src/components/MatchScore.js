@@ -19,8 +19,8 @@ export const MatchStatusBadge = ({ match, className }) => {
   );
 };
 
-const TeamRow = ({ team, showScore, isTrailing }) => (
-  <div className={`match-team ${isTrailing ? 'match-team--trailing' : ''}`}>
+const TeamRow = ({ team, showScore, isLoser }) => (
+  <div className={`match-team ${isLoser ? 'match-team--lost' : ''}`}>
     <span className="match-team__name">{team.name}</span>
     {showScore && <span className="match-team__score">{team.score}</span>}
   </div>
@@ -40,13 +40,14 @@ export const MatchInfo = ({ match, title, sport }) => {
 
   const [first, second] = score.teams;
   const showScores = score.status !== 'pre' && hasPoints(first) && hasPoints(second);
+  const isFinal = showScores && score.status === 'final';
   const difference = Number(first.score) - Number(second.score);
 
   return (
     <>
       <h3 className="match-teams" aria-label={title}>
-        <TeamRow team={first} showScore={showScores} isTrailing={showScores && difference < 0} />
-        <TeamRow team={second} showScore={showScores} isTrailing={showScores && difference > 0} />
+        <TeamRow team={first} showScore={showScores} isLoser={isFinal && difference < 0} />
+        <TeamRow team={second} showScore={showScores} isLoser={isFinal && difference > 0} />
       </h3>
       <p className="match-sport">{sport}</p>
       {score.odds && (

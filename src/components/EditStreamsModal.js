@@ -5,6 +5,8 @@ import { LAYOUTS } from '../layouts';
 import { tmdbApi } from '../utils/tmdbApi';
 import useModalBehavior from '../useModalBehavior';
 
+const CLEAR_ALL_CONFIRM_MS = 3000;
+
 // Simple reorder function
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
@@ -26,8 +28,6 @@ const EditStreamsModal = ({
   formatApiUrl,
   sourceIndices,
   onCycleSource,
-  keepStreamsRunning,
-  onKeepStreamsRunningChange,
   currentLayout,
   allowedLayouts,
   onLayoutChange,
@@ -36,9 +36,7 @@ const EditStreamsModal = ({
   const [refreshingStreams, setRefreshingStreams] = useState(new Set());
   const [nextEpisodeLoading, setNextEpisodeLoading] = useState(new Set());
   const [isLayoutMenuVisible, setLayoutMenuVisible] = useState(false);
-  const [clearAllHoldProgress, setClearAllHoldProgress] = useState(0);
-  const [isClearAllHolding, setIsClearAllHolding] = useState(false);
-  const [clearAllHoldTimer, setClearAllHoldTimer] = useState(null);
+  const [isConfirmingClearAll, setIsConfirmingClearAll] = useState(false);
   
   // State for persistent stream titles
   const [streamTitles, setStreamTitles] = useState(() => {
@@ -187,54 +185,25 @@ const EditStreamsModal = ({
     }
   };
 
-  // Function to handle clear all streams with press and hold
-  const handleClearAllStart = (e) => {
-    e.preventDefault();
-    if (videoUrls.length === 0) return;
-    
-    setIsClearAllHolding(true);
-    setClearAllHoldProgress(0);
-    
-    const startTime = Date.now();
-    const duration = 650; // 650ms hold duration
-    
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min((elapsed / duration) * 100, 100);
-      
-      setClearAllHoldProgress(progress);
-      
-      if (progress >= 100) {
-        // Clear all when animation completes
-        clearInterval(timer);
-        onClearAllStreams();
-        onClose();
-        // Reset states
-        setIsClearAllHolding(false);
-        setClearAllHoldProgress(0);
-      }
-    }, 16); // ~60fps updates
-    
-    setClearAllHoldTimer(timer);
-  };
-  
-  const handleClearAllEnd = () => {
-    if (clearAllHoldTimer) {
-      clearInterval(clearAllHoldTimer);
-      setClearAllHoldTimer(null);
+  // Clearing can't be undone, so the first click asks for a second one
+  const handleClearAll = () => {
+    if (!isConfirmingClearAll) {
+      setIsConfirmingClearAll(true);
+      return;
     }
-    setIsClearAllHolding(false);
-    setClearAllHoldProgress(0);
+
+    setIsConfirmingClearAll(false);
+    onClearAllStreams();
+    onClose();
   };
-  
-  // Cleanup timer on unmount
+
+  // Drop the confirmation if the second click doesn't come
   useEffect(() => {
-    return () => {
-      if (clearAllHoldTimer) {
-        clearInterval(clearAllHoldTimer);
-      }
-    };
-  }, [clearAllHoldTimer]);
+    if (!isConfirmingClearAll) return;
+
+    const timer = setTimeout(() => setIsConfirmingClearAll(false), CLEAR_ALL_CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [isConfirmingClearAll]);
 
   const handleRefreshStream = async (url, index) => {
     setRefreshingStreams(prev => new Set([...prev, index]));
@@ -688,40 +657,14 @@ const EditStreamsModal = ({
             </div>
           </div>
           
-          <div className="flex-1 text-center">
-            <label className="footer-tip manage-keep-running" title="Streams you can't see keep using CPU, data and sound">
-              <input
-                type="checkbox"
-                checked={keepStreamsRunning}
-                onChange={(e) => onKeepStreamsRunningChange(e.target.checked)}
-              />{' '}
-              Keep hidden streams running
-            </label>
-            <div className="footer-tip manage-drag-tip">
-              Drag streams to reorder
-            </div>
-          </div>
-          
           <div className="modal__actions">
-            {/* Clear All button with press and hold animation */}
             {videoUrls.length > 0 && (
-              <button 
-                className={`btn btn--danger ${isClearAllHolding ? 'holding' : ''}`}
-                onMouseDown={handleClearAllStart}
-                onMouseUp={handleClearAllEnd}
-                onMouseLeave={handleClearAllEnd}
-                onTouchStart={handleClearAllStart}
-                onTouchEnd={handleClearAllEnd}
-                title={isClearAllHolding ? `Hold to clear all (${Math.round(clearAllHoldProgress)}%)` : 'Hold to clear all streams'}
-                style={{
-                  '--progress': `${clearAllHoldProgress}%`
-                }}
+              <button
+                className={`btn btn--danger manage-clear-all ${isConfirmingClearAll ? 'confirming' : ''}`}
+                onClick={handleClearAll}
               >
-                <div className="clear-all-progress" style={{ width: `${clearAllHoldProgress}%` }}></div>
-                <div className="clear-all-content">
-                  <Trash2 size={16} />
-                  <span>{isClearAllHolding ? 'Hold...' : 'Clear All'}</span>
-                </div>
+                <Trash2 size={16} />
+                <span>{isConfirmingClearAll ? 'Confirm?' : 'Clear All'}</span>
               </button>
             )}
           </div>
