@@ -146,7 +146,7 @@ const FloatingCard = ({ entry, slot, grid, isOpen, onOpenChange, onMove, onUnpin
         {game.teams.map(team => <CardTeam key={team.abbr} team={team} game={game} leader={leader} />)}
         <span className="score-card__pulse">{isInPlay(game) && <PulseMeter value={pulse.score} />}</span>
       </button>
-      <button type="button" className="score-card__close" aria-label={`Close ${label} card`} onClick={() => onUnpin(card.id)}>
+      <button type="button" className="icon-btn score-card__close" aria-label={`Close ${label} card`} onClick={() => onUnpin(card.id)}>
         <X size={14} strokeWidth={2} />
       </button>
       {isOpen && (

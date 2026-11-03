@@ -27,8 +27,10 @@ import UndoToast from './components/UndoToast';
 import ScoreCards from './components/ScoreCards';
 import ScoreTicker from './components/ScoreTicker';
 import { pinnedRows, tickerRows } from './utils/scoreCards';
+import { drawerFit } from './utils/drawerFit';
 import useProfile from './useProfile';
 import useMediaQuery from './useMediaQuery';
+import useViewportSize from './useViewportSize';
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
@@ -43,6 +45,9 @@ const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
 const ALLOWED_LAYOUTS = getAllowedLayouts(deviceType);
 const DEVICE_MAX_STREAMS = getDeviceMaxStreams(deviceType);
 const DEVICE_MAX_CARDS = getDeviceMaxCards(deviceType);
+// Matches --stream-header-height and --score-ticker-bar on desktop
+const HEADER_HEIGHT = 60;
+const TICKER_HEIGHT = 32;
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -65,6 +70,7 @@ const App = () => {
   const [isCardDragging, setIsCardDragging] = useState(false);
   const [scoreboardFocus, setScoreboardFocus] = useState(null);
   const isCompactCards = useMediaQuery('(max-width: 600px)') || deviceType === 'phone';
+  const viewport = useViewportSize();
 
   // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
@@ -688,6 +694,21 @@ const App = () => {
 const isStreamView = currentView === 'stream-view';
 const isPageFullscreen = isActuallyFullscreen && isStreamView;
 
+// Dock the drawer beside the streams only when that keeps them about as big; otherwise it floats over them
+const fit = drawerFit({
+  width: viewport.width,
+  height: viewport.height - (isPageFullscreen ? 0 : HEADER_HEIGHT) - (profile.isTickerOn ? TICKER_HEIGHT : 0),
+  layout
+});
+const isDrawerDocked = isStreamView && showScoreboard && fit.mode === 'dock';
+const appClassName = [
+  'app',
+  isStreamView && 'stream-view',
+  isStreamView && showScoreboard && 'scoreboard-open',
+  isDrawerDocked && 'scoreboard-docked',
+  isStreamView && profile.isTickerOn && 'ticker-on'
+].filter(Boolean).join(' ');
+
 // Render players in a fixed order and place them with CSS. Moving an iframe in the
 // DOM reloads it, so reordering must not change their order in the markup.
 const renderedVideos = (isResumePending ? [] : videoUrls)
@@ -695,7 +716,7 @@ const renderedVideos = (isResumePending ? [] : videoUrls)
   .sort();
 
 return (
-  <div className={`app${isStreamView ? ' stream-view' : ''}${isStreamView && showScoreboard ? ' scoreboard-open' : ''}${isStreamView && profile.isTickerOn ? ' ticker-on' : ''}`}>
+  <div className={appClassName} style={isDrawerDocked ? { '--scoreboard-width': `${fit.width}px` } : undefined}>
     {streamAudio.isCheckDone && !streamAudio.hasExtension && !isActuallyFullscreen && <ExtensionChip />}
 
     {!isStreamView && (
@@ -807,6 +828,7 @@ return (
         onClose={() => setShowScoreboard(false)}
         isEscapeBlocked={showStreamBrowser || showEditStreams || Boolean(movieDetails) || Boolean(openCardId)}
         isFullscreen={isPageFullscreen && !isHeaderVisibleInFullscreen}
+        isOverlay={fit.mode === 'overlay'}
         rows={scoreboardRows}
         tiles={tiles}
         canAdd={canAddStream}
@@ -834,7 +856,7 @@ return (
       {/* Video Grid - stays mounted so hidden streams keep running */}
       <div
         ref={pipWindow.gridRef}
-        className={`video-grid ${layout}${pipWindow.isInteracting || isCardDragging ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}${scoreDrag ? ' score-dragging' : ''}`}
+        className={`video-grid ${layout}${isDrawerDocked && fit.stackDual ? ' dual-stacked' : ''}${pipWindow.isInteracting || isCardDragging ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}${scoreDrag ? ' score-dragging' : ''}`}
         style={{ display: isStreamView ? undefined : 'none' }}
       >
         {scoreDrag && canAddStream && streamIndexOf(scoreDrag) < 0 && (

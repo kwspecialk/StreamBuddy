@@ -8,7 +8,7 @@ import './ScoreboardDrawer.css';
 const FILTER_LABELS = { live: 'Live', all: 'All today', following: 'Following' };
 
 const pulseReasons = ({ game, pulse }) => [
-  pulse.closeAndLate && 'close and late',
+  pulse.closeAndLate && 'Close and late',
   pulse.upset && 'underdog leading',
   game.situation?.redZone && `${game.situation.possession} in the red zone`,
   pulse.following && 'a team you follow'
@@ -34,12 +34,12 @@ const useFrozenOrder = (sections) => {
   return { ordered, isFrozen, freeze, unfreeze: () => setIsFrozen(false) };
 };
 
+// A bar only: Pulse orders the games, the number itself isn't worth reading
 export const PulseMeter = ({ value }) => (
-  <span className="pulse-meter" title={`Game Pulse ${value} of 100`}>
-    <span className="pulse-meter__track" aria-hidden="true">
+  <span className="pulse-meter" role="img" aria-label={`Game Pulse ${value} of 100`} title="Game Pulse: how close and late it is">
+    <span className="pulse-meter__track">
       <span className="pulse-meter__fill" style={{ width: `${value}%` }} />
     </span>
-    <span className="pulse-meter__value">{value}</span>
   </span>
 );
 
@@ -56,7 +56,7 @@ const TeamLine = ({ team, game, isFollowed, isTrailing }) => (
 
 // Also opens from a score card, which leaves out pinning since the card's × unpins
 export const GameMenu = ({ row, tiles, canAdd, follows, onWatchNow, onAdd, onReplace, onToggleFollow, isPinned, onTogglePin, id }) => {
-  const { game, match, pulse, streamIndex, screenIndex } = row;
+  const { game, match, streamIndex, screenIndex } = row;
   const reasons = pulseReasons(row);
   const replaceTargets = tiles.filter(tile => tile.index !== screenIndex);
 
@@ -108,10 +108,8 @@ export const GameMenu = ({ row, tiles, canAdd, follows, onWatchNow, onAdd, onRep
           );
         })}
       </div>
-      {isInPlay(game) && (
-        <p className="scoreboard-menu__why">
-          Pulse {pulse.score}{reasons.length > 0 && `: ${reasons.join(', ')}`}
-        </p>
+      {isInPlay(game) && reasons.length > 0 && (
+        <p className="scoreboard-menu__why">{reasons.join(', ')}</p>
       )}
     </div>
   );
@@ -206,6 +204,7 @@ const ScoreboardDrawer = ({
   onClose,
   isEscapeBlocked,
   isFullscreen,
+  isOverlay,
   rows,
   tiles,
   canAdd,
@@ -266,7 +265,7 @@ const ScoreboardDrawer = ({
   };
 
   return (
-    <aside className={`scoreboard${isFullscreen ? ' scoreboard--fullscreen' : ''}`} aria-labelledby="scoreboard-title">
+    <aside className={`scoreboard${isFullscreen ? ' scoreboard--fullscreen' : ''}${isOverlay ? ' scoreboard--overlay' : ''}`} aria-labelledby="scoreboard-title">
       <div className="scoreboard__header">
         <h2 className="scoreboard__title" id="scoreboard-title" tabIndex={-1} ref={headingRef}>Scores</h2>
         <div className="scoreboard__header-actions">

@@ -46,6 +46,8 @@
   --color-dark-border: #2f383d;
   --color-dark-border-light: rgba(255, 255, 255, 0.1);
   --color-dark-border-medium: rgba(255, 255, 255, 0.2);
+  /* Anything floating over a stream: score cards, the scores drawer when it overlays, drop zones */
+  --color-glass: rgba(16, 20, 22, 0.86);
   
   /* Text Colors */
   --color-text-primary: #ffffff;

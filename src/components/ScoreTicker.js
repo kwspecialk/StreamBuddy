@@ -7,7 +7,7 @@ import './ScoreCards.css';
 
 const TickerItems = ({ rows, onOpenGame, isCopy }) => (
   <ul className="score-ticker__items" aria-hidden={isCopy || undefined}>
-    {rows.map(({ game, pulse }) => (
+    {rows.map(({ game }) => (
       <li key={game.id}>
         <button
           type="button"
@@ -23,7 +23,6 @@ const TickerItems = ({ rows, onOpenGame, isCopy }) => (
             </span>
           ))}
           <span className="score-ticker__clock">{statusText(game)}</span>
-          <span className="score-ticker__pulse" title={`Game Pulse ${pulse.score} of 100`}>{pulse.score}</span>
         </button>
       </li>
     ))}

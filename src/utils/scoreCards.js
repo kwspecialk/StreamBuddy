@@ -1,7 +1,7 @@
 // Score cards float over the streams; the ticker runs along the bottom. Both read scoreboard rows.
 import { isInPlay } from './gamePulse';
 
-export const CARD_SIZE = { width: 184, height: 88 };
+export const CARD_SIZE = { width: 184, height: 84 };
 // Clears the main stream's mute button in the top right
 const DEFAULT_INSET = { top: 44, right: 12 };
 const CARD_GAP = 8;

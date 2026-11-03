@@ -30,9 +30,29 @@
   from { transform: translateX(24px); opacity: 0; }
 }
 
-/* Desktop streams make room for the panel instead of sitting under it */
+/* A docked dual layout stacks its streams when that keeps them as big. Players move with
+   CSS only, so nothing reloads. */
+.video-grid.dual.dual-stacked {
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, 1fr);
+}
+
+/* Over the streams it turns to glass, like the score cards, so the game still shows through */
+.scoreboard--overlay {
+  background: var(--color-glass);
+  border-color: var(--color-dark-border-light);
+  backdrop-filter: var(--backdrop-blur);
+}
+
+.scoreboard--overlay .scoreboard__filters,
+.scoreboard--overlay .scoreboard__hint {
+  border-color: var(--color-dark-border-light);
+}
+
+/* Docked, the streams make room for the panel instead of sitting under it. App.js docks
+   it only when that leaves the main stream about as big (see utils/drawerFit.js). */
 @media (min-width: 1024px) {
-  .app.scoreboard-open .video-grid {
+  .app.scoreboard-docked .video-grid {
     width: calc(100vw - var(--scoreboard-width));
   }
 }
@@ -321,15 +341,6 @@
   transition: width var(--transition-slow);
 }
 
-.pulse-meter__value {
-  min-width: 2ch;
-  text-align: right;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-}
-
 .score-badge {
   padding: 1px 6px;
   border-radius: var(--radius-xs);
@@ -498,7 +509,7 @@
   padding: var(--space-md) var(--space-xl);
   border: 2px dashed var(--color-p);
   border-radius: var(--radius-lg);
-  background: rgba(16, 20, 22, 0.92);
+  background: var(--color-glass);
   color: var(--color-p);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
@@ -549,7 +560,7 @@
 }
 
 @media (min-width: 1024px) {
-  .app.scoreboard-open .undo-toast {
+  .app.scoreboard-docked .undo-toast {
     left: calc((100vw - var(--scoreboard-width)) / 2);
   }
 }
