@@ -1,0 +1,1343 @@
+<title>StreamBuddy Score Mode</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a long-form brief with one full-width working wireframe near the top.
+   Dark-only on purpose, matching the StreamBuddy app it mocks up. */
+:root {
+  --bg: #0c1012;
+  --panel: #151b1e;
+  --surface: #1e2529;
+  --surface-2: #273035;
+  --line: #2f383d;
+  --fg: #eef2f2;
+  --muted: #a3adb0;
+  --dim: #6f7a7e;
+  --accent: #00d2b0;
+  --accent-soft: rgba(0, 210, 176, 0.14);
+  --on-accent: #04221d;
+  --live: #e0393b;
+  --upset: #f0b43c;
+  --upset-soft: rgba(240, 180, 60, 0.16);
+  --shade: rgba(5, 8, 9, 0.72);
+  --font-body: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --radius: 10px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; }
+.prose { max-width: 68ch; }
+h1, h2, h3 { font-stretch: 72%; line-height: 1.05; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(44px, 8vw, 84px); font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; }
+h2 { font-size: clamp(30px, 4.4vw, 44px); font-weight: 750; text-transform: uppercase; }
+h3 { font-size: 22px; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--accent); }
+code, pre { font-family: var(--font-mono); font-size: 13px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+section { padding-block: 56px 0; display: flex; flex-direction: column; gap: 20px; }
+.muted { color: var(--muted); }
+
+/* Intro */
+.intro { padding-block: 48px 8px; display: grid; gap: 20px; }
+.intro h1 span { color: var(--accent); }
+.lede { font-size: 19px; color: var(--fg); max-width: 62ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fact { font-size: 13px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); }
+.fact b { color: var(--fg); font-weight: 600; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; padding-top: 4px; }
+.toc a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+.toc a:hover { color: var(--fg); border-color: var(--accent); }
+
+/* ---------- Prototype ---------- */
+.proto-controls { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; font-size: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: transparent; color: var(--muted); border: 0; padding: 6px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.proto {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.app-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--bg);
+}
+.brand { font-weight: 800; font-stretch: 75%; font-size: 18px; letter-spacing: 0.02em; margin-right: auto; }
+.brand span { color: var(--accent); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.chip:hover { background: var(--surface-2); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.chip.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 650; }
+.chip .count { background: var(--live); color: #fff; border-radius: 999px; padding: 0 6px; font-size: 11px; font-weight: 700; }
+.chip.ghost { opacity: 0.55; cursor: default; }
+.proto-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+.proto-body.no-drawer { grid-template-columns: minmax(0, 1fr); }
+.proto-body.no-drawer .drawer { display: none; }
+
+.stage-wrap { padding: 12px; min-width: 0; }
+.stage {
+  container-type: inline-size;
+  position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%;
+  background: #050708; border-radius: 8px; overflow: hidden;
+}
+.tiles { position: absolute; inset: 0; display: grid; gap: 3px; }
+.tiles.n1 { grid-template: 1fr / 1fr; }
+.tiles.n2 { grid-template: 1fr / 1fr 1fr; align-content: center; }
+.tiles.n2 .tile { aspect-ratio: 16/9; }
+.tiles.n3 { grid-template: 1fr 1fr / 2fr 1fr; }
+.tiles.n3 .tile:first-child { grid-row: span 2; }
+.tiles.n4 { grid-template: 1fr 1fr / 1fr 1fr; }
+.tiles.n5 { grid-template: 1fr 1fr / 2fr 1fr 1fr; }
+.tiles.n5 .tile:first-child { grid-row: span 2; }
+.tiles.n6 { grid-template: 1fr 1fr / 1fr 1fr 1fr; }
+.tiles.pip { display: block; }
+.tiles.pip .tile:first-child { position: absolute; inset: 0; }
+.tiles.pip .tile:not(:first-child) {
+  position: absolute; width: 24%; aspect-ratio: 16/9; bottom: 4%;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.25); z-index: 2;
+}
+.tile {
+  position: relative; overflow: hidden; min-width: 0; min-height: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 4px),
+    linear-gradient(135deg, var(--c1), #07090a 55%, var(--c2));
+}
+.tile.drop-target { outline: 3px solid var(--accent); outline-offset: -3px; }
+.tile-name {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-stretch: 62%; font-weight: 800; font-size: 9cqi; color: rgba(255,255,255,0.07); letter-spacing: 0.02em; pointer-events: none;
+  text-transform: uppercase;
+}
+.tiles.pip .tile:not(:first-child) .tile-name, .tiles.n4 .tile-name, .tiles.n5 .tile:not(:first-child) .tile-name, .tiles.n6 .tile-name, .tiles.n3 .tile:not(:first-child) .tile-name { font-size: 4cqi; }
+.tile-tag {
+  position: absolute; top: 6px; left: 6px; font-size: max(9px, 1.1cqi); font-weight: 700; letter-spacing: 0.08em;
+  background: var(--accent); color: var(--on-accent); padding: 1px 6px; border-radius: 4px;
+}
+.tile-tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
+.tile:hover .tile-tools, .tile:focus-within .tile-tools { opacity: 1; }
+@media (hover: none) { .tile-tools { opacity: 1; } }
+.tile-tools button {
+  background: var(--shade); color: var(--fg); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px;
+  font: inherit; font-size: max(10px, 1.1cqi); padding: 2px 7px; cursor: pointer;
+}
+.bug {
+  position: absolute; left: 6px; bottom: 6px; display: inline-flex; align-items: center; gap: 0.6em;
+  background: var(--shade); backdrop-filter: blur(4px); border-radius: 5px; padding: 0.25em 0.6em;
+  font-size: max(10px, 1.45cqi); font-variant-numeric: tabular-nums; white-space: nowrap; max-width: calc(100% - 12px); overflow: hidden;
+}
+.tiles.pip .tile:not(:first-child) .bug, .tiles.n4 .bug, .tiles.n6 .bug { font-size: max(9px, 1.1cqi); }
+.bug b { font-weight: 750; }
+.bug i { font-style: normal; color: var(--muted); }
+.bug .sw { width: 3px; height: 1em; border-radius: 1px; background: var(--c); display: inline-block; }
+.bug .spoiler { color: var(--muted); letter-spacing: 0.1em; }
+.lock-badge { position: absolute; top: 6px; left: 52px; font-size: max(9px, 1.1cqi); background: var(--shade); padding: 1px 6px; border-radius: 4px; color: var(--upset); }
+
+.stage-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 20px; font-size: 14px; }
+.stage.drop-add::after {
+  content: "Drop to add to layout"; position: absolute; inset: 0; display: grid; place-items: center;
+  border: 3px dashed var(--accent); border-radius: 8px; color: var(--accent); background: rgba(0,210,176,0.08);
+  font-weight: 700; pointer-events: none; z-index: 5;
+}
+
+/* Score cards: the "PiP with scores" idea */
+.cards { position: absolute; top: 2.2%; right: 1.4%; display: flex; flex-direction: column; gap: 0.8cqi; width: 21cqi; min-width: 120px; z-index: 3; }
+.card {
+  background: rgba(14, 19, 21, 0.9); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 8px; padding: 0.7cqi 0.9cqi; font-size: max(10px, 1.25cqi); cursor: pointer; position: relative;
+  font-variant-numeric: tabular-nums;
+}
+.card:hover { border-color: var(--accent); }
+.card .c-top { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; }
+.card .c-row { display: flex; align-items: center; gap: 0.5em; font-weight: 650; }
+.card .c-row .sw { width: 3px; height: 0.95em; border-radius: 1px; background: var(--c); }
+.card .c-row b { margin-left: auto; font-weight: 800; }
+.card .c-row.lead b { color: var(--fg); }
+.card .c-row.trail { color: var(--muted); }
+.card .c-x { position: absolute; top: 2px; right: 4px; background: none; border: 0; color: var(--dim); cursor: pointer; font-size: 1.1em; line-height: 1; padding: 2px; display: none; }
+.card:hover .c-x, .card:focus-within .c-x { display: block; }
+@media (hover: none) { .card .c-x { display: block; } }
+.card:hover .c-top .clk { visibility: hidden; }
+.meter { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 0.5cqi; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 2px; transition: width .6s; }
+.meter.hot i { background: var(--live); }
+
+/* Ticker */
+.ticker {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 4.6cqi; min-height: 20px; z-index: 4;
+  background: rgba(6, 9, 10, 0.92); border-top: 2px solid var(--accent); overflow: hidden;
+  display: flex; align-items: center; font-size: max(10px, 1.45cqi); font-variant-numeric: tabular-nums;
+}
+.ticker-label { flex: none; background: var(--accent); color: var(--on-accent); font-weight: 800; padding: 0 0.9em; height: 100%; display: grid; place-items: center; letter-spacing: 0.06em; position: relative; z-index: 1; }
+.ticker-viewport { overflow: hidden; flex: 1; }
+.ticker-track { display: inline-flex; gap: 2.4em; padding-left: 1.2em; white-space: nowrap; animation: crawl 48s linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker-track span b { font-weight: 800; }
+.ticker-track span i { font-style: normal; color: var(--muted); }
+.ticker-track .lg { color: var(--accent); font-weight: 700; margin-right: 0.4em; }
+@keyframes crawl { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+  .ticker-viewport { overflow-x: auto; }
+}
+.has-ticker .tiles { bottom: max(20px, 4.6cqi); }
+.has-ticker .tiles.pip .tile:not(:first-child) { bottom: 4%; }
+
+/* Drawer */
+.drawer { border-left: 1px solid var(--line); background: var(--bg); display: flex; flex-direction: column; min-width: 0; max-height: 640px; }
+.drawer-head { padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--line); }
+.drawer-head .row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.drawer-head h3 { font-size: 20px; text-transform: uppercase; }
+.drawer-head select { background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; padding: 3px 6px; }
+.filters { display: flex; gap: 4px; flex-wrap: wrap; }
+.filters button { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.filters button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.frozen-note { font-size: 11px; color: var(--dim); min-height: 14px; }
+.list { overflow-y: auto; padding: 4px 6px 12px; flex: 1; }
+.group-label { font-size: 11px; letter-spacing: 0.12em; color: var(--dim); font-weight: 700; padding: 10px 6px 4px; text-transform: uppercase; }
+.game {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center;
+  padding: 8px 8px 8px 10px; border-radius: 8px; cursor: pointer; position: relative; font-variant-numeric: tabular-nums;
+  border: 1px solid transparent;
+}
+.game:hover { background: var(--surface); }
+.game:focus-visible { outline-offset: -2px; }
+.game.on-screen { border-color: rgba(0,210,176,0.35); }
+.game .teams { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.game .t { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; }
+.game .t .sw { width: 4px; height: 14px; border-radius: 1px; background: var(--c); flex: none; outline: 1px solid rgba(255,255,255,0.12); }
+.game .t .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.game .t .fav { color: var(--upset); font-size: 11px; }
+.game .t b { margin-left: auto; font-weight: 800; padding-left: 8px; }
+.game .t.trail { color: var(--muted); }
+.game .side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 64px; }
+.game .clk { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.game .clk.live { color: var(--fg); }
+.game .clk.live::before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--live); border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+.game .pulse { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+.game .pulse .meter { width: 40px; margin: 0; }
+.badges { grid-column: 1 / -1; display: flex; gap: 4px; flex-wrap: wrap; }
+.badges:empty { display: none; }
+.badge { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; padding: 1px 6px; border-radius: 4px; background: var(--surface-2); color: var(--muted); text-transform: uppercase; }
+.badge.upset { background: var(--upset-soft); color: var(--upset); }
+.badge.hot { background: rgba(224,57,59,0.18); color: #ff8a8b; }
+.badge.screen { background: var(--accent-soft); color: var(--accent); }
+.badge.nostream { background: transparent; border: 1px dashed var(--line); }
+
+/* Menu */
+.menu {
+  position: absolute; z-index: 20; width: 248px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.55); padding: 6px; font-size: 14px;
+}
+.menu .m-head { padding: 6px 8px 8px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.menu .m-head strong { display: block; font-size: 15px; }
+.menu .m-head small { color: var(--muted); font-size: 12px; display: block; }
+.menu button { display: flex; width: 100%; text-align: left; gap: 8px; align-items: baseline; background: none; border: 0; color: var(--fg); font: inherit; padding: 7px 8px; border-radius: 6px; cursor: pointer; }
+.menu button:hover:not(:disabled), .menu button:focus-visible { background: var(--surface-2); }
+.menu button:disabled { color: var(--dim); cursor: default; }
+.menu button kbd { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--dim); }
+.menu .m-sub { font-size: 11px; color: var(--dim); padding: 6px 8px 2px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+.menu .why { font-size: 12px; color: var(--muted); padding: 6px 8px; border-top: 1px solid var(--line); margin-top: 4px; line-height: 1.45; }
+.menu .why b { color: var(--fg); }
+
+/* Toasts */
+.toasts { position: absolute; left: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 30; max-width: min(380px, calc(100% - 48px)); }
+.toast {
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+  padding: 10px 12px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center;
+}
+.toast.alert { border-left-color: var(--live); }
+.toast.auto { border-left-color: var(--upset); }
+.toast p { flex: 1 1 180px; }
+.toast .acts { display: flex; gap: 6px; }
+.toast button { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; padding: 3px 9px; cursor: pointer; }
+.toast button.go { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 650; }
+
+.proto-foot { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.proto-foot b { color: var(--fg); }
+
+@media (max-width: 860px) {
+  .proto-body { grid-template-columns: minmax(0, 1fr); }
+  .drawer { border-left: 0; border-top: 1px solid var(--line); max-height: 460px; }
+  .toasts { left: 12px; bottom: 12px; max-width: calc(100% - 24px); }
+}
+
+/* ---------- Brief ---------- */
+.callout { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; background: var(--panel); display: grid; gap: 10px; }
+.callout.rec { border-color: rgba(0,210,176,0.45); }
+.callout h3 { font-size: 20px; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rule { border-top: 2px solid var(--line); padding-top: 10px; display: grid; gap: 4px; }
+.rule strong { font-size: 15px; }
+.rule span { font-size: 14px; color: var(--muted); }
+.rule kbd, .k { font-family: var(--font-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; color: var(--fg); }
+
+.tier-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-top: 10px; }
+.tier-head h3 { font-size: 26px; text-transform: uppercase; }
+.tier-head p { color: var(--muted); font-size: 14px; }
+.features { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.feature { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.feature h4 { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.25; }
+.feature p { font-size: 14px; color: var(--muted); }
+.feature .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 6px; }
+.tag { font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.tag.free { color: var(--accent); border-color: rgba(0,210,176,0.4); }
+.tag.cdn { color: #9fc4ff; border-color: rgba(159,196,255,0.35); }
+.tag.store { color: var(--upset); border-color: rgba(240,180,60,0.4); }
+.tag.server { color: #ff8a8b; border-color: rgba(255,138,139,0.4); }
+.tag.yours { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.legend { display: flex; gap: 8px 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); align-items: center; }
+
+.formula { font-family: var(--font-mono); font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; overflow-x: auto; line-height: 1.7; white-space: pre; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 650; background: var(--panel); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num { text-align: right; }
+td .pill { display: inline-block; min-width: 34px; text-align: center; font-weight: 800; border-radius: 6px; padding: 1px 6px; background: var(--surface-2); }
+td .pill.hot { background: rgba(224,57,59,0.22); color: #ffb0b1; }
+td .pill.warm { background: var(--accent-soft); color: var(--accent); }
+.yes { color: var(--accent); font-weight: 650; }
+.no { color: var(--dim); }
+
+.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.phase { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--panel); display: flex; flex-direction: column; gap: 8px; }
+.phase .when { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.phase h4 { margin: 0; font-size: 18px; }
+.phase ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--muted); display: grid; gap: 4px; }
+.phase .cost { margin-top: auto; font-size: 13px; padding-top: 8px; border-top: 1px solid var(--line); }
+pre.code { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; overflow-x: auto; line-height: 1.55; margin: 0; color: #d6e2e2; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+.two > * { min-width: 0; }
+ol.order { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 76ch; }
+ol.order li strong { display: block; }
+ol.order li span { color: var(--muted); font-size: 15px; }
+.diagram { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; overflow-x: auto; }
+ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+ul.plain li { color: var(--fg); }
+ul.plain li span { color: var(--muted); }
+footer { padding-top: 56px; font-size: 13px; color: var(--dim); }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <div class="eyebrow">StreamBuddy brainstorm · November 2026</div>
+    <h1>Score <span>Mode</span></h1>
+    <p class="lede">Ideas for turning StreamBuddy from "a grid of streams" into "the best seat for a whole slate of games." The scores feed already tells us which games matter right now. These ideas put that to work while keeping almost all of it in the browser, so Vercel costs stay where they are.</p>
+    <div class="facts" aria-label="What the scores feed has today">
+      <span class="fact"><b>12</b> leagues from ESPN</span>
+      <span class="fact">score, status, clock, <b>pre-game line</b></span>
+      <span class="fact">one function, CDN cached <b>180 s</b></span>
+      <span class="fact">ESPN also returns <b>period, clock seconds, team colors, records, possession</b> we currently drop</span>
+    </div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#prototype">Clickable wireframe</a>
+      <a href="#add-or-replace">Add or replace?</a>
+      <a href="#features">Feature ideas</a>
+      <a href="#pulse">Game Pulse</a>
+      <a href="#fantasy">Fantasy</a>
+      <a href="#accounts">Accounts &amp; infrastructure</a>
+      <a href="#api">API changes</a>
+      <a href="#order">Build order</a>
+    </nav>
+  </header>
+
+  <!-- ===================== PROTOTYPE ===================== -->
+  <section id="prototype">
+    <div class="stack prose">
+      <div class="eyebrow">Clickable wireframe · simulated games</div>
+      <h2>The stream view, score-first</h2>
+      <p class="muted">Tonight's real matchups with made-up scores that tick forward every couple of seconds. Click a game in the scoreboard, drag a game onto a tile to replace it, or drop it on empty space to add it. The floating cards top-right are the "PiP with scores from other games."</p>
+    </div>
+
+    <div class="proto-controls">
+      <span>Clicking a game in the scoreboard:</span>
+      <div class="seg" role="group" aria-label="Click behaviour">
+        <button type="button" data-click="menu" aria-pressed="true">Shows a menu</button>
+        <button type="button" data-click="watch" aria-pressed="false">Watches it now</button>
+        <button type="button" data-click="add" aria-pressed="false">Adds it</button>
+      </div>
+    </div>
+
+    <div class="proto" id="proto">
+      <div class="app-bar">
+        <div class="brand">Stream<span>Buddy</span></div>
+        <button type="button" class="chip primary ghost" tabindex="-1">+ Add</button>
+        <button type="button" class="chip" id="t-drawer" aria-pressed="true">Scores <span class="count" id="live-count">0</span></button>
+        <div class="seg" role="group" aria-label="Layout">
+          <button type="button" data-mode="grid" aria-pressed="true">Grid</button>
+          <button type="button" data-mode="pip" aria-pressed="false">PiP</button>
+        </div>
+        <button type="button" class="chip" id="t-bugs" aria-pressed="true">Score bugs</button>
+        <button type="button" class="chip" id="t-ticker" aria-pressed="true">Ticker</button>
+        <button type="button" class="chip" id="t-spoil" aria-pressed="false">Spoiler shield</button>
+        <button type="button" class="chip" id="t-auto" aria-pressed="false">Auto-director</button>
+        <button type="button" class="chip" id="t-sim" aria-pressed="true">Simulating</button>
+      </div>
+      <div class="proto-body" id="proto-body">
+        <div class="stage-wrap">
+          <div class="stage" id="stage">
+            <div class="tiles" id="tiles"></div>
+            <div class="cards" id="cards"></div>
+            <div class="ticker" id="ticker"></div>
+          </div>
+        </div>
+        <aside class="drawer" aria-label="Scoreboard">
+          <div class="drawer-head">
+            <div class="row1">
+              <h3>Scoreboard</h3>
+              <select id="sort" aria-label="Sort games">
+                <option value="pulse">Sort: Pulse</option>
+                <option value="league">Sort: League</option>
+                <option value="time">Sort: Start time</option>
+              </select>
+            </div>
+            <div class="filters" role="group" aria-label="Filter games">
+              <button type="button" data-filter="live" aria-pressed="true">Live</button>
+              <button type="button" data-filter="all" aria-pressed="false">All today</button>
+              <button type="button" data-filter="following" aria-pressed="false">Following</button>
+            </div>
+            <div class="frozen-note" id="frozen-note"></div>
+          </div>
+          <div class="list" id="list"></div>
+        </aside>
+      </div>
+      <div class="proto-foot">
+        <span><b>Drag</b> a game onto a tile to replace it</span>
+        <span><b>Drop</b> on empty space to add</span>
+        <span>The list stops reordering while your pointer is over it</span>
+        <span>★ = team you follow (sample: SEA)</span>
+      </div>
+      <div class="toasts" id="toasts" aria-live="polite"></div>
+      <div class="menu" id="menu" hidden></div>
+    </div>
+  </section>
+
+  <!-- ===================== ADD OR REPLACE ===================== -->
+  <section id="add-or-replace">
+    <div class="stack prose">
+      <div class="eyebrow">Your open question</div>
+      <h2>Should a click add the game or replace the main one?</h2>
+      <p>Both, depending on how the user gets there. People reach for the scoreboard for two different reasons: "something is happening over there, show me" and "I want one more game going." Give each its own gesture, and make the quick one undoable so it never feels risky.</p>
+    </div>
+    <div class="callout rec">
+      <h3>Recommendation</h3>
+      <div class="rules">
+        <div class="rule"><strong>Click → small menu</strong><span>Watch now, Add to layout, Replace tile 1–N, Pin score card, Follow team. The toggle above the wireframe lets you try the other defaults.</span></div>
+        <div class="rule"><strong>Watch now = promote, don't delete</strong><span>The new game becomes main and the old main slides to slot 2. Something only drops off if the layout is full, and the toast offers Undo.</span></div>
+        <div class="rule"><strong>Drag onto a tile = replace that tile</strong><span>Precise and visual. Dragging a game that is already on screen swaps the two tiles.</span></div>
+        <div class="rule"><strong>Shortcuts for power users</strong><span><span class="k">Enter</span> watch now, <span class="k">Shift</span>+<span class="k">Enter</span> add, <span class="k">P</span> pin card. Double-click a row also watches.</span></div>
+      </div>
+      <p class="muted" style="font-size:14px">Implementation note: the app already keeps iframes in a fixed DOM order and places them with CSS <code>order</code>, so "promote to main" can reuse <code>handleMakeMain</code> without reloading any player.</p>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section id="features">
+    <div class="stack prose">
+      <div class="eyebrow">Feature ideas</div>
+      <h2>What Score Mode could include</h2>
+      <p class="muted">Grouped by how soon they are realistic. Each card says where the work runs, because that is what decides cost.</p>
+    </div>
+    <div class="legend">
+      <span class="tag free">Browser only</span> no server cost
+      <span class="tag cdn">CDN-cached function</span> cost grows with games, not users
+      <span class="tag store">Needs storage</span> accounts or a database
+      <span class="tag server">Needs server jobs</span> scheduled work, the first real spend
+    </div>
+
+    <div class="tier-head"><h3>Now</h3><p>Builds on <code>/api/scores</code> with a few extra fields.</p></div>
+    <div class="features">
+      <article class="feature">
+        <h4>Scoreboard drawer</h4>
+        <p>A slide-out list of every game today: live first, sorted by Pulse, filterable to Live, All, or Following. Shows games without a stream too, marked "No stream yet." Click to watch, drag to place.</p>
+        <div class="tags"><span class="tag yours">Your idea</span><span class="tag free">Browser only</span><span class="tag">M</span></div>
+      </article>
+      <article class="feature">
+        <h4>Score cards (score-only PiP)</h4>
+        <p>Floating cards for games you're not watching: score, clock, possession dot, Pulse bar. Reuse <code>usePipWindow</code> for drag and resize, with the aspect ratio made a parameter. A "league card" variant lists every NFL game in one box.</p>
+        <div class="tags"><span class="tag yours">Your idea</span><span class="tag free">Browser only</span><span class="tag">M</span></div>
+      </article>
+      <article class="feature">
+        <h4>Score bugs on tiles</h4>
+        <p>A small score overlay on each stream. Many ppv streams crop or delay the broadcast graphic, and small tiles make it unreadable. One toggle for all tiles, plus a per-tile override.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Bottom ticker</h4>
+        <p>A crawl across the bottom in fullscreen with every live score, followed teams first. Pauses on hover; tapping a score opens the same game menu.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Game Pulse</h4>
+        <p>A 0–100 "how much does this game matter right now" score from margin, time left, upset, overtime, teams you follow and fantasy players. It sorts the drawer and powers alerts and the auto-director. Formula below.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Spoiler shield</h4>
+        <p>ppv streams often run 30–90 s behind live, so a score bug can show a touchdown before you see it. Option 1: hide scores for games on screen. Option 2: a delay slider that shows scores from N seconds ago, using snapshots the browser keeps.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Smart layouts</h4>
+        <p>Saved layouts hold rules instead of URLs, because embed URLs change every game. "Main: the Seahawks game. PiP: the closest NFL game. Cards: my NBA teams." Loading a layout fills it from whatever is live.</p>
+        <div class="tags"><span class="tag free">localStorage first</span><span class="tag">M</span></div>
+      </article>
+      <article class="feature">
+        <h4>Share a setup link</h4>
+        <p>Put the smart layout in the URL hash: <code>#l=pip;nfl:SEA;hot:nfl;card:nba:OKC</code>. A friend opens it and gets the same setup with the streams that are live for them. No backend.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+    </div>
+
+    <div class="tier-head"><h3>Next</h3><p>Bigger, still cheap.</p></div>
+    <div class="features">
+      <article class="feature">
+        <h4>Close-game alerts</h4>
+        <p>A toast, plus a browser notification if allowed, when a game crosses a Pulse threshold: a team you follow in a one-score game late, any game going to overtime, an underdog leading in the fourth. Watch now and Pin card buttons sit right in the alert. Works while a StreamBuddy tab is open.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">M</span></div>
+      </article>
+      <article class="feature">
+        <h4>Auto-director</h4>
+        <p>RedZone-style: the main slot follows the hottest game. It only switches when the gap is big enough and the cooldown has passed, and it never moves a main you've locked. Every switch comes with an Undo and a Lock button.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">M</span></div>
+      </article>
+      <article class="feature">
+        <h4>Game detail panel</h4>
+        <p>Open a game for box score, leaders, scoring plays and a win-probability sparkline. ESPN's summary is about 600 KB, so a small <code>/api/game?id=</code> function trims it to ~15 KB and caches it at the CDN for 60 s.</p>
+        <div class="tags"><span class="tag cdn">CDN-cached function</span><span class="tag">M</span></div>
+      </article>
+      <article class="feature">
+        <h4>"What you missed"</h4>
+        <p>When you switch a game into main, a short strip lists the scoring plays since you last had it on screen. Comes from the same trimmed summary.</p>
+        <div class="tags"><span class="tag cdn">CDN-cached function</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Auto-join followed teams</h4>
+        <p>When a followed team's game starts and a stream appears, add it to the layout or show a "Your game is on" toast. A "Remind me" button builds an .ics calendar file in the browser.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Tonight timeline</h4>
+        <p>A horizontal timeline of today's games by start time, so you can see overlaps and plan which games share the screen. Click a block to pre-load it into a smart layout.</p>
+        <div class="tags"><span class="tag free">Browser only</span><span class="tag">S</span></div>
+      </article>
+      <article class="feature">
+        <h4>Fantasy overlay</h4>
+        <p>Import a Sleeper league by username, with no login needed. Badges show "3 of your players" on games, Pulse gets a boost, and the detail panel shows your players' lines. Details in the Fantasy section.</p>
+        <div class="tags"><span class="tag yours">Your idea</span><span class="tag free">Browser only</span><span class="tag cdn">player map cached daily</span><span class="tag">L</span></div>
+      </article>
+    </div>
+
+    <div class="tier-head"><h3>Dream</h3><p>Worth designing toward; each one introduces a real running cost.</p></div>
+    <div class="features">
+      <article class="feature">
+        <h4>Phone as remote</h4>
+        <p>Scan a QR code on the TV or desktop and your phone becomes the scoreboard: tap a game there and it swaps in on the big screen. Needs a realtime channel between the two devices. Supabase Realtime's free tier covers this if accounts already use Supabase.</p>
+        <div class="tags"><span class="tag store">Realtime channel</span><span class="tag">L</span></div>
+      </article>
+      <article class="feature">
+        <h4>Background push alerts</h4>
+        <p>Close-game alerts with the tab closed. Needs a job that checks scores every minute on game days, stored push subscriptions, and alert rules per user. Vercel Hobby cron only runs daily, so this would live in Supabase (pg_cron + an edge function).</p>
+        <div class="tags"><span class="tag server">Needs server jobs</span><span class="tag store">Needs storage</span><span class="tag">L</span></div>
+      </article>
+      <article class="feature">
+        <h4>Watch rooms</h4>
+        <p>Friends join a room and share one smart layout. The host's swaps propagate to everyone, with reactions only and no chat so there's nothing to moderate. Same realtime channel as the remote.</p>
+        <div class="tags"><span class="tag store">Realtime channel</span><span class="tag">L</span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== PULSE ===================== -->
+  <section id="pulse">
+    <div class="stack prose">
+      <div class="eyebrow">The relevance algorithm</div>
+      <h2>Game Pulse</h2>
+      <p>One number answers "should I be looking at this game right now?" It runs in the browser on every scores refresh. Every input is already in the feed or one field away, and the user's follows and fantasy roster only add bonuses. Without an account it still works for everyone.</p>
+    </div>
+    <div class="formula">close   = max(0, 1 − |margin| / scale)        scale: NFL 17 · NBA 15 · NHL 3 · soccer 3
+late    = share of regulation played          0 at kick-off, 1 at the final whistle or in OT
+base    = close × (0.35 + 0.65 × late)        a tie in the 1st is interesting; a tie in the 4th is very interesting
+
+bonus   + 0.15  underdog (by pre-game line) leading after halftime
+        + 0.20  overtime
+        + 0.10  red zone / power play / penalty kick  (from situation)
+        + 0.25  a team you follow
+        + 0.05  per fantasy starter in the game, max 0.15
+
+pulse   = min(100, round(100 × (base + bonus)))      pre-game: 10 inside 15 min of start, +25 if followed · final: 0</div>
+    <p class="muted prose">Below, the same formula scoring the wireframe's games as they tick. The scale constants are a first guess: one score in football, two possessions in basketball. They are easy to tune once real games show how it ranks.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Game</th><th>State</th><th class="num">Margin</th><th class="num">Close</th><th class="num">Late</th><th>Bonuses</th><th class="num">Pulse</th></tr></thead>
+        <tbody id="pulse-table"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== FANTASY ===================== -->
+  <section id="fantasy">
+    <div class="stack prose">
+      <div class="eyebrow">Low priority, still possible</div>
+      <h2>Fantasy without building a fantasy app</h2>
+      <p>Skip "build your team" entirely and read the team the user already has. The goal is modest: know which of your players are in which game, show their stat line, and nudge Pulse. Live fantasy points are a stretch goal.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Source</th><th>How the user connects</th><th>Login or server needed?</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sleeper</strong></td><td>Types their username. Public API returns leagues, rosters, starters and scoring settings.</td><td class="yes">No. Read-only, CORS open (checked today)</td><td>Build this first</td></tr>
+          <tr><td><strong>ESPN Fantasy</strong></td><td>Pastes a league ID. Works for public leagues only.</td><td class="no">Private leagues need ESPN session cookies. Don't ask users for those.</td><td>Public leagues only</td></tr>
+          <tr><td><strong>Yahoo</strong></td><td>"Connect Yahoo" OAuth button.</td><td class="no">Yes. Token exchange plus refresh tokens stored server-side.</td><td>After accounts exist</td></tr>
+          <tr><td><strong>Manual watchlist</strong></td><td>Search players and star them.</td><td class="yes">No</td><td>Fallback for any platform</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="plain">
+      <li>Player → game: Sleeper's player list includes each player's ESPN ID, so a roster maps straight onto ESPN box scores. <span>The list is ~5 MB; trim it to ID, name, team and position in a daily CDN-cached function, or fetch it once a day into IndexedDB.</span></li>
+      <li>Live points: the trimmed box score from <code>/api/game</code> plus the league's <code>scoring_settings</code> gives an estimate. <span>Label it "approx." since stat corrections lag.</span></li>
+      <li>NFL first, NBA second. <span>Those are where Sleeper leagues are.</span></li>
+    </ul>
+  </section>
+
+  <!-- ===================== ACCOUNTS ===================== -->
+  <section id="accounts">
+    <div class="stack prose">
+      <div class="eyebrow">Accounts &amp; infrastructure</div>
+      <h2>Accounts without a backend to babysit</h2>
+      <p>Everything a user would save fits in one small JSON document: follows, smart layouts, preferences, fantasy links. Make that document the unit everywhere. It lives in <code>localStorage</code> today, gets a share link and export next, and syncs to an account later without changing shape. With accounts, the browser talks straight to the auth and database provider, so Vercel never sees the traffic.</p>
+    </div>
+
+    <div class="phases">
+      <div class="phase">
+        <div class="when">Phase 0 · now</div>
+        <h4>Local profile</h4>
+        <ul>
+          <li>One versioned <code>streambuddy.profile</code> key replaces the loose keys</li>
+          <li>Follow teams and leagues, smart layouts, prefs</li>
+          <li>Export or import as a code; share layouts by URL</li>
+        </ul>
+        <div class="cost"><b>$0.</b> Matches the ROADMAP plan.</div>
+      </div>
+      <div class="phase">
+        <div class="when">Phase 1 · accounts</div>
+        <h4>Sign in to sync</h4>
+        <ul>
+          <li>Supabase Auth: magic link and Google</li>
+          <li>One <code>profiles</code> row per user holding the JSON doc, protected by row-level security</li>
+          <li>Load on sign-in and merge with local; debounced writes (≥ 5 s)</li>
+          <li>Accounts stay optional and everything works signed out</li>
+        </ul>
+        <div class="cost"><b>$0</b> on the free tier (50k monthly users, 500 MB). A 5 KB doc means 10k users ≈ 50 MB. Free projects pause after a week without traffic; Pro is $25/mo if that bites.</div>
+      </div>
+      <div class="phase">
+        <div class="when">Phase 2 · realtime</div>
+        <h4>Remote &amp; rooms</h4>
+        <ul>
+          <li>Supabase Realtime broadcast channel per pairing or room</li>
+          <li>Messages are small commands like <code>{watch: "nfl:SEA"}</code>, not video</li>
+        </ul>
+        <div class="cost">Free tier covers small use; concurrent connections are the limit to watch.</div>
+      </div>
+      <div class="phase">
+        <div class="when">Phase 3 · push</div>
+        <h4>Alerts with the tab closed</h4>
+        <ul>
+          <li>pg_cron every minute on game days → edge function → ESPN</li>
+          <li>Compare against stored alert rules, send Web Push</li>
+        </ul>
+        <div class="cost">The first piece that costs real compute. Only build it once people are asking for it.</div>
+      </div>
+    </div>
+
+    <div class="diagram">
+<pre class="mermaid">
+%%{init: {'theme':'dark'}}%%
+flowchart LR
+  B["Browser app<br/>Pulse · alerts · cards · ticker"]
+  S["/api/scores<br/>Vercel · CDN 30–180 s"]
+  G["/api/game?id<br/>Vercel · CDN 60 s"]
+  E[("ESPN")]
+  P[("ppv.st streams")]
+  SL[("Sleeper API")]
+  SB[("Supabase<br/>auth + profiles jsonb")]
+  J["pg_cron + edge function"]
+  B --> S --> E
+  B -->|on demand| G --> E
+  B -->|direct| P
+  B -->|direct| SL
+  B -->|direct, RLS| SB
+  SB -.->|phase 3| J
+  J -.->|web push| B
+</pre>
+    </div>
+
+    <div class="two">
+      <div class="stack">
+        <h3>The profile document</h3>
+<pre class="code">{
+  "v": 1,
+  "updatedAt": "2026-11-02T23:40:00Z",
+  "follow": {
+    "teams": ["nfl:SEA", "nba:OKC", "pl:ARS"],
+    "leagues": ["nfl", "nba", "pl"]
+  },
+  "layouts": [{
+    "name": "Sunday slate",
+    "mode": "pip",
+    "slots": [
+      { "rule": "team", "team": "nfl:SEA" },
+      { "rule": "hottest", "league": "nfl" },
+      { "rule": "hottest", "league": "nfl", "skip": 1 }
+    ],
+    "cards": [{ "rule": "team", "team": "nba:OKC" }],
+    "ticker": true
+  }],
+  "prefs": {
+    "spoilerShield": "on-screen",
+    "autoDirector": { "minGap": 15, "cooldownSec": 90 },
+    "alerts": [{ "when": "close-late", "scope": "following" }]
+  },
+  "fantasy": { "provider": "sleeper", "user": "your-name", "leagues": ["…"] }
+}</pre>
+      </div>
+      <div class="stack">
+        <h3>The whole database</h3>
+<pre class="code">create table profiles (
+  user_id uuid primary key
+    references auth.users on delete cascade,
+  doc jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table profiles enable row level security;
+
+create policy "own profile" on profiles
+  for all using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);</pre>
+        <p class="muted" style="font-size:14px">Merging local and synced docs: take the union of follows, keep layouts by name with the newer one winning, and let the newer <code>updatedAt</code> win for prefs. Firebase Auth with Firestore is an equal alternative that never pauses. Supabase is the pick because realtime and cron come in the same box for phases 2 and 3.</p>
+      </div>
+    </div>
+
+    <h3>Where the money would go</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Piece</th><th>Runs on</th><th>Cost grows with</th><th>Rough volume</th></tr></thead>
+        <tbody>
+          <tr><td>Scores feed today</td><td>Vercel function, CDN 180 s</td><td>CDN regions, not users</td><td>≤ 480 runs/day per region</td></tr>
+          <tr><td>Score Mode feed</td><td><code>/api/scores?fast=1</code>, CDN 30 s, only while scoreboard UI is visible</td><td>CDN regions, not users</td><td>≤ 2,880 runs/day per region</td></tr>
+          <tr><td>Game detail</td><td><code>/api/game?id=</code>, CDN 60 s</td><td>distinct games opened</td><td>≤ 60 runs/hr per game being viewed</td></tr>
+          <tr><td>Pulse, cards, bugs, ticker, alerts, auto-director</td><td>browser</td><td>nothing</td><td>$0</td></tr>
+          <tr><td>Accounts &amp; sync</td><td>Supabase, browser direct</td><td>stored docs</td><td>$0 on free tier</td></tr>
+          <tr><td>Fantasy</td><td>Sleeper, browser direct + daily player map</td><td>nothing</td><td>1 run/day</td></tr>
+          <tr><td>Push alerts</td><td>Supabase cron + edge function</td><td>minutes of game time</td><td>~1,440 runs on a full game day</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted prose" style="font-size:14px">ESPN's endpoints also allow browser requests directly (open CORS, checked today), which would take Vercel out of scores completely. Keeping the proxy is the safer default: one cached request per region instead of one per viewer, and one place to fix things if ESPN changes.</p>
+  </section>
+
+  <!-- ===================== API ===================== -->
+  <section id="api">
+    <div class="stack prose">
+      <div class="eyebrow">Small changes to api/scores.js</div>
+      <h2>Fields to add to the feed</h2>
+      <p class="muted">All of these are already in the scoreboard response <code>trimEvent</code> reads, so they add bytes but no extra requests.</p>
+    </div>
+    <ul class="plain">
+      <li><code>period</code> and <code>clockSec</code> from <code>status.period</code> / <code>status.clock</code> <span>so Pulse doesn't parse "4th 8:18"</span></li>
+      <li><code>teams[].color</code> <span>for score bugs and cards without hotlinking logos</span></li>
+      <li><code>teams[].record</code> <span>a drawer subtitle ("6-2"), also handy for upset logic in soccer</span></li>
+      <li><code>situation</code> while live: possession, down &amp; distance, red zone <span>for the possession dot and the RZ bonus</span></li>
+      <li><code>favorite</code>: which team the pre-game line favours <span>parsed once on the server from <code>odds.details</code></span></li>
+      <li>More leagues: NCAAF, NCAAB, Champions League, MLB in season <span>more ESPN fetches per refresh, no more function runs</span></li>
+      <li>A <code>?fast=1</code> variant with <code>s-maxage=30</code> <span>polled only while the drawer, cards or ticker are showing</span></li>
+    </ul>
+  </section>
+
+  <!-- ===================== ORDER ===================== -->
+  <section id="order">
+    <div class="stack prose">
+      <div class="eyebrow">Suggested sequence</div>
+      <h2>Build order</h2>
+    </div>
+    <ol class="order">
+      <li><strong>Feed fields + Pulse</strong><span>The API additions above and a <code>gamePulse.js</code> util with tests next to <code>matchScores.test.js</code>.</span></li>
+      <li><strong>Scoreboard drawer</strong><span>Watch now, Add, Replace tile, drag to tile, Undo toast.</span></li>
+      <li><strong>Score cards, bugs, ticker</strong><span>Generalise <code>usePipWindow</code>'s aspect ratio so cards share the drag and resize code.</span></li>
+      <li><strong>Local profile</strong><span>Follow teams, smart layouts, share link. Follows feed straight into Pulse.</span></li>
+      <li><strong>Alerts + auto-director</strong><span>Both read Pulse; ship alerts first since they're less surprising.</span></li>
+      <li><strong>Game detail + "what you missed"</strong><span>The first new function.</span></li>
+      <li><strong>Accounts</strong><span>Sync the existing profile doc. Nothing else changes shape.</span></li>
+      <li><strong>Fantasy via Sleeper</strong></li>
+      <li><strong>Remote, rooms, push</strong><span>Only if people ask for them.</span></li>
+    </ol>
+  </section>
+
+  <footer>Brainstorm on branch <code>claude/score-focused-brainstorm-e68a9c</code>. Wireframe scores are simulated; matchups are the real Nov 2–3, 2026 slate.</footer>
+</div>
+
+<script>
+(() => {
+  const SPORTS = {
+    nfl: { label: 'NFL', periods: 4, len: 900, otLen: 600, scale: 17, per: p => (p > 4 ? 'OT' : `Q${p}`), step: 26 },
+    nba: { label: 'NBA', periods: 4, len: 720, otLen: 300, scale: 15, per: p => (p > 4 ? 'OT' : `Q${p}`), step: 22 },
+    nhl: { label: 'NHL', periods: 3, len: 1200, otLen: 300, scale: 3, per: p => (p > 3 ? 'OT' : `P${p}`), step: 38 }
+  };
+  const team = (abbr, name, color, score = 0) => ({ abbr, name, color, score });
+  const games = [
+    { id: 'g1', league: 'nfl', away: team('CHI', 'Bears', '#c83803', 17), home: team('SEA', 'Seahawks', '#69be28', 20), status: 'live', period: 4, clock: 161, fav: 'CHI', line: 'CHI -2.5', stream: true, fantasy: 2, poss: 'CHI', rz: false },
+    { id: 'g2', league: 'nba', away: team('CLE', 'Cavaliers', '#860038', 88), home: team('OKC', 'Thunder', '#007ac1', 91), status: 'live', period: 4, clock: 410, fav: 'OKC', line: 'OKC -6.5', stream: true },
+    { id: 'g3', league: 'nba', away: team('PHI', '76ers', '#1d428a', 101), home: team('CHI', 'Bulls', '#ce1141', 74), status: 'live', period: 4, clock: 500, fav: 'PHI', line: 'PHI -8', stream: true },
+    { id: 'g4', league: 'nhl', away: team('BOS', 'Bruins', '#fcb514', 2), home: team('VGK', 'Golden Knights', '#b4975a', 2), status: 'live', period: 3, clock: 640, fav: 'VGK', line: 'VGK -135', stream: true },
+    { id: 'g5', league: 'nhl', away: team('FLA', 'Panthers', '#c8102e', 1), home: team('DET', 'Red Wings', '#e30526', 3), status: 'live', period: 2, clock: 300, fav: 'FLA', line: 'FLA -150', stream: true },
+    { id: 'g6', league: 'nba', away: team('NYK', 'Knicks', '#f58426', 52), home: team('BKN', 'Nets', '#9ea2a2', 49), status: 'live', period: 2, clock: 120, fav: 'NYK', line: 'NYK -9.5', stream: true },
+    { id: 'g7', league: 'nba', away: team('MEM', 'Grizzlies', '#5d76a9', 30), home: team('NO', 'Pelicans', '#0a2240', 38), status: 'live', period: 2, clock: 600, fav: 'MEM', line: 'MEM -4', stream: false },
+    { id: 'g8', league: 'nba', away: team('DAL', 'Mavericks', '#0064b1'), home: team('SAC', 'Kings', '#5a2d81'), status: 'pre', startsIn: 6, start: '9:00 PM', fav: 'DAL', line: 'DAL -3', stream: false },
+    { id: 'g9', league: 'nhl', away: team('SJ', 'Sharks', '#00788a'), home: team('CGY', 'Flames', '#dd1a32'), status: 'pre', startsIn: 18, start: '10:00 PM', fav: 'CGY', line: 'CGY -120', stream: false },
+    { id: 'g10', league: 'nba', away: team('IND', 'Pacers', '#fdbb30', 112), home: team('ATL', 'Hawks', '#c8102e', 108), status: 'final', period: 4, clock: 0, fav: 'ATL', line: 'ATL -2', stream: false }
+  ];
+  const byId = id => games.find(g => g.id === id);
+  const MAX_TILES = 6;
+
+  const state = {
+    slots: ['g1', 'g2', 'g4'],
+    cards: ['g5', 'g6'],
+    mode: 'grid',
+    drawer: true,
+    bugs: true,
+    ticker: true,
+    spoil: false,
+    auto: false,
+    sim: true,
+    lockMain: false,
+    clickMode: 'menu',
+    filter: 'live',
+    sort: 'pulse',
+    follows: new Set(['SEA'])
+  };
+  let undoSnapshot = null;
+  let listFrozen = false;
+  let dragging = null;
+  let lastAutoSwitch = 0;
+  const alerted = new Set();
+
+  const $ = sel => document.querySelector(sel);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const mmss = sec => `${Math.floor(sec / 60)}:${String(Math.max(0, sec) % 60).padStart(2, '0')}`;
+  const isLive = g => g.status === 'live';
+  const followed = g => state.follows.has(g.away.abbr) || state.follows.has(g.home.abbr);
+  const label = g => `${g.away.abbr} @ ${g.home.abbr}`;
+  const leader = g => (g.away.score > g.home.score ? g.away.abbr : g.home.score > g.away.score ? g.home.abbr : null);
+
+  const clockText = g => {
+    if (g.status === 'pre') return g.startsIn <= 15 ? `in ${g.startsIn} min` : g.start;
+    if (g.status === 'final') return 'Final';
+    return `${SPORTS[g.league].per(g.period)} ${mmss(g.clock)}`;
+  };
+
+  const lateness = g => {
+    const s = SPORTS[g.league];
+    if (g.status === 'final' || g.period > s.periods) return 1;
+    return ((g.period - 1) * s.len + (s.len - g.clock)) / (s.periods * s.len);
+  };
+
+  const pulse = g => {
+    const s = SPORTS[g.league];
+    const parts = [];
+    if (g.status === 'final') return { score: 0, close: null, late: 1, parts: ['Final'], upset: false };
+    if (g.status === 'pre') {
+      let v = g.startsIn <= 15 ? 0.1 : 0;
+      if (followed(g)) { v += 0.25; parts.push('Following +25'); }
+      if (g.startsIn <= 15) parts.push('Starting soon +10');
+      return { score: Math.round(v * 100), close: null, late: 0, parts, upset: false };
+    }
+    const margin = Math.abs(g.away.score - g.home.score);
+    const close = Math.max(0, 1 - margin / s.scale);
+    const late = lateness(g);
+    let v = close * (0.35 + 0.65 * late);
+    const lead = leader(g);
+    const upset = Boolean(lead && lead !== g.fav && late >= 0.5);
+    if (upset) { v += 0.15; parts.push('Upset +15'); }
+    if (g.period > s.periods) { v += 0.2; parts.push('OT +20'); }
+    if (g.rz) { v += 0.1; parts.push('Red zone +10'); }
+    if (followed(g)) { v += 0.25; parts.push('Following +25'); }
+    if (g.fantasy) { const f = Math.min(0.15, 0.05 * g.fantasy); v += f; parts.push(`${g.fantasy} fantasy +${Math.round(f * 100)}`); }
+    return { score: Math.min(100, Math.round(v * 100)), close, late, margin, parts, upset };
+  };
+
+  // ---------- markup helpers ----------
+  const scoreShown = g => !(state.spoil && state.slots.includes(g.id) && g.status !== 'pre');
+  const bugHTML = g => {
+    if (g.status === 'pre') return `<span class="sw" style="--c:${g.away.color}"></span>${g.away.abbr} <span class="sw" style="--c:${g.home.color}"></span>${g.home.abbr} <i>${clockText(g)}</i>`;
+    if (!scoreShown(g)) return `${g.away.abbr} <span class="spoiler">— —</span> ${g.home.abbr} <i>${clockText(g)}</i>`;
+    return `<span class="sw" style="--c:${g.away.color}"></span>${g.away.abbr} <b>${g.away.score}</b> <span class="sw" style="--c:${g.home.color}"></span>${g.home.abbr} <b>${g.home.score}</b> <i>${clockText(g)}</i>`;
+  };
+  const meterHTML = p => `<div class="meter${p >= 70 ? ' hot' : ''}"><i style="width:${p}%"></i></div>`;
+  const cardInner = g => {
+    const p = pulse(g).score;
+    const lead = leader(g);
+    const row = t => `<div class="c-row ${lead === t.abbr ? 'lead' : lead ? 'trail' : ''}"><span class="sw" style="--c:${t.color}"></span>${t.abbr}${g.poss === t.abbr && isLive(g) ? ' <span style="color:var(--accent)">●</span>' : ''}<b>${g.status === 'pre' ? '' : t.score}</b></div>`;
+    return `<div class="c-top"><span>${SPORTS[g.league].label}</span><span class="clk">${clockText(g)}</span></div>${row(g.away)}${row(g.home)}${meterHTML(p)}`;
+  };
+  const tickerItem = g => `<span data-tick="${g.id}"><span class="lg">${SPORTS[g.league].label}</span>${g.away.abbr} <b>${g.away.score}</b> ${g.home.abbr} <b>${g.home.score}</b> <i>${clockText(g)}</i></span>`;
+
+  // ---------- stage ----------
+  function renderStage() {
+    const tiles = $('#tiles');
+    const n = state.slots.length;
+    tiles.className = `tiles ${state.mode === 'pip' && n > 1 ? 'pip' : `n${Math.max(1, n)}`}`;
+    if (!n) {
+      tiles.innerHTML = '<div class="stage-empty">Nothing playing. Pick a game from the scoreboard, or drag one here.</div>';
+    } else {
+      tiles.innerHTML = state.slots.map((id, i) => {
+        const g = byId(id);
+        const pipStyle = state.mode === 'pip' && i > 0 ? ` style="right:${2 + (i - 1) * 26}%;--c1:${g.away.color};--c2:${g.home.color}"` : ` style="--c1:${g.away.color};--c2:${g.home.color}"`;
+        return `<div class="tile" data-slot="${i}"${pipStyle}>
+          <div class="tile-name">${g.away.name} @ ${g.home.name}</div>
+          ${i === 0 && n > 1 ? '<span class="tile-tag">MAIN</span>' : `<span class="tile-tag" style="background:var(--shade);color:var(--fg)">${i + 1}</span>`}
+          ${i === 0 && state.lockMain ? '<span class="lock-badge">Locked</span>' : ''}
+          <div class="tile-tools">
+            ${i > 0 ? `<button type="button" data-act="main" data-id="${id}">Make main</button>` : `<button type="button" data-act="lock">${state.lockMain ? 'Unlock' : 'Lock'}</button>`}
+            <button type="button" data-act="remove" data-id="${id}" aria-label="Remove ${label(g)}">✕</button>
+          </div>
+          ${state.bugs ? `<div class="bug" data-bug="${id}">${bugHTML(g)}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+    $('#stage').classList.toggle('has-ticker', state.ticker);
+    renderCards();
+    renderTicker();
+  }
+
+  function renderCards() {
+    $('#cards').innerHTML = state.cards.map(id => `<div class="card" role="button" tabindex="0" data-card="${id}">
+      <div class="c-body" data-cardbody="${id}">${cardInner(byId(id))}</div>
+      <button type="button" class="c-x" data-act="unpin" data-id="${id}" aria-label="Remove score card">✕</button>
+    </div>`).join('');
+  }
+
+  function renderTicker() {
+    const t = $('#ticker');
+    t.hidden = !state.ticker;
+    if (!state.ticker) return;
+    const live = games.filter(g => g.status !== 'pre').sort((a, b) => (followed(b) - followed(a)) || (pulse(b).score - pulse(a).score));
+    const items = live.map(tickerItem).join('');
+    t.innerHTML = `<div class="ticker-label">SCORES</div><div class="ticker-viewport"><div class="ticker-track">${items}${items}</div></div>`;
+  }
+
+  function updateLiveBits() {
+    document.querySelectorAll('[data-bug]').forEach(el => { el.innerHTML = bugHTML(byId(el.dataset.bug)); });
+    document.querySelectorAll('[data-cardbody]').forEach(el => { el.innerHTML = cardInner(byId(el.dataset.cardbody)); });
+    document.querySelectorAll('[data-tick]').forEach(el => {
+      const g = byId(el.dataset.tick);
+      el.outerHTML = tickerItem(g);
+    });
+  }
+
+  // ---------- drawer ----------
+  function sortedGames() {
+    let list = games.slice();
+    if (state.filter === 'live') list = list.filter(isLive);
+    if (state.filter === 'following') list = list.filter(followed);
+    const p = new Map(list.map(g => [g.id, pulse(g).score]));
+    const statusRank = g => (isLive(g) ? 0 : g.status === 'pre' ? 1 : 2);
+    if (state.sort === 'pulse') list.sort((a, b) => statusRank(a) - statusRank(b) || p.get(b.id) - p.get(a.id));
+    if (state.sort === 'time') list.sort((a, b) => statusRank(a) - statusRank(b));
+    if (state.sort === 'league') list.sort((a, b) => a.league.localeCompare(b.league) || p.get(b.id) - p.get(a.id));
+    return list;
+  }
+
+  function rowHTML(g) {
+    const pl = pulse(g);
+    const lead = leader(g);
+    const onScreen = state.slots.includes(g.id);
+    const carded = state.cards.includes(g.id);
+    const tRow = t => `<div class="t ${g.status !== 'pre' && lead && lead !== t.abbr ? 'trail' : ''}"><span class="sw" style="--c:${t.color}"></span><span class="nm">${t.name}</span>${state.follows.has(t.abbr) ? '<span class="fav" aria-label="Following">★</span>' : ''}<b>${g.status === 'pre' ? '' : scoreShown(g) ? t.score : '–'}</b></div>`;
+    const badges = [
+      onScreen ? `<span class="badge screen">On screen${state.slots[0] === g.id ? ' · main' : ''}</span>` : '',
+      carded ? '<span class="badge screen">Card</span>' : '',
+      pl.upset ? '<span class="badge upset">Upset watch</span>' : '',
+      isLive(g) && pl.score >= 70 ? '<span class="badge hot">Close &amp; late</span>' : '',
+      g.rz ? '<span class="badge hot">Red zone</span>' : '',
+      g.fantasy ? `<span class="badge">${g.fantasy} fantasy</span>` : '',
+      !g.stream && g.status !== 'final' ? '<span class="badge nostream">No stream yet</span>' : ''
+    ].join('');
+    return `<div class="game${onScreen ? ' on-screen' : ''}" role="button" tabindex="0" draggable="${g.stream}" data-game="${g.id}" aria-label="${esc(`${g.away.name} at ${g.home.name}, ${clockText(g)}`)}">
+      <div class="teams">${tRow(g.away)}${tRow(g.home)}</div>
+      <div class="side"><span class="clk${isLive(g) ? ' live' : ''}">${clockText(g)}</span>
+        <span class="pulse" title="Game Pulse">${meterHTML(pl.score)}${pl.score}</span></div>
+      <div class="badges">${badges}</div>
+    </div>`;
+  }
+
+  function renderList() {
+    $('#live-count').textContent = games.filter(isLive).length;
+    if (listFrozen || dragging) return;
+    const list = sortedGames();
+    let html = '';
+    if (!list.length) html = '<p class="muted" style="padding:16px 8px;font-size:14px">No games match. Follow a team from any game menu.</p>';
+    else if (state.sort === 'league') {
+      let cur = '';
+      list.forEach(g => { if (g.league !== cur) { cur = g.league; html += `<div class="group-label">${SPORTS[cur].label}</div>`; } html += rowHTML(g); });
+    } else html = list.map(rowHTML).join('');
+    $('#list').innerHTML = html;
+  }
+
+  // ---------- actions ----------
+  const snapshot = () => { undoSnapshot = { slots: state.slots.slice(), cards: state.cards.slice() }; };
+  const undo = () => { if (!undoSnapshot) return; state.slots = undoSnapshot.slots; state.cards = undoSnapshot.cards; undoSnapshot = null; renderAll(); };
+
+  function watchNow(id, { auto = false } = {}) {
+    const g = byId(id);
+    if (!g.stream) return;
+    snapshot();
+    const had = state.slots.indexOf(id);
+    let dropped = null;
+    if (had === 0) return;
+    if (had > 0) state.slots.splice(had, 1);
+    state.slots.unshift(id);
+    if (state.slots.length > MAX_TILES) dropped = byId(state.slots.pop());
+    state.cards = state.cards.filter(c => c !== id);
+    renderAll();
+    const pl = pulse(g);
+    const why = auto ? ` (Pulse ${pl.score}: ${describe(g)})` : '';
+    toast(`${auto ? 'Auto-director switched to' : 'Watching'} ${label(g)}${why}.${dropped ? ` ${label(dropped)} was removed.` : ' Previous main moved to tile 2.'}`, {
+      kind: auto ? 'auto' : '',
+      actions: [['Undo', undo], ...(auto ? [['Lock main', () => { state.lockMain = true; renderStage(); }]] : [])]
+    });
+  }
+
+  function addToLayout(id) {
+    const g = byId(id);
+    if (!g.stream || state.slots.includes(id)) return;
+    if (state.slots.length >= MAX_TILES) { toast(`Layout is full (${MAX_TILES}). Drag the game onto a tile to replace it.`); return; }
+    snapshot();
+    state.slots.push(id);
+    state.cards = state.cards.filter(c => c !== id);
+    renderAll();
+    toast(`Added ${label(g)} as tile ${state.slots.length}.`, { actions: [['Undo', undo]] });
+  }
+
+  function replaceSlot(id, slot) {
+    const g = byId(id);
+    if (!g.stream) return;
+    snapshot();
+    const existing = state.slots.indexOf(id);
+    const old = state.slots[slot];
+    if (existing === slot) return;
+    if (existing >= 0) { state.slots[existing] = old; state.slots[slot] = id; }
+    else state.slots[slot] = id;
+    state.cards = state.cards.filter(c => c !== id);
+    renderAll();
+    toast(existing >= 0 ? `Swapped ${label(g)} and ${label(byId(old))}.` : `Replaced ${label(byId(old))} with ${label(g)}.`, { actions: [['Undo', undo], ...(existing >= 0 ? [] : [['Pin old as card', () => { if (!state.cards.includes(old)) state.cards.unshift(old); renderAll(); }]])] });
+  }
+
+  function togglePin(id) {
+    snapshot();
+    if (state.cards.includes(id)) state.cards = state.cards.filter(c => c !== id);
+    else { state.cards.unshift(id); if (state.cards.length > 4) state.cards.pop(); }
+    renderAll();
+  }
+
+  const describe = g => {
+    if (g.status !== 'live') return clockText(g);
+    const m = Math.abs(g.away.score - g.home.score);
+    const s = m === 0 ? 'tied' : `${m}-${g.league === 'nhl' ? 'goal' : 'pt'} game`;
+    return `${s}, ${clockText(g)}`;
+  };
+
+  // ---------- menu ----------
+  const menu = $('#menu');
+  let menuFor = null;
+  function openMenu(id, anchor) {
+    const g = byId(id);
+    const pl = pulse(g);
+    menuFor = id;
+    const onScreen = state.slots.indexOf(id);
+    const can = g.stream;
+    const slotButtons = state.slots.map((sid, i) => sid === id ? '' : `<button type="button" data-m="slot" data-slot="${i}" ${can ? '' : 'disabled'}>Replace tile ${i + 1} · ${label(byId(sid))}</button>`).join('');
+    menu.innerHTML = `
+      <div class="m-head"><strong>${g.away.name} @ ${g.home.name}</strong><small>${SPORTS[g.league].label} · ${clockText(g)} · line ${g.line}</small></div>
+      <button type="button" data-m="watch" ${can && onScreen !== 0 ? '' : 'disabled'}>${onScreen === 0 ? 'Already main' : 'Watch now'}<kbd>Enter</kbd></button>
+      <button type="button" data-m="add" ${can && onScreen < 0 ? '' : 'disabled'}>${onScreen >= 0 ? 'Already on screen' : 'Add to layout'}<kbd>⇧ Enter</kbd></button>
+      ${slotButtons ? `<div class="m-sub">Replace</div>${slotButtons}` : ''}
+      <div class="m-sub">More</div>
+      <button type="button" data-m="pin">${state.cards.includes(id) ? 'Remove score card' : 'Pin score card'}<kbd>P</kbd></button>
+      <button type="button" data-m="follow" data-team="${g.away.abbr}">${state.follows.has(g.away.abbr) ? 'Unfollow' : 'Follow'} ${g.away.name}</button>
+      <button type="button" data-m="follow" data-team="${g.home.abbr}">${state.follows.has(g.home.abbr) ? 'Unfollow' : 'Follow'} ${g.home.name}</button>
+      ${!can && g.status === 'pre' ? '<button type="button" data-m="remind">Remind me (.ics)</button>' : ''}
+      <div class="why"><b>Pulse ${pl.score}</b>${pl.close !== null ? ` · close ${pl.close.toFixed(2)} × late ${pl.late.toFixed(2)}` : ''}${pl.parts.length ? ` · ${pl.parts.join(' · ')}` : ''}${!can ? '<br>No stream on ppv.st yet. Scores still show.' : ''}</div>`;
+    menu.hidden = false;
+    const box = $('#proto').getBoundingClientRect();
+    const r = anchor.getBoundingClientRect();
+    const w = menu.offsetWidth;
+    const h = menu.offsetHeight;
+    let left = r.left - box.left - w - 8;
+    if (left < 8) left = Math.min(r.right - box.left + 8, box.width - w - 8);
+    if (left < 8) left = Math.max(8, Math.min(r.left - box.left, box.width - w - 8));
+    let top = Math.min(r.top - box.top, box.height - h - 8);
+    if (box.width < 600) top = Math.min(r.bottom - box.top + 4, box.height - h - 8);
+    menu.style.left = `${left}px`;
+    menu.style.top = `${Math.max(8, top)}px`;
+    menu.querySelector('button:not(:disabled)')?.focus();
+  }
+  const closeMenu = () => { menu.hidden = true; menuFor = null; };
+
+  menu.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.disabled) return;
+    const id = menuFor;
+    const m = b.dataset.m;
+    closeMenu();
+    if (m === 'watch') watchNow(id);
+    if (m === 'add') addToLayout(id);
+    if (m === 'slot') replaceSlot(id, Number(b.dataset.slot));
+    if (m === 'pin') togglePin(id);
+    if (m === 'follow') { const t = b.dataset.team; state.follows.has(t) ? state.follows.delete(t) : state.follows.add(t); renderAll(); toast(`${state.follows.has(t) ? 'Following' : 'Stopped following'} ${t}. Pulse and the Following filter update.`); }
+    if (m === 'remind') toast('Would download a calendar reminder for tip-off.');
+  });
+  document.addEventListener('pointerdown', e => { if (!menu.hidden && !menu.contains(e.target) && !e.target.closest('[data-game],[data-card]')) closeMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) closeMenu(); });
+
+  function activateGame(id, anchor, e) {
+    if (e && e.type === 'keydown') {
+      if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); addToLayout(id); return; }
+      if (e.key === 'Enter') { e.preventDefault(); watchNow(id); return; }
+      if (e.key === 'p' || e.key === 'P') { togglePin(id); return; }
+      if (e.key === ' ') { e.preventDefault(); openMenu(id, anchor); }
+      return;
+    }
+    if (menuFor === id && !menu.hidden) { closeMenu(); return; }
+    const g = byId(id);
+    if (state.clickMode === 'watch' && g.stream) watchNow(id);
+    else if (state.clickMode === 'add' && g.stream && !state.slots.includes(id)) addToLayout(id);
+    else openMenu(id, anchor);
+  }
+
+  const list = $('#list');
+  list.addEventListener('click', e => { const row = e.target.closest('[data-game]'); if (row) activateGame(row.dataset.game, row, e); });
+  list.addEventListener('dblclick', e => { const row = e.target.closest('[data-game]'); if (row) { closeMenu(); watchNow(row.dataset.game); } });
+  list.addEventListener('keydown', e => { const row = e.target.closest('[data-game]'); if (row) activateGame(row.dataset.game, row, e); });
+  list.addEventListener('pointerenter', () => { listFrozen = true; $('#frozen-note').textContent = 'Order paused while you browse'; });
+  list.addEventListener('pointerleave', () => { listFrozen = false; $('#frozen-note').textContent = ''; renderList(); });
+
+  // drag and drop
+  list.addEventListener('dragstart', e => {
+    const row = e.target.closest('[data-game]');
+    if (!row) return;
+    dragging = row.dataset.game;
+    e.dataTransfer.setData('text/plain', dragging);
+    e.dataTransfer.effectAllowed = 'move';
+    closeMenu();
+  });
+  list.addEventListener('dragend', () => { dragging = null; clearDrop(); renderList(); });
+  const stage = $('#stage');
+  const clearDrop = () => { stage.classList.remove('drop-add'); stage.querySelectorAll('.drop-target').forEach(t => t.classList.remove('drop-target')); };
+  stage.addEventListener('dragover', e => {
+    if (!dragging) return;
+    e.preventDefault();
+    const tile = e.target.closest('.tile');
+    clearDrop();
+    if (tile) tile.classList.add('drop-target');
+    else stage.classList.add('drop-add');
+  });
+  stage.addEventListener('dragleave', e => { if (!stage.contains(e.relatedTarget)) clearDrop(); });
+  stage.addEventListener('drop', e => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData('text/plain') || dragging;
+    const tile = e.target.closest('.tile');
+    clearDrop();
+    dragging = null;
+    if (!id) return;
+    if (tile) replaceSlot(id, Number(tile.dataset.slot));
+    else addToLayout(id);
+  });
+
+  // stage buttons and cards
+  stage.addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]');
+    if (b) {
+      const id = b.dataset.id;
+      if (b.dataset.act === 'main') watchNow(id);
+      if (b.dataset.act === 'lock') { state.lockMain = !state.lockMain; renderStage(); toast(state.lockMain ? 'Main is locked. Auto-director will leave it alone.' : 'Main unlocked.'); }
+      if (b.dataset.act === 'remove') { snapshot(); state.slots = state.slots.filter(s => s !== id); renderAll(); toast(`Removed ${label(byId(id))}.`, { actions: [['Undo', undo], ['Keep as card', () => { if (!state.cards.includes(id)) state.cards.unshift(id); renderAll(); }]] }); }
+      if (b.dataset.act === 'unpin') togglePin(id);
+      return;
+    }
+    const card = e.target.closest('[data-card]');
+    if (card) activateGame(card.dataset.card, card, e);
+  });
+  stage.addEventListener('keydown', e => { const card = e.target.closest('[data-card]'); if (card && e.target === card) activateGame(card.dataset.card, card, e); });
+
+  // ---------- toasts ----------
+  function toast(text, { kind = '', actions = [] } = {}) {
+    const host = $('#toasts');
+    const el = document.createElement('div');
+    el.className = `toast ${kind}`;
+    el.innerHTML = `<p>${esc(text)}</p><div class="acts"></div>`;
+    actions.forEach(([name, fn], i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = name;
+      if (i === 0 && kind === 'alert') b.className = 'go';
+      b.addEventListener('click', () => { fn(); el.remove(); });
+      el.querySelector('.acts').appendChild(b);
+    });
+    host.appendChild(el);
+    while (host.children.length > 3) host.firstElementChild.remove();
+    setTimeout(() => el.remove(), 7000);
+  }
+
+  // ---------- simulation ----------
+  const rnd = n => Math.floor(Math.random() * n);
+  function tick() {
+    games.forEach(g => {
+      if (g.status === 'pre') {
+        g.startsIn = Math.max(0, g.startsIn - 1);
+        if (g.startsIn === 3) g.stream = true;
+        if (g.startsIn === 0) { g.status = 'live'; g.period = 1; g.clock = SPORTS[g.league].len; }
+        return;
+      }
+      if (!isLive(g)) return;
+      const s = SPORTS[g.league];
+      g.clock -= s.step + rnd(10);
+      if (g.league === 'nba') { g.away.score += [0, 0, 1, 2, 2, 3][rnd(6)]; g.home.score += [0, 0, 1, 2, 2, 3][rnd(6)]; }
+      if (g.league === 'nhl' && Math.random() < 0.06) (Math.random() < 0.5 ? g.away : g.home).score += 1;
+      if (g.league === 'nfl') {
+        g.rz = Math.random() < 0.22;
+        if (Math.random() < 0.13) {
+          const t = g.poss === g.away.abbr ? g.away : g.home;
+          t.score += Math.random() < 0.6 ? 7 : 3;
+          g.poss = t === g.away ? g.home.abbr : g.away.abbr;
+          g.rz = false;
+        } else if (Math.random() < 0.15) g.poss = g.poss === g.away.abbr ? g.home.abbr : g.away.abbr;
+      }
+      if (g.clock <= 0) {
+        if (g.period >= s.periods && g.away.score !== g.home.score) { g.status = 'final'; g.clock = 0; g.rz = false; }
+        else { g.period += 1; g.clock = g.period > s.periods ? s.otLen : s.len; }
+      }
+    });
+    resetIfDone();
+    runAlerts();
+    runAutoDirector();
+    renderList();
+    updateLiveBits();
+    renderPulseTable();
+  }
+
+  // When the sample slate winds down, bring it back so the wireframe keeps moving
+  function resetIfDone() {
+    const live = games.filter(isLive).length;
+    if (live > 2) return;
+    games.forEach(g => {
+      if (g.id === 'g10') return;
+      if (g.status === 'final') {
+        const s = SPORTS[g.league];
+        g.status = 'live'; g.period = s.periods; g.clock = Math.round(s.len * (0.3 + Math.random() * 0.5));
+        const base = g.league === 'nba' ? 80 + rnd(15) : g.league === 'nfl' ? 14 + rnd(10) : 1 + rnd(3);
+        g.away.score = base; g.home.score = base + rnd(g.league === 'nhl' ? 2 : 8);
+      }
+    });
+    toast('Sample slate reset so the wireframe keeps running.');
+  }
+
+  function runAlerts() {
+    games.forEach(g => {
+      if (!isLive(g) || state.slots.includes(g.id)) return;
+      const p = pulse(g).score;
+      const key = `${g.id}:${g.period}`;
+      if (p >= 75 && !alerted.has(key)) {
+        alerted.add(key);
+        toast(`${pulse(g).upset ? 'Upset watch' : 'Close game'}: ${g.away.abbr} ${g.away.score}, ${g.home.abbr} ${g.home.score} · ${clockText(g)}`, {
+          kind: 'alert',
+          actions: g.stream ? [['Watch now', () => watchNow(g.id)], ['Pin card', () => { if (!state.cards.includes(g.id)) togglePin(g.id); }]] : [['Pin card', () => { if (!state.cards.includes(g.id)) togglePin(g.id); }]]
+        });
+      }
+    });
+  }
+
+  function runAutoDirector() {
+    if (!state.auto || state.lockMain || Date.now() - lastAutoSwitch < 9000) return;
+    const main = byId(state.slots[0]);
+    const best = games.filter(g => isLive(g) && g.stream).sort((a, b) => pulse(b).score - pulse(a).score)[0];
+    if (!best || (main && best.id === main.id)) return;
+    const gap = pulse(best).score - (main && isLive(main) ? pulse(main).score : 0);
+    if (gap >= 15) { lastAutoSwitch = Date.now(); watchNow(best.id, { auto: true }); }
+  }
+
+  function renderPulseTable() {
+    const rows = games.slice().sort((a, b) => pulse(b).score - pulse(a).score).map(g => {
+      const p = pulse(g);
+      return `<tr><td><strong>${label(g)}</strong> <span class="muted">${SPORTS[g.league].label}</span></td>
+        <td>${clockText(g)}</td>
+        <td class="num">${g.status === 'pre' ? '–' : Math.abs(g.away.score - g.home.score)}</td>
+        <td class="num">${p.close === null ? '–' : p.close.toFixed(2)}</td>
+        <td class="num">${g.status === 'pre' ? '–' : p.late.toFixed(2)}</td>
+        <td>${p.parts.length ? p.parts.join(', ') : '<span class="no">none</span>'}</td>
+        <td class="num"><span class="pill ${p.score >= 70 ? 'hot' : p.score >= 40 ? 'warm' : ''}">${p.score}</span></td></tr>`;
+    }).join('');
+    $('#pulse-table').innerHTML = rows;
+  }
+
+  function renderAll() {
+    renderStage();
+    renderList();
+    renderPulseTable();
+  }
+
+  // ---------- controls ----------
+  const setPressed = (el, on) => el.setAttribute('aria-pressed', String(on));
+  const bindToggle = (sel, key, after) => $(sel).addEventListener('click', e => { state[key] = !state[key]; setPressed(e.currentTarget, state[key]); after && after(); });
+  bindToggle('#t-drawer', 'drawer', () => $('#proto-body').classList.toggle('no-drawer', !state.drawer));
+  bindToggle('#t-bugs', 'bugs', renderStage);
+  bindToggle('#t-ticker', 'ticker', renderStage);
+  bindToggle('#t-spoil', 'spoil', () => { renderAll(); if (state.spoil) toast('Scores hidden for games on screen. Cards and the ticker still show other games.'); });
+  bindToggle('#t-auto', 'auto', () => { if (state.auto) toast('Auto-director on. Main follows the highest-Pulse game (gap ≥ 15, at most every 9 s here).', { kind: 'auto' }); });
+  bindToggle('#t-sim', 'sim', () => { $('#t-sim').textContent = state.sim ? 'Simulating' : 'Paused'; });
+  document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+    state.mode = b.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(x => setPressed(x, x === b));
+    renderStage();
+  }));
+  document.querySelectorAll('[data-click]').forEach(b => b.addEventListener('click', () => {
+    state.clickMode = b.dataset.click;
+    document.querySelectorAll('[data-click]').forEach(x => setPressed(x, x === b));
+  }));
+  document.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => {
+    state.filter = b.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(x => setPressed(x, x === b));
+    listFrozen = false;
+    renderList();
+    listFrozen = $('#list').matches(':hover');
+  }));
+  $('#sort').addEventListener('change', e => { state.sort = e.target.value; const f = listFrozen; listFrozen = false; renderList(); listFrozen = f; });
+
+  renderAll();
+  setInterval(() => { if (state.sim && !document.hidden) tick(); }, 2400);
+})();
+</script>
