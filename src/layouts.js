@@ -21,3 +21,5 @@ export const getAllowedLayouts = (device) => DEVICE_LIMITS[device].layouts;
 
 export const getMaxStreams = (device, layout) =>
   Math.min(LAYOUTS[layout]?.windows || 1, DEVICE_LIMITS[device].maxStreams);
+
+export const getDeviceMaxStreams = (device) => DEVICE_LIMITS[device].maxStreams;

@@ -4,9 +4,9 @@ import { attachScores, fetchScores } from './utils/matchScores';
 const SCORE_REFRESH_INTERVAL_MS = 180000;
 const REFRESH_CHECK_INTERVAL_MS = 15000;
 
-// Adds ESPN scores to matches, polling only while `enabled` and the tab is visible.
-// Any failure leaves matches without scores, so cards fall back to plain LIVE.
-export const useMatchScores = (matches, enabled) => {
+// The ESPN games from /api/scores, polling only while `enabled` and the tab is visible.
+// Any failure gives an empty list, so cards fall back to plain LIVE.
+export const useScores = (enabled) => {
   const [scores, setScores] = useState([]);
   const lastFetchRef = useRef(0);
 
@@ -32,5 +32,11 @@ export const useMatchScores = (matches, enabled) => {
     };
   }, [enabled]);
 
+  return scores;
+};
+
+// Adds ESPN scores to matches
+export const useMatchScores = (matches, enabled) => {
+  const scores = useScores(enabled);
   return useMemo(() => attachScores(matches, scores), [matches, scores]);
 };

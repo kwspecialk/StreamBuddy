@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import VideoFeed from './VideoFeed';
 import LayoutSelector from './LayoutSelector';
-import { LAYOUTS, getAllowedLayouts, getMaxStreams } from './layouts';
+import { LAYOUTS, getAllowedLayouts, getMaxStreams, getDeviceMaxStreams } from './layouts';
 import './App.css';
 import './components/LayoutSelector.css';
 import './components/StreamHomepage.css';
@@ -16,13 +16,19 @@ import OnDemandVideoFeed from './OnDemandVideoFeed';
 import StreamHomepage from './components/StreamHomepage';
 import StreamBrowserModal from './components/StreamBrowserModal';
 import EditStreamsModal from './components/EditStreamsModal';
-import { Plus, Maximize, Minimize, Play, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Plus, Maximize, Minimize, Play, Settings, Volume2, VolumeX, Activity } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
 import { fetchLiveMatches, findMatchForUrl, formatEmbedTitle } from './utils/ppvApi';
+import { attachScores } from './utils/matchScores';
+import { buildScoreboard, gameIdsOnScreen, gameLabel } from './utils/scoreboard';
+import { isInPlay } from './utils/gamePulse';
+import ScoreboardDrawer from './components/ScoreboardDrawer';
+import UndoToast from './components/UndoToast';
+import useFollows from './useFollows';
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
-import { useMatchScores } from './useMatchScores';
+import { useScores } from './useMatchScores';
 import useWakeLock from './useWakeLock';
 import StreamHelp from './components/StreamHelp';
 import StreamNotice from './components/StreamNotice';
@@ -31,6 +37,7 @@ import { deviceType, isTouchDevice, canFullscreenPage } from './deviceProfile';
 const MATCH_REFRESH_INTERVAL_MS = 60000;
 const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
 const ALLOWED_LAYOUTS = getAllowedLayouts(deviceType);
+const DEVICE_MAX_STREAMS = getDeviceMaxStreams(deviceType);
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -43,12 +50,20 @@ const App = () => {
   // Modal states
   const [showStreamBrowser, setShowStreamBrowser] = useState(false);
   const [showEditStreams, setShowEditStreams] = useState(false);
+  const [showScoreboard, setShowScoreboard] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [scoreDrag, setScoreDrag] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null);
+  const { follows, toggleFollow } = useFollows();
 
   // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const hasLoadedMatchesRef = React.useRef(false);
-  const scoredMatches = useMatchScores(matches, currentView === 'homepage' || showStreamBrowser);
+  // Both views show scores, and the stream view's Scores button counts live games.
+  // /api/scores is CDN cached, so polling it costs the same however many people watch.
+  const scores = useScores(true);
+  const scoredMatches = useMemo(() => attachScores(matches, scores), [matches, scores]);
 
   const [videoUrls, setVideoUrls] = useState(() => {
     const savedUrls = localStorage.getItem('savedVideoUrls');
@@ -245,12 +260,12 @@ const App = () => {
 
   // Load matches when needed
   useEffect(() => {
-    if (currentView === 'homepage' || showStreamBrowser) {
+    if (currentView === 'homepage' || showStreamBrowser || showScoreboard) {
       fetchMatches();
       const refreshTimer = setInterval(fetchMatches, MATCH_REFRESH_INTERVAL_MS);
       return () => clearInterval(refreshTimer);
     }
-  }, [currentView, showStreamBrowser, fetchMatches]);
+  }, [currentView, showStreamBrowser, showScoreboard, fetchMatches]);
 
   // Saved streams need the match list too, to recover their titles and sources
   useEffect(() => {
@@ -452,6 +467,154 @@ const App = () => {
 
   const displayedVideos = getDisplayedVideos();
 
+  // ---------- Scores drawer ----------
+  const screenGameIds = useMemo(
+    () => gameIdsOnScreen(videoUrls, scoredMatches, sourceIndices, scores),
+    [videoUrls, scoredMatches, sourceIndices, scores]
+  );
+  const scoreboardRows = useMemo(() => buildScoreboard({
+    scores,
+    matches: scoredMatches,
+    videoUrls,
+    sourceIndices,
+    displayedCount: displayedVideos.length,
+    follows
+  }), [scores, scoredMatches, videoUrls, sourceIndices, displayedVideos.length, follows]);
+  const liveGameCount = scores.filter(isInPlay).length;
+  const canAddStream = videoUrls.length < DEVICE_MAX_STREAMS;
+
+  const tileLabel = (url) => {
+    const game = scores.find(g => g.id === screenGameIds[videoUrls.indexOf(url)]);
+    if (game) return gameLabel(game);
+    const title = sourceIndices[url]?.match?.title || formatEmbedTitle(url);
+    return title === url ? 'Movie or show' : title;
+  };
+  const tiles = displayedVideos.map((url, index) => ({ index, label: tileLabel(url) }));
+
+  const showUndo = (message, snapshot) => setToast({ message, snapshot });
+  const dismissToast = useCallback(() => setToast(null), []);
+  const takeSnapshot = () => ({ videoUrls, sourceIndices, layout });
+  const handleUndo = () => {
+    if (!toast?.snapshot) return;
+    setVideoUrls(toast.snapshot.videoUrls);
+    setSourceIndices(toast.snapshot.sourceIndices);
+    setLayout(toast.snapshot.layout);
+    setToast(null);
+  };
+
+  // A game can already be playing from a source the scoreboard didn't pick
+  const streamIndexOf = (row) => (row.streamIndex >= 0 ? row.streamIndex : videoUrls.indexOf(row.match.sources[0].embedUrl));
+
+  const rememberMatch = (url, match, ...removedUrls) => setSourceIndices(prev => {
+    const updated = { ...prev, [url]: { match, sourceIndex: 0 } };
+    removedUrls.forEach(removedUrl => delete updated[removedUrl]);
+    return updated;
+  });
+
+  // The game becomes the main stream. The old main moves to slot 2; the last stream
+  // closes only when the device can't load another one.
+  const handleWatchGame = (row) => {
+    const label = gameLabel(row.game);
+    const existing = streamIndexOf(row);
+    if (existing === 0) return;
+    const snapshot = takeSnapshot();
+    setIsResumePending(false);
+
+    if (existing > 0) {
+      handleMakeMain(videoUrls[existing]);
+      showUndo(`Watching ${label}. ${tileLabel(videoUrls[0])} moved to stream 2.`, snapshot);
+      return;
+    }
+
+    const url = row.match.sources[0].embedUrl;
+    // Streams saved on a bigger screen can leave more than this device plays
+    const all = [url, ...videoUrls];
+    const next = all.slice(0, DEVICE_MAX_STREAMS);
+    const closed = all.slice(DEVICE_MAX_STREAMS);
+    setVideoUrls(next);
+    rememberMatch(url, row.match, ...closed);
+    closed.forEach(streamAudio.forgetStream);
+    autoSwitchLayout(next.length);
+
+    const moved = videoUrls.length > 0 && next.length > 1 ? ` ${tileLabel(videoUrls[0])} moved to stream 2.` : '';
+    const closedText = closed.length === 1 ? ` Closed ${tileLabel(closed[0])} to make room.`
+      : closed.length > 1 ? ` Closed ${closed.length} other streams to make room.` : '';
+    showUndo(`Watching ${label}.${moved}${closedText}`, snapshot);
+  };
+
+  const handleAddGame = (row) => {
+    if (streamIndexOf(row) >= 0) return;
+    if (!canAddStream) {
+      showUndo('No room for another stream on this device. Replace one instead.', null);
+      return;
+    }
+    const snapshot = takeSnapshot();
+    const url = row.match.sources[0].embedUrl;
+    const next = [...videoUrls, url];
+    setIsResumePending(false);
+    setVideoUrls(next);
+    rememberMatch(url, row.match);
+    const newLayout = autoSwitchLayout(next.length);
+
+    const isVisible = getMaxStreams(deviceType, newLayout) >= next.length;
+    showUndo(`Added ${gameLabel(row.game)} as stream ${next.length}.${isVisible ? '' : ' Pick a bigger layout to see it.'}`, snapshot);
+  };
+
+  // A game already on screen swaps places, which moves players with CSS and reloads nothing
+  const handleReplaceStream = (row, index) => {
+    const existing = streamIndexOf(row);
+    if (existing === index) return;
+    const snapshot = takeSnapshot();
+    const label = gameLabel(row.game);
+    const replacedUrl = videoUrls[index];
+    const next = [...videoUrls];
+
+    if (existing >= 0) {
+      next[index] = videoUrls[existing];
+      next[existing] = replacedUrl;
+      setVideoUrls(next);
+      showUndo(`Swapped ${label} and ${tileLabel(replacedUrl)}.`, snapshot);
+      return;
+    }
+
+    const url = row.match.sources[0].embedUrl;
+    next[index] = url;
+    setVideoUrls(next);
+    rememberMatch(url, row.match, replacedUrl);
+    streamAudio.forgetStream(replacedUrl);
+    showUndo(`Replaced ${tileLabel(replacedUrl)} with ${label}.`, snapshot);
+  };
+
+  const endScoreDrag = () => {
+    setScoreDrag(null);
+    setDropTarget(null);
+  };
+
+  const dropHandlers = (target, onDrop) => (scoreDrag ? {
+    onDragOver: (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.dataTransfer.dropEffect = 'move';
+      if (dropTarget !== target) setDropTarget(target);
+    },
+    onDragLeave: (event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) setDropTarget(current => (current === target ? null : current));
+    },
+    onDrop: (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onDrop(scoreDrag);
+      endScoreDrag();
+    }
+  } : {});
+
+  const dropLabelFor = (index) => {
+    if (!scoreDrag) return undefined;
+    const existing = streamIndexOf(scoreDrag);
+    if (existing === index) return 'Already here';
+    return `${existing >= 0 ? 'Swap with' : 'Replace with'} ${gameLabel(scoreDrag.game)}`;
+  };
+
   useEffect(() => {
     return () => {
       const iframes = document.querySelectorAll('iframe');
@@ -498,7 +661,7 @@ const renderedVideos = (isResumePending ? [] : videoUrls)
   .sort();
 
 return (
-  <div className={`app${isStreamView ? ' stream-view' : ''}`}>
+  <div className={`app${isStreamView ? ' stream-view' : ''}${isStreamView && showScoreboard ? ' scoreboard-open' : ''}`}>
     {streamAudio.isCheckDone && !streamAudio.hasExtension && !isActuallyFullscreen && <ExtensionChip />}
 
     {!isStreamView && (
@@ -527,6 +690,17 @@ return (
         </div>
         
         <div className="header-actions">
+          <button
+            className="btn btn--md--settings btn--secondary--settings scores-btn"
+            onClick={() => setShowScoreboard(isOpen => !isOpen)}
+            aria-pressed={showScoreboard}
+            title="Live scores"
+          >
+            <Activity size={18} strokeWidth={1.75} />
+            <span>Scores</span>
+            {liveGameCount > 0 && <b className="scores-btn__count" aria-label={`${liveGameCount} live`}>{liveGameCount}</b>}
+          </button>
+
           <button 
             className="btn btn--md btn--primary"
             onClick={handleOpenStreamBrowser}
@@ -593,14 +767,41 @@ return (
         allowedLayouts={ALLOWED_LAYOUTS}
         streamAudio={streamAudio}
       />
+
+      <ScoreboardDrawer
+        isOpen={showScoreboard}
+        onClose={() => setShowScoreboard(false)}
+        isEscapeBlocked={showStreamBrowser || showEditStreams || Boolean(movieDetails)}
+        isFullscreen={isPageFullscreen && !isHeaderVisibleInFullscreen}
+        rows={scoreboardRows}
+        tiles={tiles}
+        canAdd={canAddStream}
+        canDrag={!isTouchDevice}
+        follows={follows}
+        onToggleFollow={toggleFollow}
+        onWatchNow={handleWatchGame}
+        onAdd={handleAddGame}
+        onReplace={handleReplaceStream}
+        onDragStateChange={(row) => (row ? setScoreDrag(row) : endScoreDrag())}
+      />
+
+      <UndoToast toast={toast} onUndo={handleUndo} onDismiss={dismissToast} />
     </>)}
 
       {/* Video Grid - stays mounted so hidden streams keep running */}
       <div
         ref={pipWindow.gridRef}
-        className={`video-grid ${layout}${pipWindow.isInteracting ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}`}
+        className={`video-grid ${layout}${pipWindow.isInteracting ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}${scoreDrag ? ' score-dragging' : ''}`}
         style={{ display: isStreamView ? undefined : 'none' }}
       >
+        {scoreDrag && canAddStream && streamIndexOf(scoreDrag) < 0 && (
+          <div
+            className={`score-add-zone${dropTarget === 'add' ? ' score-add-zone--active' : ''}`}
+            {...dropHandlers('add', handleAddGame)}
+          >
+            Drop here to add {gameLabel(scoreDrag.game)}
+          </div>
+        )}
         {isResumePending && (
           <div className="player-empty">
             <h1>Pick up where you left off</h1>
@@ -632,12 +833,15 @@ return (
           const isPipWindow = layout === 'pip' && index > 0;
           const pipSlot = index - 1;
           const isMuted = streamAudio.isMuted(url);
+          const isDropTarget = dropTarget === index;
 
           return (
             <div
               key={url}
               data-streambuddy-stream={streamAudio.hasExtension ? getStreamKey(url) : undefined}
-              className={`video-container slot-${index + 1}${isPipWindow ? ' pip-window' : ''}`}
+              className={`video-container slot-${index + 1}${isPipWindow ? ' pip-window' : ''}${isDropTarget ? ' score-drop-target' : ''}`}
+              data-drop-label={isDropTarget ? dropLabelFor(index) : undefined}
+              {...(displayedVideos.includes(url) ? dropHandlers(index, row => handleReplaceStream(row, index)) : {})}
               style={{
                 ...(isPipWindow ? pipWindow.getStyle(pipSlot) : undefined),
                 order: index,

@@ -54,8 +54,28 @@ const toOdds = (odds) => (odds?.details ? { line: odds.details, total: odds.over
 const toTeam = (competitor) => ({
   abbr: competitor.team?.abbreviation || '',
   name: competitor.team?.displayName || '',
-  score: competitor.score ?? null
+  score: competitor.score ?? null,
+  color: competitor.team?.color ? `#${competitor.team.color}` : null,
+  record: competitor.records?.[0]?.summary || null
 });
+
+// "BUF -3" names the favourite first. The line can use a longer code than the team,
+// e.g. "UTAH -130" for UTA, so a prefix counts when it fits only one team.
+export const toFavorite = (odds, teams) => {
+  const code = odds?.line?.split(' ')[0];
+  if (!code) return null;
+  if (teams.some(team => team.abbr === code)) return code;
+
+  const prefixed = teams.filter(team => team.abbr && (code.startsWith(team.abbr) || team.abbr.startsWith(code)));
+  return prefixed.length === 1 ? prefixed[0].abbr : null;
+};
+
+// Only football fills this in, and only while a drive is on
+const toSituation = (situation, competitors) => {
+  if (!situation?.possession) return null;
+  const team = competitors.find(c => c.team?.id === situation.possession);
+  return team ? { possession: team.team.abbreviation, redZone: Boolean(situation.isRedZone) } : null;
+};
 
 export const trimEvent = (event, league) => {
   const competition = event.competitions?.[0];
@@ -65,6 +85,11 @@ export const trimEvent = (event, league) => {
 
   const status = toStatus(event.status?.type || {});
   const isSoccer = LEAGUES[league][0] === 'soccer';
+  // Same order ppv.st titles use: US leagues away-home, soccer home-away
+  const teams = (isSoccer ? [home, away] : [away, home]).map(toTeam);
+  // The line is dropped once a game ends, but who was favoured still matters for upsets
+  const lineOdds = toOdds(competition.odds?.[0]);
+  const isInPlay = status === 'live' || status === 'break';
 
   return {
     id: event.id,
@@ -72,9 +97,12 @@ export const trimEvent = (event, league) => {
     start: Date.parse(event.date),
     status,
     clock: toClock(event.status?.type?.shortDetail),
-    // Same order ppv.st titles use: US leagues away-home, soccer home-away
-    teams: (isSoccer ? [home, away] : [away, home]).map(toTeam),
-    odds: status === 'pre' || status === 'live' || status === 'break' ? toOdds(competition.odds?.[0]) : null
+    period: event.status?.period ?? null,
+    clockSec: event.status?.clock ?? null,
+    teams,
+    odds: status === 'pre' || isInPlay ? lineOdds : null,
+    favorite: toFavorite(lineOdds, teams),
+    situation: status === 'live' ? toSituation(competition.situation, competition.competitors) : null
   };
 };
 
@@ -122,7 +150,8 @@ const addMissingOdds = (games) => Promise.all(games.map(async game => {
   if (game.odds || !isInPlay || !LEAGUES_NEEDING_CORE_ODDS.includes(game.league)) return game;
 
   try {
-    return { ...game, odds: await fetchPreGameOdds(game) };
+    const odds = await fetchPreGameOdds(game);
+    return { ...game, odds, favorite: game.favorite || toFavorite(odds, game.teams) };
   } catch (error) {
     return game; // Scores still work without odds
   }
