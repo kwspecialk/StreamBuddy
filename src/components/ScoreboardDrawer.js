@@ -323,7 +323,7 @@ const ScoreboardDrawer = ({
       <p className="scoreboard__hint">
         {isFrozen
           ? 'Order paused while you browse'
-          : canDrag ? 'Enter watches · Shift+Enter adds · P pins a card · drag onto a stream to replace it' : 'Pulse ranks live games by how close and late they are'}
+          : canDrag ? 'Enter to watch, Shift+Enter to add, P to pin a card. Drag a game onto a stream to replace it.' : 'Live games are ordered by how close and late they are'}
       </p>
     </aside>
   );

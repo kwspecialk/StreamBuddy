@@ -23,7 +23,6 @@
   border-radius: var(--radius-md);
   background: var(--color-glass);
   backdrop-filter: var(--backdrop-blur-light);
-  box-shadow: var(--shadow-dropdown);
   color: var(--color-text-primary);
   transition: var(--transition-colors);
 }
@@ -77,21 +76,19 @@
   gap: var(--space-sm);
   padding-right: 22px; /* Room for the close button */
   color: var(--color-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
+/* League codes are acronyms, so capitals here are the name, not a label style */
 .score-card__league {
   font-stretch: 75%;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
 }
 
 .score-card__status {
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
@@ -128,7 +125,7 @@
   width: 4px;
   height: 14px;
   border-radius: 1px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px var(--color-dark-border-light);
 }
 
 .score-card__possession {
@@ -205,10 +202,9 @@
 .score-card-menu__title {
   margin: 0 var(--space-md) var(--space-sm);
   font-size: var(--font-size-lg);
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   font-stretch: 75%;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 
 @keyframes score-card-menu-in {
@@ -281,7 +277,7 @@
 
 .score-chip .score-card__status {
   color: var(--color-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--font-size-2xs);
 }
 
 .score-chip .score-card__status--live {
@@ -294,7 +290,7 @@
   left: 0;
   bottom: 0;
   height: 2px;
-  background: var(--color-butterscotch);
+  background: var(--color-pulse);
 }
 
 .score-card-menu--strip {
@@ -355,10 +351,8 @@
   padding: 0 var(--space-md);
   border-right: 1px solid var(--color-dark-border);
   color: var(--color-text-primary);
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   font-stretch: 75%;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .score-ticker__label::before {
@@ -436,9 +430,8 @@
 
 .score-ticker__league {
   color: var(--color-text-muted);
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   font-stretch: 75%;
-  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 

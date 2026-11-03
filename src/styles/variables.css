@@ -48,6 +48,12 @@
   --color-dark-border-medium: rgba(255, 255, 255, 0.2);
   /* Anything floating over a stream: score cards, the scores drawer when it overlays, drop zones */
   --color-glass: rgba(16, 20, 22, 0.86);
+  /* Tints of the two roles: teal for what you can act on or have on screen, butterscotch for Pulse */
+  --color-p-tint: rgba(0, 210, 176, 0.12);
+  --color-p-edge: rgba(0, 210, 176, 0.35);
+  --color-pulse: var(--color-butterscotch);
+  --color-pulse-tint: rgba(212, 161, 68, 0.16);
+  --color-track: rgba(255, 255, 255, 0.08);
   
   /* Text Colors */
   --color-text-primary: #ffffff;
@@ -82,6 +88,7 @@
   --radius-control: 4px; /* Every button, input and icon button */
   
   /* Typography Scale */
+  --font-size-2xs: 0.6875rem; /* 11px, the floor: badges and card meta */
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
   --font-size-base: 1rem;     /* 16px */

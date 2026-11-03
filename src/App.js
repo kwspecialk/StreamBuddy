@@ -27,7 +27,7 @@ import UndoToast from './components/UndoToast';
 import ScoreCards from './components/ScoreCards';
 import ScoreTicker from './components/ScoreTicker';
 import { pinnedRows, tickerRows } from './utils/scoreCards';
-import { drawerFit } from './utils/drawerFit';
+import { DOCK_MIN_SCREEN, drawerFit } from './utils/drawerFit';
 import useProfile from './useProfile';
 import useMediaQuery from './useMediaQuery';
 import useViewportSize from './useViewportSize';
@@ -694,12 +694,18 @@ const App = () => {
 const isStreamView = currentView === 'stream-view';
 const isPageFullscreen = isActuallyFullscreen && isStreamView;
 
-// Dock the drawer beside the streams only when that keeps them about as big; otherwise it floats over them
-const fit = drawerFit({
-  width: viewport.width,
-  height: viewport.height - (isPageFullscreen ? 0 : HEADER_HEIGHT) - (profile.isTickerOn ? TICKER_HEIGHT : 0),
+// Dock the drawer beside the streams only when that keeps them about as big; otherwise it floats
+// over them. It's decided from the window when the drawer opens, or when the layout, fullscreen or
+// ticker changes, but not while the window is being resized, so it never flips back and forth.
+const fitWhenOpened = useMemo(() => drawerFit({
+  width: window.innerWidth,
+  height: window.innerHeight - (isPageFullscreen ? 0 : HEADER_HEIGHT) - (profile.isTickerOn ? TICKER_HEIGHT : 0),
   layout
-});
+  // showScoreboard re-decides on each open
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}), [showScoreboard, layout, isPageFullscreen, profile.isTickerOn]);
+// A window made too narrow to dock in still switches to floating
+const fit = viewport.width >= DOCK_MIN_SCREEN ? fitWhenOpened : { ...fitWhenOpened, mode: 'overlay' };
 const isDrawerDocked = isStreamView && showScoreboard && fit.mode === 'dock';
 const appClassName = [
   'app',

@@ -9,6 +9,10 @@ import './ScoreCards.css';
 
 // A press that moves less than this is a click, not a drag
 const DRAG_THRESHOLD_PX = 4;
+// Arrow keys move a focused card this far, or further with Shift
+const KEY_STEP_PX = 16;
+const KEY_STEP_LARGE_PX = 64;
+const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 const MENU_WIDTH = 300;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
@@ -120,6 +124,19 @@ const FloatingCard = ({ entry, slot, grid, isOpen, onOpenChange, onMove, onUnpin
     handle.addEventListener('pointercancel', handleEnd);
   };
 
+  // Moving with the keyboard as well as by dragging
+  const handleKeyDown = (event) => {
+    const direction = ARROWS[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    const step = event.shiftKey ? KEY_STEP_LARGE_PX : KEY_STEP_PX;
+    const next = {
+      left: clamp(position.left + direction[0] * step, 0, grid.width - CARD_SIZE.width),
+      top: clamp(position.top + direction[1] * step, 0, grid.height - CARD_SIZE.height)
+    };
+    onMove(card.id, cardFractions(next, grid));
+  };
+
   return (
     <div
       ref={cardRef}
@@ -132,8 +149,9 @@ const FloatingCard = ({ entry, slot, grid, isOpen, onOpenChange, onMove, onUnpin
         aria-label={`${label}, ${game.teams.map(team => `${team.name || team.abbr} ${team.score ?? ''}`).join(', ')}, ${statusText(game)}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        title="Click for options · drag to move"
+        title="Drag or use the arrow keys to move"
         onPointerDown={handlePointerDown}
+        onKeyDown={handleKeyDown}
         onClick={() => {
           if (wasDraggedRef.current) return;
           onOpenChange(isOpen ? null : game.id);

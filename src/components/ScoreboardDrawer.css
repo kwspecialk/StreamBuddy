@@ -68,10 +68,9 @@
 .scoreboard__title {
   margin: 0;
   font-size: var(--font-size-2xl);
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   font-stretch: 75%;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   line-height: var(--line-height-tight);
   outline: none;
 }
@@ -116,7 +115,7 @@
 }
 
 .scoreboard__filter[aria-pressed="true"] {
-  background: rgba(0, 210, 176, 0.12);
+  background: var(--color-p-tint);
   border-color: var(--color-p);
   color: var(--color-p);
 }
@@ -146,8 +145,7 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+
 }
 
 .scoreboard__list {
@@ -180,7 +178,7 @@
 }
 
 .scoreboard-row--on-screen {
-  border-color: rgba(0, 210, 176, 0.35);
+  border-color: var(--color-p-edge);
 }
 
 .scoreboard-row[draggable="true"] {
@@ -234,7 +232,7 @@
   width: 4px;
   height: 14px;
   border-radius: 1px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px var(--color-dark-border-light);
 }
 
 .scoreboard-team__name {
@@ -329,7 +327,7 @@
   width: 44px;
   height: 4px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-track);
   overflow: hidden;
 }
 
@@ -337,7 +335,7 @@
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 2px;
-  background: var(--color-butterscotch);
+  background: var(--color-pulse);
   transition: width var(--transition-slow);
 }
 
@@ -346,19 +344,18 @@
   border-radius: var(--radius-xs);
   background: var(--color-dark-surface-hover);
   color: var(--color-text-secondary);
-  font-size: 0.6875rem;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+
 }
 
 .score-badge--screen {
-  background: rgba(0, 210, 176, 0.12);
+  background: var(--color-p-tint);
   color: var(--color-p);
 }
 
 .score-badge--upset {
-  background: rgba(212, 161, 68, 0.16);
+  background: var(--color-pulse-tint);
   color: var(--color-butterscotch);
 }
 
@@ -403,8 +400,7 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+
 }
 
 .scoreboard-menu__tiles {
@@ -462,7 +458,7 @@
 }
 
 .scores-btn[aria-pressed="true"] {
-  background: rgba(0, 210, 176, 0.12);
+  background: var(--color-p-tint);
   color: var(--color-p);
 }
 
@@ -472,7 +468,7 @@
   border-radius: var(--radius-full);
   background: var(--color-live);
   color: var(--color-on-live);
-  font-size: 0.6875rem;
+  font-size: var(--font-size-2xs);
   font-weight: var(--font-weight-bold);
   line-height: 18px;
   font-variant-numeric: tabular-nums;
