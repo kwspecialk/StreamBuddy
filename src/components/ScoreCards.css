@@ -1,0 +1,528 @@
+/* Score cards and the ticker. Same rules as the drawer: teal is for actions,
+   red only marks live, butterscotch is Pulse. */
+
+:root {
+  --score-ticker-bar: 32px;
+  --score-ticker-height: calc(var(--score-ticker-bar) + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- Floating cards ---------- */
+
+/* Covers the grid so cards can be placed in it; only the cards take pointer events */
+.score-cards {
+  position: absolute;
+  inset: 0;
+  z-index: 6; /* Over PiP windows and the drop zone */
+  pointer-events: none;
+}
+
+.score-card {
+  position: absolute;
+  pointer-events: auto;
+  border: 1px solid var(--color-dark-border);
+  border-radius: var(--radius-md);
+  background: rgba(16, 20, 22, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-dropdown);
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-fast);
+}
+
+.score-card:hover,
+.score-card--open {
+  border-color: var(--color-dark-border-medium);
+}
+
+.score-card--dragging {
+  z-index: 1;
+  border-color: var(--color-p);
+  box-shadow: var(--shadow-modal);
+}
+
+.score-card--open {
+  z-index: 2;
+}
+
+.score-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 7px 10px 6px;
+  border: none;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.score-card--dragging .score-card__body {
+  cursor: grabbing;
+}
+
+.score-card__body:focus-visible {
+  outline: 2px solid var(--color-p);
+  outline-offset: -2px;
+}
+
+.score-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-right: 22px; /* Room for the close button */
+  margin-bottom: 1px;
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.score-card__league {
+  font-stretch: 75%;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.score-card__status {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.score-card__status--live {
+  color: var(--color-text-primary);
+}
+
+.score-card__status--live::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--color-live);
+  vertical-align: 1px;
+}
+
+.score-card__team {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+}
+
+.score-card__team--trailing {
+  color: var(--color-text-muted);
+}
+
+.score-card__swatch {
+  flex: none;
+  width: 4px;
+  height: 13px;
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.score-card__possession {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+}
+
+.score-card__score {
+  margin-left: auto;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-card__pulse {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 14px;
+  margin-top: auto;
+}
+
+.score-card__pulse .pulse-meter__track {
+  width: 100%;
+}
+
+.score-card__pulse .pulse-meter {
+  width: 100%;
+}
+
+.score-card__close {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--transition-colors), opacity var(--transition-fast);
+}
+
+.score-card:hover .score-card__close,
+.score-card:focus-within .score-card__close,
+.score-card__close:focus-visible {
+  opacity: 1;
+}
+
+.score-card__close:hover {
+  background: var(--color-dark-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.score-card__close:focus-visible {
+  outline: 2px solid var(--color-p);
+  outline-offset: -2px;
+}
+
+@media (hover: none) {
+  .score-card__close {
+    opacity: 1;
+  }
+}
+
+/* The game menu, opened from a card or a chip */
+.score-card-menu {
+  position: absolute;
+  z-index: 3;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: var(--space-md);
+  border: 1px solid var(--color-dark-border);
+  border-radius: var(--radius-md);
+  background: var(--color-dark-bg-secondary);
+  box-shadow: var(--shadow-modal);
+  cursor: auto;
+  animation: score-card-menu-in var(--transition-base);
+}
+
+.score-card-menu__title {
+  margin: 0 var(--space-md) var(--space-sm);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+@keyframes score-card-menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ---------- Phones: a strip of chips ---------- */
+
+.score-strip {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  left: 56px; /* Clear of the stream options button */
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.score-strip__chips {
+  display: flex;
+  gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  pointer-events: auto;
+}
+
+.score-chip {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-dark-border);
+  border-radius: var(--radius-control);
+  background: rgba(16, 20, 22, 0.92);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.score-chip[aria-expanded="true"] {
+  border-color: var(--color-p);
+}
+
+.score-chip__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.score-chip__team .score-card__swatch {
+  height: 11px;
+  width: 3px;
+}
+
+.score-chip__team--trailing {
+  color: var(--color-text-muted);
+}
+
+.score-chip .score-card__status {
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+}
+
+.score-chip .score-card__status--live {
+  color: var(--color-text-primary);
+}
+
+/* Pulse as a thin underline */
+.score-chip__pulse {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-butterscotch);
+}
+
+.score-card-menu--strip {
+  position: static;
+  width: min(320px, 100%);
+  max-height: 60dvh;
+  margin-top: 4px;
+  pointer-events: auto;
+}
+
+/* ---------- Ticker ---------- */
+
+/* Stream heights leave room for the ticker instead of sitting under it */
+.app.ticker-on .video-grid {
+  height: calc(100vh - var(--stream-header-height) - var(--score-ticker-height));
+  height: calc(100dvh - var(--stream-header-height) - var(--score-ticker-height));
+}
+
+.app.ticker-on .video-grid.page-fullscreen {
+  height: calc(100vh - var(--score-ticker-height));
+  height: calc(100dvh - var(--score-ticker-height));
+}
+
+.score-ticker {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 890; /* Under the drawer (900) */
+  display: flex;
+  align-items: stretch;
+  height: var(--score-ticker-height);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--color-dark-border);
+  background: var(--color-dark-bg-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1024px) {
+  .app.scoreboard-open .score-ticker {
+    right: var(--scoreboard-width);
+  }
+}
+
+.score-ticker__label {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--space-md);
+  border-right: 1px solid var(--color-dark-border);
+  color: var(--color-text-primary);
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.score-ticker__label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-live);
+}
+
+.score-ticker__viewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.score-ticker__track {
+  display: inline-flex;
+  height: 100%;
+}
+
+.score-ticker__track > div {
+  display: flex;
+}
+
+.score-ticker__track--crawling {
+  animation: score-ticker-crawl var(--ticker-duration, 40s) linear infinite;
+}
+
+.score-ticker:hover .score-ticker__track,
+.score-ticker:focus-within .score-ticker__track {
+  animation-play-state: paused;
+}
+
+@keyframes score-ticker-crawl {
+  to { transform: translateX(-50%); }
+}
+
+.score-ticker__items {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  padding: 0 var(--space-sm) 0 0;
+  list-style: none;
+}
+
+.score-ticker__items li {
+  display: flex;
+}
+
+.score-ticker__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 var(--space-md);
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.score-ticker__item:hover {
+  background: var(--color-dark-surface);
+  color: var(--color-text-primary);
+}
+
+.score-ticker__item:focus-visible {
+  outline: 2px solid var(--color-p);
+  outline-offset: -2px;
+}
+
+.score-ticker__league {
+  color: var(--color-text-muted);
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.score-ticker__team b {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.score-ticker__clock {
+  color: var(--color-text-muted);
+}
+
+.score-ticker__pulse {
+  min-width: 2ch;
+  padding: 0 4px;
+  border-radius: var(--radius-xs);
+  background: rgba(212, 161, 68, 0.16);
+  color: var(--color-butterscotch);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+.score-ticker__empty {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0 var(--space-md);
+  color: var(--color-text-muted);
+}
+
+.score-ticker__close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--score-ticker-bar);
+  padding: 0;
+  border: none;
+  border-left: 1px solid var(--color-dark-border);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.score-ticker__close:hover {
+  color: var(--color-text-primary);
+  background: var(--color-dark-surface);
+}
+
+.score-ticker__close:focus-visible {
+  outline: 2px solid var(--color-p);
+  outline-offset: -2px;
+}
+
+/* The toast clears the ticker */
+.app.ticker-on .undo-toast {
+  bottom: calc(var(--score-ticker-height) + var(--space-md) + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 600px) {
+  :root {
+    --score-ticker-bar: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-ticker__track--crawling {
+    animation: none;
+  }
+
+  .score-ticker__viewport {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .score-card-menu {
+    animation: none;
+  }
+}

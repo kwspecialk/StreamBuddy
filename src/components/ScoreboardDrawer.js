@@ -1,19 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Star } from 'lucide-react';
+import { X, Star, Pin } from 'lucide-react';
 import { useEscapeKey } from '../useModalBehavior';
-import { countFor, groupScoreboard } from '../utils/scoreboard';
+import { countFor, groupScoreboard, statusText } from '../utils/scoreboard';
 import { isFollowedGame, isInPlay, leaderOf, teamKey } from '../utils/gamePulse';
 import './ScoreboardDrawer.css';
 
 const FILTER_LABELS = { live: 'Live', all: 'All today', following: 'Following' };
-
-const formatStart = (ms) => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-
-const statusText = (game) => {
-  if (game.status === 'pre') return formatStart(game.start);
-  if (game.status === 'final') return /final/i.test(game.clock) ? game.clock : 'Final';
-  return game.clock;
-};
 
 const pulseReasons = ({ game, pulse }) => [
   pulse.closeAndLate && 'close and late',
@@ -42,7 +34,7 @@ const useFrozenOrder = (sections) => {
   return { ordered, isFrozen, freeze, unfreeze: () => setIsFrozen(false) };
 };
 
-const PulseMeter = ({ value }) => (
+export const PulseMeter = ({ value }) => (
   <span className="pulse-meter" title={`Game Pulse ${value} of 100`}>
     <span className="pulse-meter__track" aria-hidden="true">
       <span className="pulse-meter__fill" style={{ width: `${value}%` }} />
@@ -62,13 +54,14 @@ const TeamLine = ({ team, game, isFollowed, isTrailing }) => (
   </span>
 );
 
-const GameMenu = ({ row, tiles, canAdd, follows, onWatchNow, onAdd, onReplace, onToggleFollow }) => {
+// Also opens from a score card, which leaves out pinning since the card's × unpins
+export const GameMenu = ({ row, tiles, canAdd, follows, onWatchNow, onAdd, onReplace, onToggleFollow, isPinned, onTogglePin, id }) => {
   const { game, match, pulse, streamIndex, screenIndex } = row;
   const reasons = pulseReasons(row);
   const replaceTargets = tiles.filter(tile => tile.index !== screenIndex);
 
   return (
-    <div className="scoreboard-menu" id={`scoreboard-menu-${game.id}`}>
+    <div className="scoreboard-menu" id={id}>
       {match ? (
         <>
           <div className="scoreboard-menu__actions">
@@ -98,6 +91,12 @@ const GameMenu = ({ row, tiles, canAdd, follows, onWatchNow, onAdd, onReplace, o
         <p className="scoreboard-menu__note">No stream for this game yet. It shows up here as soon as one goes live.</p>
       )}
       <div className="scoreboard-menu__follow">
+        {onTogglePin && (
+          <button type="button" className="btn btn--ghost btn--xs scoreboard-menu__pin" aria-pressed={isPinned} onClick={() => onTogglePin(row)}>
+            <Pin size={14} fill={isPinned ? 'currentColor' : 'none'} />
+            {isPinned ? 'Unpin score card' : 'Pin score card'}
+          </button>
+        )}
         {game.teams.map(team => {
           const key = teamKey(game.league, team.abbr);
           const isFollowed = follows.has(key);
@@ -118,12 +117,17 @@ const GameMenu = ({ row, tiles, canAdd, follows, onWatchNow, onAdd, onReplace, o
   );
 };
 
-const GameRow = ({ row, isOpen, onToggle, follows, canDrag, onDragStateChange, onWatchNow, onAdd, menuProps }) => {
+const GameRow = ({ row, isOpen, onToggle, follows, isPinned, canDrag, onDragStateChange, onWatchNow, onAdd, onTogglePin, menuProps }) => {
   const { game, match, pulse, screenIndex } = row;
   const leader = game.status === 'pre' ? null : leaderOf(game);
   const isLive = game.status === 'live';
 
   const handleKeyDown = (event) => {
+    if (event.key.toLowerCase() === 'p' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      onTogglePin(row);
+      return;
+    }
     if (event.key !== 'Enter') return;
     event.preventDefault();
     if (!match) onToggle();
@@ -133,6 +137,7 @@ const GameRow = ({ row, isOpen, onToggle, follows, canDrag, onDragStateChange, o
 
   return (
     <li
+      id={`scoreboard-row-${game.id}`}
       className={`scoreboard-row${isOpen ? ' scoreboard-row--open' : ''}${screenIndex >= 0 ? ' scoreboard-row--on-screen' : ''}`}
       draggable={canDrag && Boolean(match)}
       onDragStart={(event) => {
@@ -169,10 +174,22 @@ const GameRow = ({ row, isOpen, onToggle, follows, canDrag, onDragStateChange, o
           {screenIndex >= 0 && <span className="score-badge score-badge--screen">{screenIndex === 0 ? 'Main stream' : `Stream ${screenIndex + 1}`}</span>}
           {pulse.closeAndLate && <span className="score-badge score-badge--close">Close &amp; late</span>}
           {pulse.upset && <span className="score-badge score-badge--upset">Upset watch</span>}
+          {isPinned && <span className="score-badge score-badge--pinned"><Pin size={10} fill="currentColor" aria-hidden="true" />Card</span>}
           {!match && game.status !== 'final' && <span className="score-badge score-badge--none">No stream yet</span>}
         </span>
       </button>
-      {isOpen && <GameMenu row={row} follows={follows} onWatchNow={onWatchNow} onAdd={onAdd} {...menuProps} />}
+      {isOpen && (
+        <GameMenu
+          row={row}
+          id={`scoreboard-menu-${game.id}`}
+          follows={follows}
+          onWatchNow={onWatchNow}
+          onAdd={onAdd}
+          isPinned={isPinned}
+          onTogglePin={onTogglePin}
+          {...menuProps}
+        />
+      )}
     </li>
   );
 };
@@ -198,7 +215,12 @@ const ScoreboardDrawer = ({
   onWatchNow,
   onAdd,
   onReplace,
-  onDragStateChange
+  onDragStateChange,
+  pinnedIds,
+  onTogglePin,
+  isTickerOn,
+  onToggleTicker,
+  focus
 }) => {
   const [filter, setFilter] = useState('live');
   const [openGameId, setOpenGameId] = useState(null);
@@ -217,6 +239,23 @@ const ScoreboardDrawer = ({
     else setOpenGameId(null);
   }, [isOpen]);
 
+  // The ticker opens the drawer at one game: show its section, open its menu and focus it
+  useEffect(() => {
+    if (!focus) return undefined;
+    const row = rows.find(r => r.game.id === focus.gameId);
+    if (!row) return undefined;
+    setFilter(isInPlay(row.game) ? 'live' : 'all');
+    setOpenGameId(focus.gameId);
+    const frame = requestAnimationFrame(() => {
+      const element = document.getElementById(`scoreboard-row-${focus.gameId}`);
+      element?.scrollIntoView({ block: 'nearest' });
+      element?.querySelector('.scoreboard-row__main')?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+    // Only a new focus request should move the drawer, not every score refresh
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
+
   if (!isOpen) return null;
 
   const followedCount = rows.filter(row => isFollowedGame(row.game, follows)).length;
@@ -230,9 +269,14 @@ const ScoreboardDrawer = ({
     <aside className={`scoreboard${isFullscreen ? ' scoreboard--fullscreen' : ''}`} aria-labelledby="scoreboard-title">
       <div className="scoreboard__header">
         <h2 className="scoreboard__title" id="scoreboard-title" tabIndex={-1} ref={headingRef}>Scores</h2>
-        <button type="button" className="icon-btn" onClick={onClose} aria-label="Close scores">
-          <X size={18} strokeWidth={1.75} />
-        </button>
+        <div className="scoreboard__header-actions">
+          <button type="button" className="scoreboard__filter scoreboard__ticker-toggle" aria-pressed={isTickerOn} onClick={onToggleTicker}>
+            Ticker
+          </button>
+          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close scores">
+            <X size={18} strokeWidth={1.75} />
+          </button>
+        </div>
       </div>
 
       <div className="scoreboard__filters" role="group" aria-label="Show games">
@@ -263,6 +307,8 @@ const ScoreboardDrawer = ({
                   isOpen={openGameId === row.game.id}
                   onToggle={() => setOpenGameId(current => (current === row.game.id ? null : row.game.id))}
                   follows={follows}
+                  isPinned={pinnedIds.has(row.game.id)}
+                  onTogglePin={onTogglePin}
                   canDrag={canDrag}
                   onDragStateChange={onDragStateChange}
                   onWatchNow={closeMenuThen(onWatchNow)}
@@ -278,7 +324,7 @@ const ScoreboardDrawer = ({
       <p className="scoreboard__hint">
         {isFrozen
           ? 'Order paused while you browse'
-          : canDrag ? 'Enter watches · Shift+Enter adds · drag a game onto a stream to replace it' : 'Pulse ranks live games by how close and late they are'}
+          : canDrag ? 'Enter watches · Shift+Enter adds · P pins a card · drag onto a stream to replace it' : 'Pulse ranks live games by how close and late they are'}
       </p>
     </aside>
   );

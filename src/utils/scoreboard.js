@@ -13,6 +13,15 @@ export const gameLabel = (game) => {
   return US_LEAGUES.includes(game.league) ? `${first} @ ${second}` : `${first} v ${second}`;
 };
 
+const formatStart = (ms) => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+// Start time, clock or Final, for rows, cards and the ticker
+export const statusText = (game) => {
+  if (game.status === 'pre') return formatStart(game.start);
+  if (game.status === 'final') return /final/i.test(game.clock) ? game.clock : 'Final';
+  return game.clock;
+};
+
 // `matches` already went through attachScores. They are sorted by viewers, so the first
 // match for a game is its busiest stream.
 const streamsByGame = (matches) => {

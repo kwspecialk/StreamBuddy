@@ -10,11 +10,12 @@ export const LAYOUTS = {
     'grid-infinite': { name: '∞', windows: Infinity }
   };
 
-// Phones and tablets can't decode many streams, and small players are unusable
+// Phones and tablets can't decode many streams, and small players are unusable.
+// Score cards sit over the streams, so smaller screens get fewer of them.
 const DEVICE_LIMITS = {
-    phone: { layouts: ['single', 'dual', 'pip'], maxStreams: 2 },
-    tablet: { layouts: ['single', 'dual', 'pip', 'triple', 'quad'], maxStreams: 4 },
-    desktop: { layouts: Object.keys(LAYOUTS), maxStreams: Infinity }
+    phone: { layouts: ['single', 'dual', 'pip'], maxStreams: 2, maxCards: 2 },
+    tablet: { layouts: ['single', 'dual', 'pip', 'triple', 'quad'], maxStreams: 4, maxCards: 3 },
+    desktop: { layouts: Object.keys(LAYOUTS), maxStreams: Infinity, maxCards: 4 }
   };
 
 export const getAllowedLayouts = (device) => DEVICE_LIMITS[device].layouts;
@@ -23,3 +24,5 @@ export const getMaxStreams = (device, layout) =>
   Math.min(LAYOUTS[layout]?.windows || 1, DEVICE_LIMITS[device].maxStreams);
 
 export const getDeviceMaxStreams = (device) => DEVICE_LIMITS[device].maxStreams;
+
+export const getDeviceMaxCards = (device) => DEVICE_LIMITS[device].maxCards;

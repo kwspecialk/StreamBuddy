@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import VideoFeed from './VideoFeed';
 import LayoutSelector from './LayoutSelector';
-import { LAYOUTS, getAllowedLayouts, getMaxStreams, getDeviceMaxStreams } from './layouts';
+import { LAYOUTS, getAllowedLayouts, getMaxStreams, getDeviceMaxStreams, getDeviceMaxCards } from './layouts';
 import './App.css';
 import './components/LayoutSelector.css';
 import './components/StreamHomepage.css';
@@ -24,7 +24,11 @@ import { buildScoreboard, gameIdsOnScreen, gameLabel } from './utils/scoreboard'
 import { isInPlay } from './utils/gamePulse';
 import ScoreboardDrawer from './components/ScoreboardDrawer';
 import UndoToast from './components/UndoToast';
-import useFollows from './useFollows';
+import ScoreCards from './components/ScoreCards';
+import ScoreTicker from './components/ScoreTicker';
+import { pinnedRows, tickerRows } from './utils/scoreCards';
+import useProfile from './useProfile';
+import useMediaQuery from './useMediaQuery';
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
@@ -38,6 +42,7 @@ const MATCH_REFRESH_INTERVAL_MS = 60000;
 const PIP_RESIZE_CORNERS = ['nw', 'ne', 'sw', 'se'];
 const ALLOWED_LAYOUTS = getAllowedLayouts(deviceType);
 const DEVICE_MAX_STREAMS = getDeviceMaxStreams(deviceType);
+const DEVICE_MAX_CARDS = getDeviceMaxCards(deviceType);
 
 const App = () => {
   // App view state - 'homepage' or 'stream-view'
@@ -54,7 +59,12 @@ const App = () => {
   const [toast, setToast] = useState(null);
   const [scoreDrag, setScoreDrag] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
-  const { follows, toggleFollow } = useFollows();
+  const profile = useProfile();
+  const { follows, toggleFollow } = profile;
+  const [openCardId, setOpenCardId] = useState(null);
+  const [isCardDragging, setIsCardDragging] = useState(false);
+  const [scoreboardFocus, setScoreboardFocus] = useState(null);
+  const isCompactCards = useMediaQuery('(max-width: 600px)') || deviceType === 'phone';
 
   // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
@@ -585,6 +595,30 @@ const App = () => {
     showUndo(`Replaced ${tileLabel(replacedUrl)} with ${label}.`, snapshot);
   };
 
+  // ---------- Score cards and ticker ----------
+  // Cards pinned on a bigger screen beyond this device's limit stay saved but aren't drawn
+  const cardEntries = pinnedRows(profile.cards, scoreboardRows).slice(0, DEVICE_MAX_CARDS);
+  const pinnedIds = new Set(profile.cards.map(card => card.id));
+  const liveTickerRows = useMemo(() => tickerRows(scoreboardRows), [scoreboardRows]);
+
+  const handleTogglePin = (row) => {
+    const label = gameLabel(row.game);
+    if (pinnedIds.has(row.game.id)) {
+      profile.unpin(row.game.id);
+      showUndo(`Unpinned ${label}.`, null);
+      return;
+    }
+    const isPinned = profile.pin(row.game.id, { max: DEVICE_MAX_CARDS, knownIds: new Set(scores.map(game => game.id)) });
+    showUndo(isPinned
+      ? `Pinned ${label} as a score card.`
+      : `This device shows up to ${DEVICE_MAX_CARDS} score cards. Close one first.`, null);
+  };
+
+  const handleOpenGameInScores = (gameId) => {
+    setShowScoreboard(true);
+    setScoreboardFocus({ gameId });
+  };
+
   const endScoreDrag = () => {
     setScoreDrag(null);
     setDropTarget(null);
@@ -661,7 +695,7 @@ const renderedVideos = (isResumePending ? [] : videoUrls)
   .sort();
 
 return (
-  <div className={`app${isStreamView ? ' stream-view' : ''}${isStreamView && showScoreboard ? ' scoreboard-open' : ''}`}>
+  <div className={`app${isStreamView ? ' stream-view' : ''}${isStreamView && showScoreboard ? ' scoreboard-open' : ''}${isStreamView && profile.isTickerOn ? ' ticker-on' : ''}`}>
     {streamAudio.isCheckDone && !streamAudio.hasExtension && !isActuallyFullscreen && <ExtensionChip />}
 
     {!isStreamView && (
@@ -771,7 +805,7 @@ return (
       <ScoreboardDrawer
         isOpen={showScoreboard}
         onClose={() => setShowScoreboard(false)}
-        isEscapeBlocked={showStreamBrowser || showEditStreams || Boolean(movieDetails)}
+        isEscapeBlocked={showStreamBrowser || showEditStreams || Boolean(movieDetails) || Boolean(openCardId)}
         isFullscreen={isPageFullscreen && !isHeaderVisibleInFullscreen}
         rows={scoreboardRows}
         tiles={tiles}
@@ -783,7 +817,16 @@ return (
         onAdd={handleAddGame}
         onReplace={handleReplaceStream}
         onDragStateChange={(row) => (row ? setScoreDrag(row) : endScoreDrag())}
+        pinnedIds={pinnedIds}
+        onTogglePin={handleTogglePin}
+        isTickerOn={profile.isTickerOn}
+        onToggleTicker={profile.toggleTicker}
+        focus={scoreboardFocus}
       />
+
+      {profile.isTickerOn && (
+        <ScoreTicker rows={liveTickerRows} onOpenGame={handleOpenGameInScores} onClose={profile.toggleTicker} />
+      )}
 
       <UndoToast toast={toast} onUndo={handleUndo} onDismiss={dismissToast} />
     </>)}
@@ -791,7 +834,7 @@ return (
       {/* Video Grid - stays mounted so hidden streams keep running */}
       <div
         ref={pipWindow.gridRef}
-        className={`video-grid ${layout}${pipWindow.isInteracting ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}${scoreDrag ? ' score-dragging' : ''}`}
+        className={`video-grid ${layout}${pipWindow.isInteracting || isCardDragging ? ' pip-interacting' : ''}${isPageFullscreen ? ' page-fullscreen' : ''}${scoreDrag ? ' score-dragging' : ''}`}
         style={{ display: isStreamView ? undefined : 'none' }}
       >
         {scoreDrag && canAddStream && streamIndexOf(scoreDrag) < 0 && (
@@ -898,6 +941,27 @@ return (
             </div>
           );
         })}
+        {/* After the players, so adding or removing cards never shifts them in the DOM */}
+        {isStreamView && (
+          <ScoreCards
+            entries={cardEntries}
+            isCompact={isCompactCards}
+            openId={openCardId}
+            onOpenChange={setOpenCardId}
+            onMove={profile.move}
+            onUnpin={profile.unpin}
+            onDragChange={setIsCardDragging}
+            menuProps={{
+              tiles,
+              canAdd: canAddStream,
+              follows,
+              onToggleFollow: toggleFollow,
+              onWatchNow: handleWatchGame,
+              onAdd: handleAddGame,
+              onReplace: handleReplaceStream
+            }}
+          />
+        )}
       </div>
 
       {isTouchDevice && isStreamView && displayedVideos.length > 0 && <StreamNotice />}

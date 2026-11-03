@@ -1,16 +1,32 @@
-import { PROFILE_KEY, loadProfile, saveProfile, toggleTeam } from './profile';
+import { PROFILE_KEY, loadProfile, saveProfile, toggleTeam, updateScoreMode } from './profile';
+
+const save = (doc) => localStorage.setItem(PROFILE_KEY, JSON.stringify(doc));
 
 describe('profile', () => {
   beforeEach(() => localStorage.clear());
 
-  it('starts empty and survives bad or old data', () => {
-    expect(loadProfile()).toEqual({ v: 1, follow: { teams: [] } });
+  it('starts empty and survives bad or unknown data', () => {
+    expect(loadProfile()).toEqual({ v: 2, follow: { teams: [] }, scoreMode: { cards: [], ticker: false } });
 
     localStorage.setItem(PROFILE_KEY, '{not json');
     expect(loadProfile().follow.teams).toEqual([]);
 
-    localStorage.setItem(PROFILE_KEY, JSON.stringify({ v: 0, follow: { teams: ['nfl:BUF'] } }));
+    save({ v: 0, follow: { teams: ['nfl:BUF'] } });
     expect(loadProfile().follow.teams).toEqual([]);
+  });
+
+  it('moves a v1 profile to v2 and keeps its follows', () => {
+    save({ v: 1, follow: { teams: ['nfl:BUF'] }, updatedAt: '2026-11-02T00:00:00.000Z' });
+    expect(loadProfile()).toMatchObject({ v: 2, follow: { teams: ['nfl:BUF'] }, scoreMode: { cards: [], ticker: false } });
+  });
+
+  it('drops cards it cannot read', () => {
+    save({
+      v: 2,
+      follow: { teams: [] },
+      scoreMode: { cards: [{ id: 'a', at: null }, { id: 'b', at: { x: 0.5, y: 'top' } }, { at: null }], ticker: 'yes' }
+    });
+    expect(loadProfile().scoreMode).toEqual({ cards: [{ id: 'a', at: null }], ticker: false });
   });
 
   it('toggles a team and round-trips through storage', () => {
@@ -19,5 +35,10 @@ describe('profile', () => {
 
     expect(loadProfile().follow.teams).toEqual(['nfl:BUF']);
     expect(toggleTeam(followed, 'nfl:BUF').follow.teams).toEqual([]);
+  });
+
+  it('saves cards and the ticker setting', () => {
+    saveProfile(updateScoreMode(loadProfile(), { cards: [{ id: 'g1', at: { x: 1, y: 0 } }], ticker: true }));
+    expect(loadProfile().scoreMode).toEqual({ cards: [{ id: 'g1', at: { x: 1, y: 0 } }], ticker: true });
   });
 });
