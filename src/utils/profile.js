@@ -1,9 +1,11 @@
 // Everything a viewer saves, as one versioned doc so it can sync to an account later.
-// v2 added Score Mode: pinned score cards and the ticker setting.
+// v2 added Score Mode: pinned score cards, the ticker setting and where the scores drawer goes.
 export const PROFILE_KEY = 'streambuddy.profile';
 const VERSION = 2;
 
-const emptyScoreMode = () => ({ cards: [], ticker: false });
+const emptyScoreMode = () => ({ cards: [], ticker: false, drawer: 'auto' });
+
+const DRAWER_MODES = ['auto', 'dock', 'float'];
 
 const emptyProfile = () => ({ v: VERSION, follow: { teams: [] }, scoreMode: emptyScoreMode() });
 
@@ -18,7 +20,8 @@ const migrate = (saved) => {
   if (saved.v !== VERSION) return emptyProfile();
 
   const cards = Array.isArray(saved.scoreMode?.cards) ? saved.scoreMode.cards.filter(isCard) : [];
-  return { ...saved, scoreMode: { cards, ticker: saved.scoreMode?.ticker === true } };
+  const drawer = DRAWER_MODES.includes(saved.scoreMode?.drawer) ? saved.scoreMode.drawer : 'auto';
+  return { ...saved, scoreMode: { cards, ticker: saved.scoreMode?.ticker === true, drawer } };
 };
 
 export const loadProfile = () => {

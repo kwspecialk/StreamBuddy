@@ -18,6 +18,13 @@ describe('drawerFit', () => {
     expect(videoWidth([1, 1 / 2], 1440 - DRAWER_WIDTH.min, 840)).toBeGreaterThanOrEqual(videoWidth([1 / 2, 1], 1440, 840));
   });
 
+  it('follows the viewer\'s own pick where docking fits', () => {
+    expect(drawerFit({ width: 1440, height: 840, layout: 'single', prefer: 'dock' })).toEqual({ mode: 'dock', width: DRAWER_WIDTH.min, stackDual: false });
+    expect(drawerFit({ width: 2560, height: 1020, layout: 'single', prefer: 'float' }).mode).toBe('overlay');
+    expect(drawerFit({ width: 2560, height: 1020, layout: 'grid-infinite', prefer: 'dock' }).mode).toBe('dock');
+    expect(drawerFit({ width: 900, height: 1200, layout: 'single', prefer: 'dock' }).mode).toBe('overlay');
+  });
+
   it('never docks on small screens or the scrolling grid', () => {
     expect(drawerFit({ width: 900, height: 1200, layout: 'dual' }).mode).toBe('overlay');
     expect(drawerFit({ width: 2560, height: 1020, layout: 'grid-infinite' }).mode).toBe('overlay');

@@ -111,7 +111,7 @@ const App = () => {
   const [isHeaderVisibleInFullscreen, setIsHeaderVisibleInFullscreen] = useState(false);
 
   // Fullscreen logic
-  const toggleFullScreen = async () => {
+  const toggleFullScreen = useCallback(async () => {
     if (!document.fullscreenElement) {
       try {
         await document.documentElement.requestFullscreen();
@@ -128,7 +128,7 @@ const App = () => {
         }
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -147,6 +147,21 @@ const App = () => {
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
+
+  // F toggles fullscreen in the stream view. Keys typed into a field, or pressed while a player
+  // has focus (the iframe keeps them), don't count.
+  useEffect(() => {
+    if (currentView !== 'stream-view') return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key.toLowerCase() !== 'f' || event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
+      const target = event.target;
+      if (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      event.preventDefault();
+      toggleFullScreen();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentView, toggleFullScreen]);
 
   // Ref for checking current header visibility in callbacks
   const isHeaderVisibleInFullscreenRef = React.useRef(isHeaderVisibleInFullscreen);
@@ -694,18 +709,21 @@ const App = () => {
 const isStreamView = currentView === 'stream-view';
 const isPageFullscreen = isActuallyFullscreen && isStreamView;
 
-// Dock the drawer beside the streams only when that keeps them about as big; otherwise it floats
-// over them. It's decided from the window when the drawer opens, or when the layout, fullscreen or
-// ticker changes, but not while the window is being resized, so it never flips back and forth.
+// Unless the viewer picked docked or floating, dock the drawer beside the streams only when that
+// keeps them about as big, and float it over them otherwise. It's decided from the window when the
+// drawer opens, or when the layout, fullscreen, ticker or that pick changes, but not while the
+// window is being resized, so it never flips back and forth.
 const fitWhenOpened = useMemo(() => drawerFit({
   width: window.innerWidth,
   height: window.innerHeight - (isPageFullscreen ? 0 : HEADER_HEIGHT) - (profile.isTickerOn ? TICKER_HEIGHT : 0),
-  layout
+  layout,
+  prefer: profile.drawerMode
   // showScoreboard re-decides on each open
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}), [showScoreboard, layout, isPageFullscreen, profile.isTickerOn]);
+}), [showScoreboard, layout, isPageFullscreen, profile.isTickerOn, profile.drawerMode]);
+const canDock = viewport.width >= DOCK_MIN_SCREEN;
 // A window made too narrow to dock in still switches to floating
-const fit = viewport.width >= DOCK_MIN_SCREEN ? fitWhenOpened : { ...fitWhenOpened, mode: 'overlay' };
+const fit = canDock ? fitWhenOpened : { ...fitWhenOpened, mode: 'overlay' };
 const isDrawerDocked = isStreamView && showScoreboard && fit.mode === 'dock';
 const appClassName = [
   'app',
@@ -849,6 +867,9 @@ return (
         onTogglePin={handleTogglePin}
         isTickerOn={profile.isTickerOn}
         onToggleTicker={profile.toggleTicker}
+        isDocked={isDrawerDocked}
+        canDock={canDock}
+        onToggleDock={() => profile.setDrawerMode(isDrawerDocked ? 'float' : 'dock')}
         focus={scoreboardFocus}
       />
 

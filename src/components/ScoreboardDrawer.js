@@ -198,6 +198,13 @@ const EMPTY_TEXT = {
   following: 'Follow a team from any game and it shows up here.'
 };
 
+const OptionSwitch = ({ label, isOn, onToggle }) => (
+  <button type="button" role="switch" aria-checked={isOn} className="scoreboard__option" onClick={onToggle}>
+    <span className="scoreboard__switch" aria-hidden="true" />
+    {label}
+  </button>
+);
+
 // The scores side panel in the stream view. A bottom sheet on phones.
 const ScoreboardDrawer = ({
   isOpen,
@@ -219,6 +226,9 @@ const ScoreboardDrawer = ({
   onTogglePin,
   isTickerOn,
   onToggleTicker,
+  isDocked,
+  canDock,
+  onToggleDock,
   focus
 }) => {
   const [filter, setFilter] = useState('live');
@@ -226,7 +236,7 @@ const ScoreboardDrawer = ({
   const headingRef = useRef(null);
 
   const sections = useMemo(() => groupScoreboard(rows, filter, follows), [rows, filter, follows]);
-  const { ordered, isFrozen, freeze, unfreeze } = useFrozenOrder(sections);
+  const { ordered, freeze, unfreeze } = useFrozenOrder(sections);
 
   useEscapeKey(isOpen && !isEscapeBlocked, () => {
     if (openGameId) setOpenGameId(null);
@@ -268,14 +278,9 @@ const ScoreboardDrawer = ({
     <aside className={`scoreboard${isFullscreen ? ' scoreboard--fullscreen' : ''}${isOverlay ? ' scoreboard--overlay' : ''}`} aria-labelledby="scoreboard-title">
       <div className="scoreboard__header">
         <h2 className="scoreboard__title" id="scoreboard-title" tabIndex={-1} ref={headingRef}>Scores</h2>
-        <div className="scoreboard__header-actions">
-          <button type="button" className="scoreboard__filter scoreboard__ticker-toggle" aria-pressed={isTickerOn} onClick={onToggleTicker}>
-            Ticker
-          </button>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close scores">
-            <X size={18} strokeWidth={1.75} />
-          </button>
-        </div>
+        <button type="button" className="icon-btn" onClick={onClose} aria-label="Close scores">
+          <X size={18} strokeWidth={1.75} />
+        </button>
       </div>
 
       <div className="scoreboard__filters" role="group" aria-label="Show games">
@@ -320,11 +325,10 @@ const ScoreboardDrawer = ({
         ))}
       </div>
 
-      <p className="scoreboard__hint">
-        {isFrozen
-          ? 'Order paused while you browse'
-          : canDrag ? 'Enter to watch, Shift+Enter to add, P to pin a card. Drag a game onto a stream to replace it.' : 'Live games are ordered by how close and late they are'}
-      </p>
+      <div className="scoreboard__options">
+        <OptionSwitch label="Ticker" isOn={isTickerOn} onToggle={onToggleTicker} />
+        {canDock && <OptionSwitch label="Dock beside streams" isOn={isDocked} onToggle={onToggleDock} />}
+      </div>
     </aside>
   );
 };

@@ -26,10 +26,12 @@ export const videoWidth = ([tileWidth, tileHeight], width, height) =>
 
 const OVERLAY = { mode: 'overlay', width: DRAWER_WIDTH.min, stackDual: false };
 
-// `width` and `height` are the stream grid's size with the drawer closed
-export const drawerFit = ({ width, height, layout }) => {
+// `width` and `height` are the stream grid's size with the drawer closed. `prefer` is the
+// viewer's own choice, 'dock' or 'float', and wins over the automatic one where docking fits.
+export const drawerFit = ({ width, height, layout, prefer }) => {
   const tile = MAIN_TILE[layout];
-  if (!tile || width < DOCK_MIN_SCREEN || height <= 0) return OVERLAY;
+  if (width < DOCK_MIN_SCREEN || height <= 0 || prefer === 'float') return OVERLAY;
+  if (!tile) return prefer === 'dock' ? { ...OVERLAY, mode: 'dock' } : OVERLAY;
 
   const full = videoWidth(tile, width, height);
   // Grid width beyond what the main picture needs is black bars the drawer can take for free
@@ -40,6 +42,6 @@ export const drawerFit = ({ width, height, layout }) => {
   const sideBySide = videoWidth(tile, narrower, height);
   const stacked = layout === 'dual' ? videoWidth(STACKED_DUAL, narrower, height) : 0;
   const best = Math.max(sideBySide, stacked);
-  if (1 - best / full > MAX_DOCK_LOSS) return OVERLAY;
+  if (prefer !== 'dock' && 1 - best / full > MAX_DOCK_LOSS) return OVERLAY;
   return { mode: 'dock', width: DRAWER_WIDTH.min, stackDual: stacked > sideBySide };
 };

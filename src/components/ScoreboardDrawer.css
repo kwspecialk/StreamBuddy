@@ -45,7 +45,7 @@
 }
 
 .scoreboard--overlay .scoreboard__filters,
-.scoreboard--overlay .scoreboard__hint {
+.scoreboard--overlay .scoreboard__options {
   border-color: var(--color-dark-border-light);
 }
 
@@ -73,16 +73,6 @@
   letter-spacing: -0.01em;
   line-height: var(--line-height-tight);
   outline: none;
-}
-
-.scoreboard__header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.scoreboard__ticker-toggle {
-  min-height: 28px;
 }
 
 .scoreboard__filters {
@@ -157,12 +147,67 @@
   list-style: none;
 }
 
-.scoreboard__hint {
-  margin: 0;
+/* View options along the bottom: plain switches, quieter than the filters above */
+.scoreboard__options {
+  display: flex;
+  gap: var(--space-lg);
   padding: var(--space-sm) var(--space-lg);
   border-top: 1px solid var(--color-dark-border);
-  color: var(--color-text-disabled);
-  font-size: var(--font-size-xs);
+}
+
+.scoreboard__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.scoreboard__option:hover {
+  color: var(--color-text-primary);
+}
+
+.scoreboard__option:focus-visible {
+  outline: 2px solid var(--color-p);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+.scoreboard__switch {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--color-dark-border-medium);
+  transition: var(--transition-colors);
+}
+
+.scoreboard__switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.scoreboard__option[aria-checked="true"] .scoreboard__switch {
+  background: var(--color-p);
+}
+
+.scoreboard__option[aria-checked="true"] .scoreboard__switch::after {
+  transform: translateX(12px);
+  background: var(--color-dark-bg);
 }
 
 /* Rows */
@@ -584,17 +629,7 @@
     padding-top: var(--space-sm);
   }
 
-  .scoreboard__header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.scoreboard__ticker-toggle {
-  min-height: 28px;
-}
-
-.scoreboard__filters {
+  .scoreboard__filters {
     overflow-x: auto;
   }
 
