@@ -118,3 +118,15 @@
 .match-status--final::before {
   display: none;
 }
+
+/* The homepage spotlight: the score is the headline, so the numbers get the most weight */
+.spotlight__content h2.match-teams--headline {
+  display: grid;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.match-teams--headline .match-team__score {
+  font-size: inherit;
+  line-height: 1;
+}
