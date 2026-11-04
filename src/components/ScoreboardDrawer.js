@@ -251,9 +251,18 @@ const ScoreboardDrawer = ({
     else onClose();
   });
 
+  // Focus moves into the drawer, and back to what opened it once it closes, unless the
+  // viewer has already moved on to something else
   useEffect(() => {
-    if (isOpen) headingRef.current?.focus();
-    else setOpenGameId(null);
+    if (!isOpen) {
+      setOpenGameId(null);
+      return undefined;
+    }
+    const opener = document.activeElement;
+    headingRef.current?.focus();
+    return () => {
+      if (document.activeElement === document.body && opener?.isConnected) opener.focus({ preventScroll: true });
+    };
   }, [isOpen]);
 
   // The ticker opens the drawer at one game: show its section, open its menu and focus it
