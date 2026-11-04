@@ -65,4 +65,12 @@ describe('useMatchScores', () => {
     await waitFor(() => expect(result.current.status).toBe('failed'));
     expect(result.current.scores).toEqual([]);
   });
+
+  it('treats a response that is not a list as failed', async () => {
+    global.fetch = jest.fn(async () => ({ ok: true, json: async () => ({ error: 'nope' }) }));
+    const { result } = renderHook(() => useScoresFeed(true));
+
+    await waitFor(() => expect(result.current.status).toBe('failed'));
+    expect(result.current.scores).toEqual([]);
+  });
 });

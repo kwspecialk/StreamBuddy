@@ -73,5 +73,8 @@ export const fetchScores = async () => {
   if (!response.ok) {
     throw new Error(`Scores responded with status: ${response.status}`);
   }
-  return response.json();
+  // The whole app reads this list, so anything else counts as a failed poll
+  const games = await response.json();
+  if (!Array.isArray(games)) throw new Error('Scores response is not a list');
+  return games;
 };
