@@ -136,6 +136,18 @@ describe('scores route', () => {
     ...overrides
   });
 
+  it('keeps only hex team colours', () => {
+    const withColor = (color) => {
+      const [first, ...rest] = event().competitions[0].competitors;
+      const competitors = [{ ...first, team: { ...first.team, color } }, ...rest];
+      return trimEvent(event({ competitions: [{ ...event().competitions[0], competitors }] }), 'nfl').teams[1].color;
+    };
+    expect(withColor('fff')).toBe('#fff');
+    expect(withColor('00338d')).toBe('#00338d');
+    expect(withColor('fff url(https://x.example/a.png)')).toBeNull();
+    expect(withColor('red')).toBeNull();
+  });
+
   it('trims an event and strips sportsbook data', () => {
     expect(trimEvent(event(), 'nfl')).toEqual({
       id: '9',

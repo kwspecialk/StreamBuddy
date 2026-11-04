@@ -51,11 +51,14 @@ const toClock = (shortDetail = '') => shortDetail.replace(/^(.+) - (.+)$/, '$2 $
 // `details` holds the closing line. Sportsbook names, links and logos are left out on purpose.
 const toOdds = (odds) => (odds?.details ? { line: odds.details, total: odds.overUnder ?? null } : null);
 
+// The colour ends up in a CSS background, so anything but a hex code is dropped
+const HEX_COLOR = /^[0-9a-f]{3}(?:[0-9a-f]{3})?$/i;
+
 const toTeam = (competitor) => ({
   abbr: competitor.team?.abbreviation || '',
   name: competitor.team?.displayName || '',
   score: competitor.score ?? null,
-  color: competitor.team?.color ? `#${competitor.team.color}` : null,
+  color: HEX_COLOR.test(competitor.team?.color || '') ? `#${competitor.team.color}` : null,
   record: competitor.records?.[0]?.summary || null
 });
 
