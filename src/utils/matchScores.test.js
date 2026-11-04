@@ -1,5 +1,5 @@
 import { parseMatchSlug, findScore, attachScores } from './matchScores';
-import { trimEvent, pickPreGameOdds } from '../../api/scores';
+import { trimEvent, pickPreGameOdds, toFavorite } from '../../api/scores';
 
 const START = 1793556000;
 
@@ -124,15 +124,28 @@ describe('scores route', () => {
   const event = (overrides = {}) => ({
     id: '9',
     date: '2026-11-01T18:00Z',
-    status: { type: { state: 'in', name: 'STATUS_IN_PROGRESS', shortDetail: '8:18 - 4th' } },
+    status: { period: 4, clock: 498, type: { state: 'in', name: 'STATUS_IN_PROGRESS', shortDetail: '8:18 - 4th' } },
     competitions: [{
       competitors: [
-        { homeAway: 'home', score: '20', team: { abbreviation: 'BUF', displayName: 'Buffalo Bills' } },
-        { homeAway: 'away', score: '17', team: { abbreviation: 'BAL', displayName: 'Baltimore Ravens' } }
+        { homeAway: 'home', score: '20', team: { id: '2', abbreviation: 'BUF', displayName: 'Buffalo Bills', color: '00338d' }, records: [{ summary: '6-2' }] },
+        { homeAway: 'away', score: '17', team: { id: '33', abbreviation: 'BAL', displayName: 'Baltimore Ravens' } }
       ],
+      situation: { possession: '33', isRedZone: true, downDistanceText: '2nd & 4 at BUF 12' },
       odds: [{ details: 'BUF -3', overUnder: 54.5, provider: { name: 'Book' }, link: { href: 'https://book.example' } }]
     }],
     ...overrides
+  });
+
+  it('keeps only hex team colours', () => {
+    const withColor = (color) => {
+      const [first, ...rest] = event().competitions[0].competitors;
+      const competitors = [{ ...first, team: { ...first.team, color } }, ...rest];
+      return trimEvent(event({ competitions: [{ ...event().competitions[0], competitors }] }), 'nfl').teams[1].color;
+    };
+    expect(withColor('fff')).toBe('#fff');
+    expect(withColor('00338d')).toBe('#00338d');
+    expect(withColor('fff url(https://x.example/a.png)')).toBeNull();
+    expect(withColor('red')).toBeNull();
   });
 
   it('trims an event and strips sportsbook data', () => {
@@ -142,12 +155,33 @@ describe('scores route', () => {
       start: Date.parse('2026-11-01T18:00Z'),
       status: 'live',
       clock: '4th 8:18',
+      period: 4,
+      clockSec: 498,
       teams: [
-        { abbr: 'BAL', name: 'Baltimore Ravens', score: '17' },
-        { abbr: 'BUF', name: 'Buffalo Bills', score: '20' }
+        { abbr: 'BAL', name: 'Baltimore Ravens', score: '17', color: null, record: null },
+        { abbr: 'BUF', name: 'Buffalo Bills', score: '20', color: '#00338d', record: '6-2' }
       ],
-      odds: { line: 'BUF -3', total: 54.5 }
+      odds: { line: 'BUF -3', total: 54.5 },
+      favorite: 'BUF',
+      situation: { possession: 'BAL', redZone: true }
     });
+  });
+
+  it('only reports possession while the game is on', () => {
+    const halftime = trimEvent(event({ status: { type: { state: 'in', name: 'STATUS_HALFTIME' } } }), 'nfl');
+
+    expect(halftime.situation).toBeNull();
+    expect(trimEvent(event({ competitions: [{ ...event().competitions[0], situation: {} }] }), 'nfl').situation).toBeNull();
+  });
+
+  it('names the favourite only when the line starts with a team in the game', () => {
+    const teams = [{ abbr: 'BAL' }, { abbr: 'BUF' }];
+
+    expect(toFavorite({ line: 'BAL -2.5' }, teams)).toBe('BAL');
+    expect(toFavorite({ line: 'EVEN' }, teams)).toBeNull();
+    expect(toFavorite({ line: 'UTAH -130' }, [{ abbr: 'TOR' }, { abbr: 'UTA' }])).toBe('UTA');
+    expect(toFavorite({ line: 'B -1' }, teams)).toBeNull();
+    expect(toFavorite(null, teams)).toBeNull();
   });
 
   it('lists soccer teams home first', () => {

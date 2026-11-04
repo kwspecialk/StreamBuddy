@@ -118,3 +118,24 @@
 .match-status--final::before {
   display: none;
 }
+
+/* The homepage spotlight: the score is the headline, so the numbers get the most weight.
+   A step smaller than a title so most team names fit the column, and long ones wrap
+   rather than lose their ends. */
+.spotlight__content h2.match-teams--headline {
+  display: grid;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  font-size: clamp(var(--font-size-3xl), 3.5vw, 3.5rem);
+}
+
+.match-teams--headline .match-team__name {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.match-teams--headline .match-team__score {
+  font-size: inherit;
+  line-height: 1;
+}

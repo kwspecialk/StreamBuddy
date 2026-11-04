@@ -4,7 +4,7 @@ import { tmdbApi } from '../utils/tmdbApi';
 import { imageCache } from '../utils/imageCache';
 import MovieDetailsModal from './MovieDetailsModal';
 import CachedImage from './CachedImage';
-import { MatchStatusBadge, MatchInfo } from './MatchScore';
+import { MatchStatusBadge, MatchInfo, MatchHeadline } from './MatchScore';
 import { clickableProps } from '../utils/a11y';
 import { canFullscreenPage } from '../deviceProfile';
 
@@ -354,7 +354,7 @@ const StreamHomepage = ({ onStreamSelect, onEnterStreamView, matches, isLoading,
           <img src={image} alt="" className="spotlight__art" onError={handleImageError} />
           <div className="spotlight__content">
             <MatchStatusBadge match={spotlightMatch} className="spotlight__label spotlight__label--live" />
-            <h2>{title}</h2>
+            <MatchHeadline match={spotlightMatch} title={title} />
             <p>{getMatchMeta(spotlightMatch)}</p>
             <span className="btn btn--primary btn--lg"><Play size={18} fill="currentColor" /> Watch now</span>
           </div>

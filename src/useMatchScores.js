@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { attachScores, fetchScores } from './utils/matchScores';
+import { useEffect, useRef, useState } from 'react';
+import { fetchScores } from './utils/matchScores';
 
 const SCORE_REFRESH_INTERVAL_MS = 180000;
 const REFRESH_CHECK_INTERVAL_MS = 15000;
 
-// Adds ESPN scores to matches, polling only while `enabled` and the tab is visible.
-// Any failure leaves matches without scores, so cards fall back to plain LIVE.
-export const useMatchScores = (matches, enabled) => {
-  const [scores, setScores] = useState([]);
+// The ESPN games from /api/scores, polling only while `enabled` and the tab is visible.
+// Any failure gives an empty list, so cards fall back to plain LIVE. `status` is 'loading'
+// until the first answer, then 'ok' or 'failed' after each poll, so an empty list from a
+// failed poll doesn't read as loading or as no games.
+export const useScoresFeed = (enabled) => {
+  const [feed, setFeed] = useState({ scores: [], status: 'loading' });
   const lastFetchRef = useRef(0);
 
   useEffect(() => {
@@ -17,9 +19,9 @@ export const useMatchScores = (matches, enabled) => {
       if (document.hidden || Date.now() - lastFetchRef.current < SCORE_REFRESH_INTERVAL_MS) return;
       lastFetchRef.current = Date.now();
       try {
-        setScores(await fetchScores());
+        setFeed({ scores: await fetchScores(), status: 'ok' });
       } catch (error) {
-        setScores([]);
+        setFeed({ scores: [], status: 'failed' });
       }
     };
 
@@ -32,5 +34,5 @@ export const useMatchScores = (matches, enabled) => {
     };
   }, [enabled]);
 
-  return useMemo(() => attachScores(matches, scores), [matches, scores]);
+  return feed;
 };

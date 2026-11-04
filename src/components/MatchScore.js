@@ -26,6 +26,22 @@ const TeamRow = ({ team, showScore, isLoser }) => (
   </div>
 );
 
+// The spotlight's headline: each team with its score once the game has points, else the title
+export const MatchHeadline = ({ match, title }) => {
+  const { score } = match;
+  const [first, second] = score?.teams || [];
+  if (!score || score.status === 'pre' || !hasPoints(first) || !hasPoints(second)) return <h2>{title}</h2>;
+
+  const difference = Number(first.score) - Number(second.score);
+  const isFinal = score.status === 'final';
+  return (
+    <h2 className="match-teams match-teams--headline" aria-label={`${first.name} ${first.score}, ${second.name} ${second.score}`}>
+      <TeamRow team={first} showScore isLoser={isFinal && difference < 0} />
+      <TeamRow team={second} showScore isLoser={isFinal && difference > 0} />
+    </h2>
+  );
+};
+
 // Title and sport for a match card. Unmatched cards keep the plain title.
 export const MatchInfo = ({ match, title, sport }) => {
   const { score } = match;
