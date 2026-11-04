@@ -30,7 +30,6 @@ import { pinnedRows, tickerRows } from './utils/scoreCards';
 import { DOCK_MIN_SCREEN, drawerFit } from './utils/drawerFit';
 import useProfile from './useProfile';
 import useMediaQuery from './useMediaQuery';
-import useViewportSize from './useViewportSize';
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
@@ -70,7 +69,8 @@ const App = () => {
   const [isCardDragging, setIsCardDragging] = useState(false);
   const [scoreboardFocus, setScoreboardFocus] = useState(null);
   const isCompactCards = useMediaQuery('(max-width: 600px)') || deviceType === 'phone';
-  const viewport = useViewportSize();
+  // A media query, not the window size, so resizing re-renders App only when this flips
+  const canDock = useMediaQuery(`(min-width: ${DOCK_MIN_SCREEN}px)`);
 
   // Matches data for Homepage and Stream Browser
   const [matches, setMatches] = useState([]);
@@ -706,7 +706,6 @@ const fitWhenOpened = useMemo(() => drawerFit({
   // showScoreboard re-decides on each open
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }), [showScoreboard, layout, isPageFullscreen, profile.isTickerOn, profile.drawerMode]);
-const canDock = viewport.width >= DOCK_MIN_SCREEN;
 // A window made too narrow to dock in still switches to floating
 const fit = canDock ? fitWhenOpened : { ...fitWhenOpened, mode: 'overlay' };
 const isDrawerDocked = isStreamView && showScoreboard && fit.mode === 'dock';
