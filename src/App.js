@@ -671,21 +671,6 @@ const App = () => {
   };
 
   useEffect(() => {
-    return () => {
-      const iframes = document.querySelectorAll('iframe');
-      iframes.forEach(iframe => {
-        try {
-          if (iframe.contentWindow) {
-            iframe.src = '';
-          }
-        } catch (e) {
-          console.warn('Cleanup failed:', e);
-        }
-      });
-    };
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem('savedVideoUrls', JSON.stringify(videoUrls));
   }, [videoUrls]);
 
