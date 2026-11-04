@@ -77,11 +77,16 @@ const FloatingCard = ({ entry, slot, grid, isOpen, onOpenChange, onMove, onUnpin
   const [dragPosition, setDragPosition] = useState(null);
   const wasDraggedRef = useRef(false);
   const cardRef = useRef(null);
+  const endDragRef = useRef(null);
   const label = gameLabel(game);
   const leader = game.status === 'pre' ? null : leaderOf(game);
   const position = dragPosition || cardPixels(card, slot, grid);
 
   usePressOutside(cardRef, isOpen, () => onOpenChange(null));
+
+  // A refresh can drop the game mid-drag. The grid's players would stay unclickable
+  // if the drag never ended, so unmounting ends it.
+  useEffect(() => () => endDragRef.current?.(), []);
 
   const handlePointerDown = (event) => {
     if (event.button !== 0) return;
@@ -108,14 +113,24 @@ const FloatingCard = ({ entry, slot, grid, isOpen, onOpenChange, onMove, onUnpin
       setDragPosition(latest);
     };
 
-    const handleEnd = () => {
+    const stopListening = () => {
+      endDragRef.current = null;
       handle.removeEventListener('pointermove', handleMove);
       handle.removeEventListener('pointerup', handleEnd);
       handle.removeEventListener('pointercancel', handleEnd);
+    };
+
+    const handleEnd = () => {
+      stopListening();
       if (!isDragging) return;
       onDragChange(false);
       onMove(card.id, cardFractions(latest, grid));
       setDragPosition(null);
+    };
+
+    endDragRef.current = () => {
+      stopListening();
+      if (isDragging) onDragChange(false);
     };
 
     handle.setPointerCapture(event.pointerId);
