@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { attachScores, fetchScores } from './utils/matchScores';
+import { useEffect, useRef, useState } from 'react';
+import { fetchScores } from './utils/matchScores';
 
 const SCORE_REFRESH_INTERVAL_MS = 180000;
 const REFRESH_CHECK_INTERVAL_MS = 15000;
@@ -35,12 +35,4 @@ export const useScoresFeed = (enabled) => {
   }, [enabled]);
 
   return feed;
-};
-
-export const useScores = (enabled) => useScoresFeed(enabled).scores;
-
-// Adds ESPN scores to matches
-export const useMatchScores = (matches, enabled) => {
-  const scores = useScores(enabled);
-  return useMemo(() => attachScores(matches, scores), [matches, scores]);
 };

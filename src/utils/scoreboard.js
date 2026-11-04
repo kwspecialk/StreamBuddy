@@ -3,8 +3,6 @@ import { findScore } from './matchScores';
 import { findMatchForUrl } from './ppvApi';
 import { gamePulse, isFollowedGame, isInPlay } from './gamePulse';
 
-export const FILTERS = ['live', 'all', 'following'];
-
 const US_LEAGUES = ['nfl', 'nba', 'nhl', 'nbl'];
 
 // US games read away @ home; soccer lists the home side first
