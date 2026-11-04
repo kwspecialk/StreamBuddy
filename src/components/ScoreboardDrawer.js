@@ -198,6 +198,13 @@ const EMPTY_TEXT = {
   following: 'Follow a team from any game and it shows up here.'
 };
 
+const emptyText = ({ rows, filter, follows, scoresStatus }) => {
+  if (rows.length === 0 && scoresStatus === 'loading') return 'Loading scores…';
+  if (rows.length === 0 && scoresStatus === 'failed') return 'Scores aren’t available right now. They’ll come back on their own.';
+  if (filter === 'following' && follows.size > 0) return 'No games today for the teams you follow.';
+  return EMPTY_TEXT[filter];
+};
+
 const OptionSwitch = ({ label, isOn, onToggle }) => (
   <button type="button" role="switch" aria-checked={isOn} className="scoreboard__option" onClick={onToggle}>
     <span className="scoreboard__switch" aria-hidden="true" />
@@ -213,6 +220,7 @@ const ScoreboardDrawer = ({
   isFullscreen,
   isOverlay,
   rows,
+  scoresStatus,
   tiles,
   canAdd,
   canDrag,
@@ -299,7 +307,7 @@ const ScoreboardDrawer = ({
       </div>
 
       <div className="scoreboard__body" onPointerEnter={(event) => event.pointerType === 'mouse' && freeze()} onPointerLeave={unfreeze}>
-        {ordered.length === 0 && <p className="scoreboard__empty">{rows.length === 0 ? 'Loading scores…' : EMPTY_TEXT[filter]}</p>}
+        {ordered.length === 0 && <p className="scoreboard__empty">{emptyText({ rows, filter, follows, scoresStatus })}</p>}
         {ordered.map(section => (
           <section key={section.id} className="scoreboard__section" aria-label={section.label}>
             {filter !== 'live' && <h3 className="scoreboard__section-title">{section.label}</h3>}

@@ -1,5 +1,5 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useMatchScores } from './useMatchScores';
+import { useMatchScores, useScoresFeed } from './useMatchScores';
 
 const game = {
   id: '1',
@@ -48,5 +48,21 @@ describe('useMatchScores', () => {
 
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
     expect(result.current).toBe(matches);
+  });
+
+  it('reports loading, then whether the poll worked', async () => {
+    const { result } = renderHook(() => useScoresFeed(true));
+    expect(result.current.status).toBe('loading');
+
+    await waitFor(() => expect(result.current.status).toBe('ok'));
+    expect(result.current.scores).toEqual([game]);
+  });
+
+  it('reports a failed poll apart from an empty one', async () => {
+    global.fetch = jest.fn(async () => ({ ok: false, status: 502 }));
+    const { result } = renderHook(() => useScoresFeed(true));
+
+    await waitFor(() => expect(result.current.status).toBe('failed'));
+    expect(result.current.scores).toEqual([]);
   });
 });

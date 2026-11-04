@@ -5,6 +5,13 @@ import { gameLabel, statusText } from '../utils/scoreboard';
 import { tickerDuration } from '../utils/scoreCards';
 import './ScoreCards.css';
 
+// What an empty ticker says, by the scores feed's status
+const EMPTY_TEXT = {
+  loading: 'Loading scores…',
+  ok: 'No games are live right now',
+  failed: 'Scores aren’t available right now'
+};
+
 const TickerItems = ({ rows, onOpenGame, isCopy }) => (
   <ul className="score-ticker__items" aria-hidden={isCopy || undefined}>
     {rows.map(({ game }) => (
@@ -31,7 +38,7 @@ const TickerItems = ({ rows, onOpenGame, isCopy }) => (
 
 // A thin strip of live games along the bottom, hottest first. It crawls only when the games
 // don't fit, pauses on hover or focus, and scrolls by hand instead for reduced motion.
-const ScoreTicker = ({ rows, onOpenGame, onClose }) => {
+const ScoreTicker = ({ rows, scoresStatus, onOpenGame, onClose }) => {
   const viewportRef = useRef(null);
   const itemsRef = useRef(null);
   const [overflows, setOverflows] = useState(false);
@@ -55,7 +62,7 @@ const ScoreTicker = ({ rows, onOpenGame, onClose }) => {
       <span className="score-ticker__label">Live</span>
       <div className="score-ticker__viewport" ref={viewportRef}>
         {rows.length === 0 ? (
-          <p className="score-ticker__empty">No games are live right now</p>
+          <p className="score-ticker__empty">{EMPTY_TEXT[scoresStatus] || EMPTY_TEXT.ok}</p>
         ) : (
           <div
             className={`score-ticker__track${isCrawling ? ' score-ticker__track--crawling' : ''}`}

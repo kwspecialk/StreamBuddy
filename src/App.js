@@ -34,7 +34,7 @@ import useViewportSize from './useViewportSize';
 import usePipWindow from './usePipWindow';
 import useStreamAudio, { getStreamKey } from './useStreamAudio';
 import ExtensionChip from './components/ExtensionChip';
-import { useScores } from './useMatchScores';
+import { useScoresFeed } from './useMatchScores';
 import useWakeLock from './useWakeLock';
 import StreamHelp from './components/StreamHelp';
 import StreamNotice from './components/StreamNotice';
@@ -78,7 +78,7 @@ const App = () => {
   const hasLoadedMatchesRef = React.useRef(false);
   // Both views show scores, and the stream view's Scores button counts live games.
   // /api/scores is CDN cached, so polling it costs the same however many people watch.
-  const scores = useScores(true);
+  const { scores, status: scoresStatus } = useScoresFeed(true);
   const scoredMatches = useMemo(() => attachScores(matches, scores), [matches, scores]);
 
   const [videoUrls, setVideoUrls] = useState(() => {
@@ -842,6 +842,7 @@ return (
         isFullscreen={isPageFullscreen && !isHeaderVisibleInFullscreen}
         isOverlay={fit.mode === 'overlay'}
         rows={scoreboardRows}
+        scoresStatus={scoresStatus}
         tiles={tiles}
         canAdd={canAddStream}
         canDrag={!isTouchDevice}
@@ -862,7 +863,7 @@ return (
       />
 
       {profile.isTickerOn && (
-        <ScoreTicker rows={liveTickerRows} onOpenGame={handleOpenGameInScores} onClose={profile.toggleTicker} />
+        <ScoreTicker rows={liveTickerRows} scoresStatus={scoresStatus} onOpenGame={handleOpenGameInScores} onClose={profile.toggleTicker} />
       )}
 
       <UndoToast toast={toast} onUndo={handleUndo} onDismiss={dismissToast} />
