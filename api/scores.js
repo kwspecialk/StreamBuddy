@@ -135,6 +135,8 @@ export const pickPreGameOdds = (items = []) =>
   toOdds(items.find(item => item.details && !/live/i.test(item.provider?.name || '')));
 
 const fetchPreGameOdds = async ({ id, league }) => {
+  // The id goes into the URL path, so only ESPN's numeric ids are sent on
+  if (!/^\d+$/.test(id)) return null;
   if (preGameOdds.has(id)) return preGameOdds.get(id);
 
   const [sport, espnLeague] = LEAGUES[league];
