@@ -46,9 +46,7 @@ describe('useMatchScores', () => {
     global.fetch = jest.fn(async () => ({ ok: false, status: 502 }));
     const { result } = renderHook(() => useMatchScores(matches, true));
 
-    await act(async () => {});
-
-    expect(global.fetch).toHaveBeenCalled();
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
     expect(result.current).toBe(matches);
   });
 });
