@@ -797,20 +797,23 @@ return (
             <span>Manage</span>
           </button>
           
-          {canFullscreenPage && <button 
-            className="icon-btn"
-            onClick={toggleFullScreen} 
-            title={isActuallyFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            aria-label={isActuallyFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          >
-            {isActuallyFullscreen ? <Minimize size={18} strokeWidth={1.75} /> : <Maximize size={18} strokeWidth={1.75} />}
-          </button>}
+          {/* How the streams are shown sits apart, with fullscreen last like in a video player */}
+          <div className="header-actions__view">
+            <LayoutSelector
+              onLayoutChange={handleLayoutChange}
+              currentLayout={layout}
+              allowedLayouts={ALLOWED_LAYOUTS}
+            />
 
-          <LayoutSelector
-            onLayoutChange={handleLayoutChange}
-            currentLayout={layout}
-            allowedLayouts={ALLOWED_LAYOUTS}
-          />
+            {canFullscreenPage && <button
+              className="icon-btn"
+              onClick={toggleFullScreen}
+              title={isActuallyFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              aria-label={isActuallyFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+              {isActuallyFullscreen ? <Minimize size={18} strokeWidth={1.75} /> : <Maximize size={18} strokeWidth={1.75} />}
+            </button>}
+          </div>
         </div>
       </div>
 
